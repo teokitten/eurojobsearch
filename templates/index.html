@@ -32,6 +32,10 @@
     --source-karriere:  #e63946;
     --source-euro:      #2196f3;
     --source-wic:       #06b6d4;
+    --source-arbeitnow: #1d4ed8;
+    --source-remotive:  #0f9d83;
+    --source-jobicy:    #6f3ff5;
+    --source-wwr:       #2b2f4a;
   }
 
   html { font-size: 15px; scroll-behavior: smooth; }
@@ -86,12 +90,14 @@
     font-weight: 600;
     color: #AFA9EC;
     margin-top: 0.2rem;
+    padding-left: 49px;
   }
 
   .subtitle {
     font-size: 0.88rem;
     color: var(--text-s);
     margin-top: 0.3rem;
+    padding-left: 49px;
   }
 
   /* ===== Main grid ===== */
@@ -574,8 +580,6 @@
 
   .no-results-tips {
     list-style: none;
-    display: inline-block;
-    text-align: left;
     margin-top: 0.35rem;
   }
 
@@ -1007,6 +1011,10 @@
   /* Job cards source badge colors */
   .src-GLASSDOOR  { background: var(--source-glassdoor); }
   .src-GOOGLE_JOBS { background: var(--source-google); }
+  .src-ARBEITNOW      { background: var(--source-arbeitnow); }
+  .src-REMOTIVE       { background: var(--source-remotive); }
+  .src-JOBICY         { background: var(--source-jobicy); }
+  .src-WEWORKREMOTELY { background: var(--source-wwr); }
 
   .footer-link {
     color: var(--text-s);
@@ -1022,7 +1030,28 @@
 
   <!-- Header -->
   <header class="site-header">
-    <h1>Euro<span>Job</span>Search</h1>
+    <div style="display:flex; align-items:center; gap:3px;">
+      <svg width="46" height="46" viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" style="flex-shrink:0; margin-top:-8px;">
+        <defs>
+          <clipPath id="earthClip"><circle cx="18" cy="24" r="10"/></clipPath>
+        </defs>
+        <circle cx="18" cy="24" r="10" fill="#2563eb"/>
+        <g clip-path="url(#earthClip)">
+          <ellipse cx="14" cy="21" rx="6" ry="4" fill="#3ecf8e" transform="rotate(-15 14 21)"/>
+          <ellipse cx="23" cy="29" rx="5" ry="3.5" fill="#3ecf8e" transform="rotate(10 23 29)"/>
+          <ellipse cx="13" cy="29" rx="3" ry="2" fill="#3ecf8e" transform="rotate(20 13 29)"/>
+        </g>
+        <path d="M4.6,7.8 L3.9,5.2 L6.2,6.6 Z" fill="#f5a623"/>
+        <path d="M4.52,7.86 L3.8,8.4 L5.4,7.2 Z" fill="#ff5c5c"/>
+        <path d="M6.28,6.54 L7.0,6.0 L5.4,7.2 Z" fill="#ff5c5c"/>
+        <path d="M6.92,11.06 L8.68,9.74 L6.28,6.54 L4.52,7.86 Z" fill="#f0f0f5"/>
+        <path d="M9.6,12.8 L6.92,11.06 L8.68,9.74 Z" fill="#ff5c5c"/>
+        <circle cx="8.4" cy="11.2" r="0.7" fill="#5b6ef5"/>
+        <circle cx="12" cy="16" r="2.2" fill="none" stroke="#f5a623" stroke-width="0.8"/>
+        <circle cx="12" cy="16" r="0.8" fill="#f5a623"/>
+      </svg>
+      <h1>Euro<span>Job</span>Search</h1>
+    </div>
     <p class="tagline">European jobs only.</p>
     <p class="subtitle">Search across job boards and company career pages – all in one place.</p>
   </header>
@@ -2034,14 +2063,16 @@ function renderJobList() {
     noResults.classList.remove('hidden');
     if (state.allResults.length === 0) {
       noResults.innerHTML =
-        `<p class="no-results-title">No jobs matched your search.</p>` +
-        `<p class="no-results p" style="color:var(--text-s);font-size:0.88rem;">A few things to try:</p>` +
-        `<ul class="no-results-tips">` +
-          `<li>Expand the timeframe (try 7 days or 30 days)</li>` +
-          `<li>Broaden your keywords (e.g. 'writer' instead of 'technical writer')</li>` +
-          `<li>Select more countries or add Remote</li>` +
-          `<li>Some sources may have returned errors – check the warnings above</li>` +
-        `</ul>`;
+        `<p class="no-results-title">No jobs matching your search criteria.</p>` +
+        `<div style="text-align:left;max-width:480px;margin:0 auto;">` +
+          `<p style="color:var(--text-s);font-size:0.88rem;">A few things to try:</p>` +
+          `<ul class="no-results-tips">` +
+            `<li>Expand the timeframe</li>` +
+            `<li>Broaden your keywords (try fewer or more general terms)</li>` +
+            `<li>Select more countries, or include Remote</li>` +
+            `<li>Some sources may have returned errors – check the warnings above</li>` +
+          `</ul>` +
+        `</div>`;
     } else {
       noResults.innerHTML =
         `<p style="color:var(--text-s);font-size:0.95rem;">` +
