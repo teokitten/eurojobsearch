@@ -1,0 +1,11 @@
+{
+  "greenhouse": [
+    "trustpilot", "wolt", "adyen", "skyscanner",
+    "contentful", "typeform", "pipedrive",
+    "revolut", "wise", "klarna", "spotify",
+    "deliveroo", "monzo", "checkout", "pleo",
+    "personio", "mollie"
+  ],
+  "lever": [],
+  "ashby": []
+}

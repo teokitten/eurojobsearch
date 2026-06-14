@@ -1,0 +1,6 @@
+flask
+requests
+feedparser
+python-jobspy
+beautifulsoup4
+python-dotenv

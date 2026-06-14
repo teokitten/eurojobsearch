@@ -1,0 +1,2477 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EuroJobSearch – European jobs only</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  /* ===== Reset & Base ===== */
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg:        #0f1117;
+    --surface:   #1a1d27;
+    --surface-r: #22263a;
+    --accent:    #5b6ef5;
+    --accent-h:  #4a5de0;
+    --text:      #f0f0f5;
+    --text-s:    #9098b1;
+    --border:    #2e3248;
+    --green:     #3ecf8e;
+    --amber:     #f5a623;
+    --red:       #ff5c5c;
+
+    --source-indeed:    #003A9B;
+    --source-linkedin:  #0A66C2;
+    --source-glassdoor: #0caa41;
+    --source-google:    #4285f4;
+    --source-gh:        #24a148;
+    --source-karriere:  #e63946;
+    --source-euro:      #2196f3;
+    --source-wic:       #06b6d4;
+  }
+
+  html { font-size: 15px; scroll-behavior: smooth; }
+
+  body {
+    font-family: 'Inter', system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+    min-height: 100vh;
+  }
+
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+
+  button {
+    font-family: inherit;
+    cursor: pointer;
+    border: none;
+    outline: none;
+  }
+
+  input, select {
+    font-family: inherit;
+    font-size: 0.95rem;
+  }
+
+  /* ===== Layout ===== */
+  .app-wrapper {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 0 1.25rem 3rem;
+  }
+
+  /* ===== Header ===== */
+  .site-header {
+    padding: 2rem 0 1.5rem;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 2rem;
+  }
+
+  .site-header h1 {
+    font-size: 1.75rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+  }
+
+  .site-header h1 span { color: var(--accent); }
+
+  .tagline {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #AFA9EC;
+    margin-top: 0.2rem;
+  }
+
+  .subtitle {
+    font-size: 0.88rem;
+    color: var(--text-s);
+    margin-top: 0.3rem;
+  }
+
+  /* ===== Main grid ===== */
+  .main-grid {
+    display: grid;
+    grid-template-columns: 320px 1fr;
+    gap: 1.5rem;
+    align-items: start;
+  }
+
+  @media (max-width: 860px) {
+    .main-grid { grid-template-columns: 1fr; }
+  }
+
+  /* ===== Search Panel ===== */
+  .search-panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.25rem;
+  }
+
+  .field-group { margin-bottom: 1.1rem; }
+
+  .field-label {
+    display: block;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--text-s);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-bottom: 0.45rem;
+  }
+
+  .text-input {
+    width: 100%;
+    background: var(--surface-r);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    padding: 0.6rem 0.85rem;
+    transition: border-color 0.15s;
+  }
+
+  .text-input:focus {
+    outline: none;
+    border-color: var(--accent);
+  }
+
+  .text-input::placeholder { color: var(--text-s); }
+
+  /* Country pills */
+  .pill-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+  }
+
+  .pill {
+    background: var(--surface-r);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    color: var(--text-s);
+    font-size: 0.8rem;
+    padding: 0.28rem 0.7rem;
+    cursor: pointer;
+    user-select: none;
+    transition: background 0.15s, color 0.15s, border-color 0.15s;
+    white-space: nowrap;
+  }
+
+  .pill.active {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #fff;
+    font-weight: 600;
+  }
+
+  .pill:hover:not(.active) {
+    border-color: var(--accent);
+    color: var(--text);
+  }
+
+  /* Source checkboxes */
+  .source-list {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.5rem;
+  }
+
+  .source-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    cursor: pointer;
+    padding: 0.3rem 0;
+  }
+
+  .source-item input[type="checkbox"] {
+    accent-color: var(--accent);
+    width: 15px;
+    height: 15px;
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+
+  .source-label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex: 1;
+    min-width: 0;
+  }
+
+  .source-item-label {
+    font-size: 0.88rem;
+    color: var(--text);
+  }
+
+  .source-row-right {
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
+  }
+
+  .source-icon-slot {
+    width: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .src-info-trigger {
+    font-size: 0.75rem;
+    color: var(--text-s);
+    cursor: default;
+    user-select: none;
+  }
+
+  .source-badge {
+    display: inline-flex;
+    align-items: center;
+    font-size: 0.7rem;
+    padding: 3px 10px;
+    border-radius: 999px;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+
+  .badge-stable { background: rgba(62,207,142,0.15); color: var(--green); }
+  .badge-warn   { background: rgba(245,166,35,0.15); color: var(--amber); }
+  .badge-note   { background: rgba(144,152,177,0.12); color: var(--text-s); }
+
+  /* Shared source tooltip – rendered on document.body */
+  #src-tooltip {
+    display: none;
+    position: fixed;
+    z-index: 999999;
+    background: #0f1117;
+    border: 1px solid #2e3248;
+    color: #f0f0f5;
+    font-size: 12px;
+    min-width: 280px;
+    max-width: 300px;
+    padding: 8px 12px;
+    border-radius: 6px;
+    white-space: normal;
+    word-break: normal;
+    line-height: 1.5;
+    text-align: left;
+    pointer-events: none;
+  }
+
+  /* LinkedIn rate-limit toast */
+  .rl-toast {
+    display: none;
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    background: #1a1d27;
+    border: 1px solid #2e3248;
+    border-left: 4px solid #f5a623;
+    border-radius: 10px;
+    padding: 16px 20px;
+    max-width: 320px;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.4);
+    z-index: 9999;
+    animation: rl-toast-in 250ms ease-out;
+  }
+  .rl-toast.visible { display: block; }
+  @keyframes rl-toast-in {
+    from { opacity: 0; transform: translateY(12px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .rl-toast-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: #f0f0f5;
+    margin: 0;
+    padding-right: 20px;
+  }
+  .rl-toast-body {
+    font-size: 13px;
+    color: #9098b1;
+    margin-top: 6px;
+    line-height: 1.5;
+  }
+  .rl-toast-close {
+    position: absolute;
+    top: 10px;
+    right: 12px;
+    background: none;
+    border: none;
+    color: #9098b1;
+    font-size: 16px;
+    cursor: pointer;
+    line-height: 1;
+    padding: 0;
+  }
+  .rl-toast-close:hover { color: #f0f0f5; }
+
+  /* Radio buttons */
+  .radio-group {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+  }
+
+  .radio-pill {
+    background: var(--surface-r);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    color: var(--text-s);
+    font-size: 0.8rem;
+    padding: 0.28rem 0.75rem;
+    cursor: pointer;
+    user-select: none;
+    transition: background 0.15s, color 0.15s, border-color 0.15s;
+  }
+
+  .radio-pill.active {
+    background: var(--surface-r);
+    border-color: var(--accent);
+    color: var(--accent);
+    font-weight: 600;
+  }
+
+  /* Toggle switch */
+  .toggle-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+  }
+
+  .toggle-label {
+    font-size: 0.88rem;
+    color: var(--text);
+    cursor: pointer;
+    user-select: none;
+  }
+
+  .toggle-switch {
+    position: relative;
+    width: 38px;
+    height: 22px;
+    flex-shrink: 0;
+  }
+
+  .toggle-switch input { opacity: 0; width: 0; height: 0; }
+
+  .toggle-track {
+    position: absolute;
+    inset: 0;
+    background: var(--surface-r);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+
+  .toggle-switch input:checked + .toggle-track { background: var(--accent); border-color: var(--accent); }
+
+  .toggle-track::after {
+    content: '';
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 16px;
+    height: 16px;
+    background: white;
+    border-radius: 50%;
+    transition: transform 0.2s;
+  }
+
+  .toggle-switch input:checked + .toggle-track::after { transform: translateX(16px); }
+
+  /* Search button */
+  .search-btn {
+    width: 100%;
+    background: var(--accent);
+    color: #fff;
+    font-size: 0.95rem;
+    font-weight: 600;
+    padding: 0.7rem;
+    border-radius: 8px;
+    transition: background 0.15s, transform 0.1s;
+    margin-top: 0.25rem;
+  }
+
+  .search-btn:hover { background: var(--accent-h); }
+  .search-btn:active { transform: scale(0.98); }
+  .search-btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+
+  .search-note {
+    font-size: 0.78rem;
+    color: var(--text-s);
+    margin-top: 0.75rem;
+    line-height: 1.5;
+  }
+
+  /* ===== Results Panel ===== */
+  .results-panel { min-height: 400px; }
+
+  /* Empty state */
+  .empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 4rem 2rem;
+    text-align: center;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+  }
+
+  .empty-icon {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    opacity: 0.6;
+  }
+
+  .empty-title {
+    font-size: 1.05rem;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 0.4rem;
+  }
+
+  .empty-sub { font-size: 0.88rem; color: var(--text-s); }
+
+  /* Toolbar */
+  .results-toolbar {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    width: 100%;
+    gap: 8px;
+    margin-bottom: 1rem;
+    padding: 0.75rem 1rem;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+  }
+
+  .toolbar-row-1 {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    width: 100%;
+  }
+
+  .toolbar-row-2 {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    width: 100%;
+  }
+
+  .toolbar-row-countries {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 6px;
+    width: 100%;
+    align-items: center;
+  }
+
+  .results-meta {
+    font-size: 0.85rem;
+    color: var(--text-s);
+  }
+
+  .results-meta strong { color: var(--text); }
+
+  .source-filter-btn {
+    background: var(--surface-r);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    color: var(--text-s);
+    font-size: 0.78rem;
+    padding: 0.22rem 0.6rem;
+    cursor: pointer;
+    transition: all 0.15s;
+    white-space: nowrap;
+  }
+
+  .source-filter-btn.active {
+    border-color: var(--accent);
+    color: var(--accent);
+    background: rgba(91,110,245,0.1);
+  }
+
+  .source-filter-btn.zero {
+    opacity: 0.35;
+    cursor: default;
+    pointer-events: none;
+  }
+
+
+  /* Warnings */
+  .warnings-box {
+    background: rgba(144,152,177,0.06);
+    border: 1px solid rgba(144,152,177,0.18);
+    border-radius: 8px;
+    padding: 0.55rem 0.85rem;
+    margin-bottom: 1rem;
+  }
+
+  .warn-toggle {
+    background: none;
+    border: none;
+    color: var(--text-s);
+    font-size: 0.82rem;
+    font-family: inherit;
+    cursor: pointer;
+    padding: 0;
+    text-align: left;
+    width: 100%;
+    line-height: 1.5;
+  }
+
+  .warn-toggle:hover { color: var(--text); }
+
+  .warn-details { margin-top: 0.5rem; }
+
+  .warn-details p {
+    font-size: 0.8rem;
+    color: var(--text-s);
+    line-height: 1.5;
+  }
+
+  .warn-details p + p { margin-top: 0.2rem; }
+
+  /* Error box (overrides warnings-box inline) */
+  .warnings-box.is-error {
+    background: rgba(255,92,92,0.06);
+    border-color: rgba(255,92,92,0.3);
+  }
+
+  .warnings-box.is-error p {
+    font-size: 0.82rem;
+    color: var(--red);
+  }
+
+  /* No-results expanded */
+  .no-results-title {
+    color: var(--text);
+    font-size: 1rem;
+    font-weight: 600;
+    margin-bottom: 0.85rem;
+  }
+
+  .no-results-tips {
+    list-style: none;
+    display: inline-block;
+    text-align: left;
+    margin-top: 0.35rem;
+  }
+
+  .no-results-tips li {
+    color: var(--text-s);
+    font-size: 0.88rem;
+    line-height: 1.75;
+  }
+
+  .no-results-tips li::before { content: '– '; }
+
+  /* Job cards */
+  .job-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+  }
+
+  .job-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1rem 1.1rem;
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.2s, box-shadow 0.2s;
+    position: relative;
+  }
+
+  .job-card:hover {
+    background: var(--surface-r);
+    border-color: var(--accent);
+    box-shadow: 0 0 0 1px var(--accent), 0 4px 16px rgba(91,110,245,0.12);
+  }
+
+  .job-card-top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 0.75rem;
+    margin-bottom: 0.35rem;
+  }
+
+  .job-title {
+    font-size: 0.97rem;
+    font-weight: 600;
+    color: var(--accent);
+    line-height: 1.35;
+    flex: 1;
+  }
+
+  .job-source-badge {
+    font-size: 0.7rem;
+    font-weight: 700;
+    padding: 0.18rem 0.55rem;
+    border-radius: 999px;
+    color: #fff;
+    white-space: nowrap;
+    flex-shrink: 0;
+    letter-spacing: 0.02em;
+  }
+
+  .src-INDEED_EU    { background: var(--source-indeed); }
+  .src-LINKEDIN_EU  { background: var(--source-linkedin); }
+  .src-GREENHOUSE   { background: var(--source-gh); }
+  .src-KARRIERE_AT  { background: var(--source-karriere); }
+  .src-EUROJOBS     { background: var(--source-euro); }
+  .src-WORKING_IN_CONTENT { background: var(--source-wic); color: #0a1a2a; }
+
+  .job-card-mid {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-bottom: 0.3rem;
+  }
+
+  .job-company {
+    font-size: 0.88rem;
+    font-weight: 500;
+    color: var(--text);
+  }
+
+  .job-location {
+    font-size: 0.82rem;
+    color: var(--text-s);
+  }
+
+  .remote-badge {
+    font-size: 0.7rem;
+    font-weight: 600;
+    padding: 0.1rem 0.45rem;
+    border-radius: 999px;
+    background: rgba(62,207,142,0.12);
+    color: var(--green);
+    border: 1px solid rgba(62,207,142,0.25);
+  }
+
+  .job-card-bottom {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+  }
+
+  .job-date {
+    font-size: 0.78rem;
+    color: var(--text-s);
+  }
+
+  .also-on {
+    font-size: 0.75rem;
+    color: var(--text-s);
+  }
+
+  .card-tooltip {
+    position: absolute;
+    top: 0.6rem;
+    right: 0.6rem;
+    font-size: 0.7rem;
+    color: var(--text-s);
+    opacity: 0;
+    transition: opacity 0.15s;
+    pointer-events: none;
+    background: var(--surface-r);
+    padding: 0.15rem 0.5rem;
+    border-radius: 4px;
+    border: 1px solid var(--border);
+    white-space: nowrap;
+  }
+
+  .job-card:hover .card-tooltip { opacity: 1; }
+
+  /* Skeleton */
+  .skeleton-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+  }
+
+  .skeleton-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1rem 1.1rem;
+    overflow: hidden;
+    position: relative;
+  }
+
+  .skeleton-line {
+    background: var(--surface-r);
+    border-radius: 4px;
+    margin-bottom: 0.55rem;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .skeleton-line::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.05) 50%, transparent 100%);
+    animation: shimmer 1.4s infinite;
+  }
+
+  @keyframes shimmer {
+    0%   { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
+  }
+
+  .skel-title { height: 18px; width: 60%; }
+  .skel-mid   { height: 14px; width: 40%; }
+  .skel-bot   { height: 12px; width: 30%; }
+
+  /* No results */
+  .no-results {
+    text-align: center;
+    padding: 3rem 1.5rem;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+  }
+
+  .no-results p {
+    color: var(--text-s);
+    font-size: 0.95rem;
+  }
+
+
+  .category-group {
+    margin-bottom: 1.5rem;
+  }
+
+  .category-title {
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text-s);
+    margin-bottom: 0.75rem;
+    padding-bottom: 0.35rem;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .site-cards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 0.75rem;
+  }
+
+  .site-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 0.85rem 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    transition: border-color 0.15s;
+  }
+
+  .site-card:hover { border-color: var(--border); }
+
+  .site-card-top {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+  }
+
+  .site-initial {
+    width: 34px;
+    height: 34px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: #fff;
+    flex-shrink: 0;
+  }
+
+  .site-name {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--text);
+  }
+
+  .site-desc {
+    font-size: 0.8rem;
+    color: var(--text-s);
+    line-height: 1.45;
+  }
+
+  .site-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+    margin-top: 0.1rem;
+  }
+
+  .meta-badge {
+    font-size: 0.7rem;
+    padding: 0.12rem 0.45rem;
+    border-radius: 999px;
+    font-weight: 500;
+  }
+
+  .meta-pull-ok    { background: rgba(62,207,142,0.12); color: var(--green); }
+  .meta-pull-warn  { background: rgba(245,166,35,0.12); color: var(--amber); }
+  .meta-pull-link  { background: rgba(91,110,245,0.12); color: var(--accent); }
+  .meta-acct-req   { background: rgba(255,92,92,0.1); color: var(--red); }
+  .meta-acct-free  { background: rgba(62,207,142,0.1); color: var(--green); }
+
+  .site-visit-btn {
+    display: inline-block;
+    margin-top: 0.3rem;
+    background: var(--surface-r);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--text-s);
+    font-size: 0.78rem;
+    padding: 0.28rem 0.7rem;
+    cursor: pointer;
+    transition: border-color 0.15s, color 0.15s;
+    text-decoration: none;
+    width: fit-content;
+  }
+
+  .site-visit-btn:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+    text-decoration: none;
+  }
+
+  /* ===== Utility ===== */
+  .divider { height: 1px; background: var(--border); margin: 0.75rem 0; }
+
+  .hidden { display: none !important; }
+
+  /* ===== "All" toggle pill (Countries + Sources) ===== */
+  .all-pill {
+    background: transparent;
+    color: #9098b1;
+    border: 1px solid #2e3248;
+    border-radius: 20px;
+    padding: 4px 14px;
+    font-size: 13px;
+    cursor: pointer;
+    user-select: none;
+    transition: background 0.15s, color 0.15s, border-color 0.15s;
+    white-space: nowrap;
+  }
+  .all-pill.active {
+    background: #5b6ef5;
+    color: #ffffff;
+    border-color: #5b6ef5;
+  }
+
+  /* ===== More countries dropdown ===== */
+  .more-countries-wrap {
+    position: relative;
+    margin-top: 0.45rem;
+  }
+  .more-countries-btn {
+    background: none;
+    border: 1px dashed var(--border);
+    border-radius: 999px;
+    color: var(--text-s);
+    font-size: 0.78rem;
+    padding: 0.22rem 0.65rem;
+    cursor: pointer;
+    transition: border-color 0.15s, color 0.15s;
+  }
+  .more-countries-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .more-countries-dropdown {
+    display: none;
+    position: absolute;
+    top: calc(100% + 4px);
+    left: 0;
+    background: #1a1d27;
+    border: 1px solid #2e3248;
+    border-radius: 8px;
+    max-height: 300px;
+    overflow-y: auto;
+    z-index: 9999;
+    min-width: 210px;
+  }
+  .more-countries-dropdown.open { display: block; }
+  .more-country-group-header {
+    font-size: 11px;
+    color: #9098b1;
+    text-transform: uppercase;
+    padding: 8px 12px 4px;
+    cursor: default;
+    user-select: none;
+    letter-spacing: 0.05em;
+  }
+  .more-country-item {
+    padding: 6px 12px;
+    font-size: 0.82rem;
+    color: var(--text);
+    cursor: pointer;
+    user-select: none;
+  }
+  .more-country-item:hover { background: #22263a; }
+  .more-country-item.already-added { opacity: 0.4; pointer-events: none; }
+
+  /* ===== Work model pills ===== */
+  .workmodel-pill {
+    background: var(--surface-r);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    color: var(--text-s);
+    font-size: 0.8rem;
+    padding: 0.28rem 0.7rem;
+    cursor: pointer;
+    user-select: none;
+    transition: background 0.15s, color 0.15s, border-color 0.15s;
+    white-space: nowrap;
+  }
+  .workmodel-pill.active {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #fff;
+    font-weight: 600;
+  }
+  .workmodel-pill:hover:not(.active) { border-color: var(--accent); color: var(--text); }
+  #workmodel-pills.wm-none .workmodel-pill { opacity: 0.5; }
+
+  /* ===== Left column wrapper (search panel + other job sites) ===== */
+  .left-column {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  /* ===== Other job sites in sidebar ===== */
+  .getsetup {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1rem 1.25rem;
+  }
+
+  .getsetup-toggle {
+    background: none;
+    color: var(--accent);
+    font-size: 0.88rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0;
+    transition: color 0.15s;
+    width: 100%;
+    text-align: left;
+  }
+  .getsetup-toggle:hover { color: var(--accent-h); }
+  .getsetup-toggle .arrow { display: inline-block; transition: transform 0.2s; font-style: normal; }
+  .getsetup-toggle.open .arrow { transform: rotate(90deg); }
+
+  .getsetup-body { display: none; margin-top: 1rem; }
+  .getsetup-body.visible { display: block; }
+
+  .getsetup-header { margin-bottom: 1rem; }
+  .getsetup-header h2 { font-size: 1rem; font-weight: 700; margin-bottom: 0.2rem; }
+  .getsetup-header p { font-size: 0.8rem; color: var(--text-s); }
+
+  /* Job cards source badge colors */
+  .src-GLASSDOOR  { background: var(--source-glassdoor); }
+  .src-GOOGLE_JOBS { background: var(--source-google); }
+
+  .footer-link {
+    color: var(--text-s);
+    text-decoration: none;
+    transition: color 0.2s ease;
+  }
+  .footer-link:hover { color: #c5cae0; }
+</style>
+</head>
+<body>
+
+<div class="app-wrapper">
+
+  <!-- Header -->
+  <header class="site-header">
+    <h1>Euro<span>Job</span>Search</h1>
+    <p class="tagline">European jobs only.</p>
+    <p class="subtitle">Search across job boards and company career pages – all in one place.</p>
+  </header>
+
+  <!-- Main grid -->
+  <div class="main-grid">
+
+    <!-- Left column: search panel + recommended sites -->
+    <div class="left-column">
+
+    <aside class="search-panel">
+
+      <div class="field-group">
+        <label class="field-label" for="keywords">Keywords</label>
+        <input
+          id="keywords"
+          class="text-input"
+          type="text"
+          placeholder="e.g. technical writer, UX designer, backend developer"
+          autocomplete="off"
+        >
+        <div class="toggle-row" style="margin-top:0.5rem;">
+          <label class="toggle-label" for="title-only">Title match only</label>
+          <label class="toggle-switch">
+            <input type="checkbox" id="title-only">
+            <span class="toggle-track"></span>
+          </label>
+        </div>
+      </div>
+
+      <div class="field-group">
+        <span class="field-label">Work model</span>
+        <div class="pill-group" id="workmodel-pills">
+          <button class="workmodel-pill active" data-workmodel="remote">🌐 Remote</button>
+          <button class="workmodel-pill active" data-workmodel="hybrid">🏢 Hybrid</button>
+          <button class="workmodel-pill active" data-workmodel="onsite">🏛 On-site</button>
+        </div>
+      </div>
+
+      <div class="field-group">
+        <span class="field-label">Countries</span>
+        <div class="pill-group" id="countries-pills">
+          <!-- "All" pill injected by JS; country pills are fully dynamic -->
+        </div>
+        <div class="more-countries-wrap">
+          <button class="more-countries-btn" id="more-countries-btn">+ More countries</button>
+          <div class="more-countries-dropdown" id="more-countries-dropdown"></div>
+        </div>
+      </div>
+
+      <div class="field-group">
+        <span class="field-label">Sources</span>
+        <div id="sources-all-row" style="margin-bottom:0.45rem;"></div>
+        <div class="source-list" id="sources-list">
+          <!-- Populated by JS from /api/sources -->
+        </div>
+        <p class="search-note" style="margin-top:0.65rem;">
+          Some sites require an account to apply.
+          <a id="get-setup-link" href="#" style="color:var(--accent);text-decoration:none;">→ See other job sites</a>
+        </p>
+      </div>
+
+      <div class="field-group">
+        <span class="field-label">Posted within</span>
+        <div class="radio-group" id="hours-radios">
+          <button class="radio-pill" data-hours="24">24h</button>
+          <button class="radio-pill active" data-hours="168">7 days</button>
+          <button class="radio-pill" data-hours="336">14 days</button>
+          <button class="radio-pill" data-hours="720">30 days</button>
+        </div>
+      </div>
+
+      <button class="search-btn" id="search-btn">Search</button>
+
+      <p id="restore-notice" style="display:none;font-size:0.78rem;color:var(--text-s);margin-top:0.5rem;opacity:1;transition:opacity 0.8s;">
+        Settings restored from your last session.
+      </p>
+
+    </aside>
+
+    </div><!-- end left-column -->
+
+    <!-- Results panel -->
+    <main class="results-panel" id="results-panel">
+
+      <!-- Empty state -->
+      <div class="empty-state" id="empty-state">
+        <div class="empty-icon">🌍</div>
+        <p class="empty-title">No search run yet</p>
+        <p class="empty-sub">Set your criteria and hit Search to find European jobs.</p>
+      </div>
+
+      <!-- Loading state (hidden by default) -->
+      <div id="loading-state" class="hidden">
+        <div class="skeleton-list">
+          <div class="skeleton-card">
+            <div class="skeleton-line skel-title"></div>
+            <div class="skeleton-line skel-mid"></div>
+            <div class="skeleton-line skel-bot"></div>
+          </div>
+          <div class="skeleton-card">
+            <div class="skeleton-line skel-title" style="width:55%"></div>
+            <div class="skeleton-line skel-mid" style="width:35%"></div>
+            <div class="skeleton-line skel-bot" style="width:25%"></div>
+          </div>
+          <div class="skeleton-card">
+            <div class="skeleton-line skel-title" style="width:70%"></div>
+            <div class="skeleton-line skel-mid" style="width:45%"></div>
+            <div class="skeleton-line skel-bot" style="width:28%"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Results state (hidden by default) -->
+      <div id="results-state" class="hidden">
+        <div class="results-toolbar">
+          <p class="results-meta" id="results-meta"></p>
+          <div class="toolbar-row-1">
+            <div id="source-filters" style="display:flex;gap:8px;flex-wrap:wrap;"></div>
+          </div>
+          <div class="toolbar-row-2" id="workmodel-filters"></div>
+          <div class="toolbar-row-countries" id="country-filters"></div>
+        </div>
+
+        <div id="warnings-box" class="warnings-box hidden"></div>
+
+        <div id="pagination-top" style="display:flex;align-items:center;gap:10px;margin-bottom:1rem;flex-wrap:wrap;"></div>
+
+        <div class="job-list" id="job-list"></div>
+
+        <div id="pagination" style="display:flex;align-items:center;gap:10px;margin-top:1rem;flex-wrap:wrap;"></div>
+
+        <div id="no-results" class="no-results hidden"></div>
+      </div>
+
+    </main>
+
+  </div><!-- end main-grid -->
+
+  <!-- Other job sites (full width, below grid) -->
+  <section class="getsetup" id="recommended-sites" style="margin-top:1.5rem;">
+    <button class="getsetup-toggle" id="recommended-sites-toggle">
+      <i class="arrow">›</i> Other job sites (manual check)
+    </button>
+    <div class="getsetup-body" id="getsetup-body">
+      <div class="getsetup-header">
+        <h2>Other job sites (manual check)</h2>
+        <p style="color:var(--text-muted);font-size:0.8rem;">The sites below don't have a public feed or API this app can search, so they're not included in your results above. Look for jobs manually.</p>
+        <p>Job boards require a free account to apply. Company career pages (via Greenhouse) do not.</p>
+      </div>
+      <div id="site-categories"></div>
+    </div>
+  </section>
+
+</div><!-- end app-wrapper -->
+
+<footer style="text-align:center;padding:1.5rem 1rem;font-size:0.8rem;color:var(--text-s);">
+  Built by <a href="https://teokitten.github.io" target="_blank" rel="noopener noreferrer" class="footer-link">Teo Moldovanu</a>
+</footer>
+
+<!-- LinkedIn rate-limit toast (must be in DOM before script runs) -->
+<div class="rl-toast" id="rl-toast">
+  <button class="rl-toast-close" id="rl-toast-close" aria-label="Dismiss">×</button>
+  <p class="rl-toast-title">LinkedIn unavailable</p>
+  <p class="rl-toast-body">LinkedIn has rate-limited this IP address and has been unchecked automatically. Your other sources are unaffected. Try again later.</p>
+</div>
+
+<script>
+// ============================================================
+// State
+// ============================================================
+const PAGE_SIZE = 10;
+
+const state = {
+  allResults: [],
+  filteredResults: [],
+  activeSourceFilter: 'ALL',
+  keywords: '',
+  queriedSources: [],
+  activeWorkModels: new Set(['remote', 'hybrid', 'onsite']),
+  activeCountries: new Set(),
+  currentPage: 1,
+  searchMeta: { sourcesCount: 0, duration: 0 },
+};
+
+// ============================================================
+// Settings persistence
+// ============================================================
+const STORAGE_KEY = 'eurojobsearch_settings';
+let _restoredSettings = null;
+
+function saveSettings() {
+  const settings = {
+    keywords: document.getElementById('keywords').value,
+    countries: [...document.querySelectorAll('#countries-pills .pill')]
+                 .map(b => ({ key: b.dataset.country, label: b.textContent.trim() })),
+    sources: getSelectedSources(),
+    hours_old: getHoursOld(),
+    title_only: document.getElementById('title-only').checked,
+    workModels: [...state.activeWorkModels],
+  };
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(settings)); } catch (_) {}
+}
+
+function restoreSettings() {
+  let saved;
+  try { saved = JSON.parse(localStorage.getItem(STORAGE_KEY)); } catch (_) {}
+  if (!saved) return false;
+  _restoredSettings = saved;
+
+  if (saved.keywords) {
+    document.getElementById('keywords').value = saved.keywords;
+  }
+
+  // Valid country keys – used to discard stale localStorage state
+  const _VALID_COUNTRY_KEYS = new Set([
+    'austria', 'belgium', 'france', 'germany', 'ireland', 'luxembourg',
+    'netherlands', 'switzerland', 'united_kingdom',
+    'denmark', 'estonia', 'finland', 'iceland', 'latvia', 'lithuania', 'norway', 'sweden',
+    'croatia', 'cyprus', 'greece', 'italy', 'malta', 'portugal', 'spain',
+    'czech_republic', 'poland', 'romania', 'slovakia',
+  ]);
+
+  if (Array.isArray(saved.countries) && saved.countries.length > 0) {
+    const entries = saved.countries.map(c => {
+      if (typeof c === 'string') {
+        // old format: string key only – look up label
+        const found = MORE_COUNTRIES_FLAT.find(x => x.key === c);
+        return (found && _VALID_COUNTRY_KEYS.has(c)) ? { key: c, label: found.label } : null;
+      }
+      return _VALID_COUNTRY_KEYS.has(c.key) ? c : null;
+    }).filter(Boolean);
+    entries.forEach(c => _addCountryPill(c.key, c.label, true));
+    syncCountriesAllPill();
+  }
+
+  if (saved.hours_old) {
+    document.querySelectorAll('#hours-radios .radio-pill').forEach(btn => {
+      btn.classList.toggle('active', parseInt(btn.dataset.hours) === saved.hours_old);
+    });
+  }
+
+  if (typeof saved.title_only === 'boolean') {
+    document.getElementById('title-only').checked = saved.title_only;
+  }
+
+  if (Array.isArray(saved.workModels)) {
+    state.activeWorkModels = new Set(saved.workModels);
+    document.querySelectorAll('#workmodel-pills .workmodel-pill').forEach(btn => {
+      btn.classList.toggle('active', state.activeWorkModels.has(btn.dataset.workmodel));
+    });
+    document.getElementById('workmodel-pills').classList.toggle('wm-none', state.activeWorkModels.size === 0);
+  }
+
+  return true;
+}
+
+function showRestoreNotice() {
+  const el = document.getElementById('restore-notice');
+  el.style.display = 'block';
+  el.style.opacity = '1';
+  el.style.transition = 'none';
+  setTimeout(() => {
+    el.style.transition = 'opacity 0.8s';
+    el.style.opacity = '0';
+    setTimeout(() => { el.style.display = 'none'; }, 850);
+  }, 3000);
+}
+
+// ============================================================
+// Country pills
+// ============================================================
+function syncKarriereAt() {
+  const austriaActive = document.querySelector('#countries-pills .pill[data-country="austria"]')?.classList.contains('active');
+  const karriereCb = document.querySelector('#sources-list input[value="KARRIERE_AT"]');
+  const karriereLabel = karriereCb?.closest('label');
+  if (!karriereCb) return;
+  if (austriaActive) {
+    karriereCb.disabled = false;
+    karriereCb.checked = true;
+    if (karriereLabel) karriereLabel.style.opacity = '';
+    _hideSrcTooltip();
+  } else {
+    karriereCb.disabled = true;
+    karriereCb.checked = false;
+    if (karriereLabel) karriereLabel.style.opacity = '0.45';
+  }
+  saveSettings();
+}
+
+function syncArbeitnow() {
+  const dach = ['germany', 'austria', 'switzerland'];
+  const anyActive = dach.some(c =>
+    document.querySelector(`#countries-pills .pill[data-country="${c}"]`)?.classList.contains('active')
+  );
+  const cb = document.querySelector('#sources-list input[value="ARBEITNOW"]');
+  const lbl = cb?.closest('label');
+  if (!cb) return;
+  if (anyActive) {
+    cb.disabled = false;
+    cb.checked = true;
+    if (lbl) lbl.style.opacity = '';
+    _hideSrcTooltip();
+  } else {
+    cb.disabled = true;
+    cb.checked = false;
+    if (lbl) lbl.style.opacity = '0.45';
+  }
+  saveSettings();
+}
+
+// ============================================================
+// Countries "All" pill
+// ============================================================
+const _allCountryPill = document.createElement('button');
+_allCountryPill.className = 'all-pill active';
+_allCountryPill.textContent = 'All';
+document.getElementById('countries-pills').prepend(_allCountryPill);
+
+function syncCountriesAllPill() {
+  const pills = document.querySelectorAll('#countries-pills .pill');
+  _allCountryPill.classList.toggle('active', pills.length === MORE_COUNTRIES_FLAT.length);
+}
+
+_allCountryPill.addEventListener('click', () => {
+  if (_allCountryPill.classList.contains('active')) {
+    // deselect all: remove every country pill
+    document.querySelectorAll('#countries-pills .pill').forEach(p => p.remove());
+    _allCountryPill.classList.remove('active');
+    updateDropdownItems();
+  } else {
+    // select all: add every country as a pill
+    MORE_COUNTRIES_FLAT.forEach(c => _addCountryPill(c.key, c.label, true));
+    _allCountryPill.classList.add('active');
+    updateDropdownItems();
+  }
+  syncKarriereAt();
+  syncArbeitnow();
+});
+
+function getSelectedCountries() {
+  return [...document.querySelectorAll('#countries-pills .pill.active')]
+    .map(b => b.dataset.country);
+}
+
+// Extra (dynamic) country pills added via "+ More countries"
+function getExtraCountries() {
+  return [...document.querySelectorAll('#countries-pills .pill[data-extra]')]
+    .map(b => ({ key: b.dataset.country, label: b.textContent.trim() }));
+}
+
+function _addCountryPill(key, label, activate = true) {
+  if (document.querySelector(`#countries-pills .pill[data-country="${key}"]`)) return;
+  const btn = document.createElement('button');
+  btn.className = 'pill' + (activate ? ' active' : '');
+  btn.dataset.country = key;
+  btn.dataset.extra = '1';
+  btn.textContent = label;
+  btn.addEventListener('click', () => {
+    btn.remove();
+    updateDropdownItems();
+    syncCountriesAllPill();
+    if (key === 'austria') { syncKarriereAt(); syncArbeitnow(); }
+    else if (key === 'germany' || key === 'switzerland') syncArbeitnow();
+    else saveSettings();
+  });
+  document.getElementById('countries-pills').appendChild(btn);
+  syncCountriesAllPill();
+  // Sync country-gated sources whenever a relevant country pill is added
+  if (key === 'austria') { syncKarriereAt(); syncArbeitnow(); }
+  else if (key === 'germany' || key === 'switzerland') syncArbeitnow();
+}
+
+// More countries dropdown – alphabetical
+const MORE_COUNTRIES_FLAT = [
+  { key: 'austria',        label: '🇦🇹 Austria' },
+  { key: 'belgium',        label: '🇧🇪 Belgium' },
+  { key: 'croatia',        label: '🇭🇷 Croatia' },
+  { key: 'cyprus',         label: '🇨🇾 Cyprus' },
+  { key: 'czech_republic', label: '🇨🇿 Czech Republic' },
+  { key: 'denmark',        label: '🇩🇰 Denmark' },
+  { key: 'estonia',        label: '🇪🇪 Estonia' },
+  { key: 'finland',        label: '🇫🇮 Finland' },
+  { key: 'france',         label: '🇫🇷 France' },
+  { key: 'germany',        label: '🇩🇪 Germany' },
+  { key: 'greece',         label: '🇬🇷 Greece' },
+  { key: 'iceland',        label: '🇮🇸 Iceland' },
+  { key: 'ireland',        label: '🇮🇪 Ireland' },
+  { key: 'italy',          label: '🇮🇹 Italy' },
+  { key: 'latvia',         label: '🇱🇻 Latvia' },
+  { key: 'lithuania',      label: '🇱🇹 Lithuania' },
+  { key: 'luxembourg',     label: '🇱🇺 Luxembourg' },
+  { key: 'malta',          label: '🇲🇹 Malta' },
+  { key: 'netherlands',    label: '🇳🇱 Netherlands' },
+  { key: 'norway',         label: '🇳🇴 Norway' },
+  { key: 'poland',         label: '🇵🇱 Poland' },
+  { key: 'portugal',       label: '🇵🇹 Portugal' },
+  { key: 'romania',        label: '🇷🇴 Romania' },
+  { key: 'slovakia',       label: '🇸🇰 Slovakia' },
+  { key: 'spain',          label: '🇪🇸 Spain' },
+  { key: 'sweden',         label: '🇸🇪 Sweden' },
+  { key: 'switzerland',    label: '🇨🇭 Switzerland' },
+  { key: 'united_kingdom', label: '🇬🇧 United Kingdom' },
+];
+
+function updateDropdownItems() {
+  document.querySelectorAll('#more-countries-dropdown .more-country-item').forEach(item => {
+    const exists = !!document.querySelector(`#countries-pills .pill[data-country="${item.dataset.key}"]`);
+    item.classList.toggle('already-added', exists);
+  });
+}
+
+(function initMoreCountries() {
+  const btn = document.getElementById('more-countries-btn');
+  const dropdown = document.getElementById('more-countries-dropdown');
+
+  MORE_COUNTRIES_FLAT.forEach(c => {
+    const item = document.createElement('div');
+    item.className = 'more-country-item';
+    item.dataset.key = c.key;
+    item.textContent = c.label;
+    item.addEventListener('click', () => {
+      _addCountryPill(c.key, c.label, true);
+      dropdown.classList.remove('open');
+      saveSettings();
+      updateDropdownItems();
+    });
+    dropdown.appendChild(item);
+  });
+
+  btn.addEventListener('click', e => {
+    e.stopPropagation();
+    updateDropdownItems();
+    dropdown.classList.toggle('open');
+  });
+
+  document.addEventListener('click', () => dropdown.classList.remove('open'));
+  dropdown.addEventListener('click', e => e.stopPropagation());
+})();
+
+// ============================================================
+// Hours radios
+// ============================================================
+document.querySelectorAll('#hours-radios .radio-pill').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('#hours-radios .radio-pill').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    saveSettings();
+  });
+});
+
+function getHoursOld() {
+  const active = document.querySelector('#hours-radios .radio-pill.active');
+  return active ? parseInt(active.dataset.hours) : 168;
+}
+
+// ============================================================
+// Work model filter
+// ============================================================
+function matchesWorkModel(job, model) {
+  const fields = [
+    job.title || '',
+    job.location || '',
+    job.description || '',
+    job.job_type || '',
+  ].join(' ').toLowerCase();
+
+  if (model === 'remote') {
+    return job.is_remote === true ||
+      fields.includes('remote') ||
+      fields.includes('zdalnie') ||
+      fields.includes('distanza') ||
+      fields.includes('télétravail');
+  }
+  if (model === 'hybrid') {
+    return job.is_hybrid === true;
+  }
+  if (model === 'onsite') {
+    return !matchesWorkModel(job, 'remote') && !matchesWorkModel(job, 'hybrid');
+  }
+  return true;
+}
+
+function getWorkModel(job) {
+  if (matchesWorkModel(job, 'remote')) return 'remote';
+  if (matchesWorkModel(job, 'hybrid')) return 'hybrid';
+  return 'onsite';
+}
+
+document.querySelectorAll('#workmodel-pills .workmodel-pill').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const model = btn.dataset.workmodel;
+    if (state.activeWorkModels.has(model)) {
+      state.activeWorkModels.delete(model);
+      btn.classList.remove('active');
+    } else {
+      state.activeWorkModels.add(model);
+      btn.classList.add('active');
+    }
+    document.getElementById('workmodel-pills').classList.toggle('wm-none', state.activeWorkModels.size === 0);
+    saveSettings();
+    state.currentPage = 1;
+    if (state.allResults.length) renderJobList();
+  });
+});
+
+// ============================================================
+// Sources – loaded from /api/sources
+// ============================================================
+const SOURCE_CONFIG_MAP = {};
+
+// Shared body-level tooltip (above all stacking contexts)
+const _srcTooltipEl = document.createElement('div');
+_srcTooltipEl.id = 'src-tooltip';
+document.body.appendChild(_srcTooltipEl);
+
+function _showSrcTooltip(anchorEl, text) {
+  _srcTooltipEl.textContent = text;
+  _srcTooltipEl.style.display = 'block';
+  const r = anchorEl.getBoundingClientRect();
+  _srcTooltipEl.style.top  = (r.bottom + 8) + 'px';
+  _srcTooltipEl.style.left = r.left + 'px';
+  const tRect = _srcTooltipEl.getBoundingClientRect();
+  if (tRect.right > window.innerWidth - 8) {
+    _srcTooltipEl.style.left = (window.innerWidth - tRect.width - 8) + 'px';
+  }
+}
+
+function _hideSrcTooltip() {
+  _srcTooltipEl.style.display = 'none';
+}
+
+// New sources that may not be in older saved settings – always default to checked
+const _NEW_SOURCES = new Set(['REMOTIVE', 'ARBEITNOW', 'JOBICY', 'WEWORKREMOTELY']);
+
+function syncSourcesAllPill() {
+  const cbs = document.querySelectorAll('#sources-list input[type="checkbox"]:not(:disabled)');
+  const allChecked = cbs.length > 0 && [...cbs].every(cb => cb.checked);
+  document.getElementById('sources-all-pill')?.classList.toggle('active', allChecked);
+}
+
+async function loadSources() {
+  try {
+    const resp = await fetch('/api/sources');
+    const sources = await resp.json();
+    const list = document.getElementById('sources-list');
+    list.innerHTML = '';
+
+    // Inject Sources "All" pill above the list
+    const allRow = document.getElementById('sources-all-row');
+    allRow.innerHTML = '';
+    const allPill = document.createElement('button');
+    allPill.className = 'all-pill active';
+    allPill.id = 'sources-all-pill';
+    allPill.textContent = 'All';
+    allPill.addEventListener('click', () => {
+      if (allPill.classList.contains('active')) {
+        document.querySelectorAll('#sources-list input[type="checkbox"]:not(:disabled)').forEach(cb => { cb.checked = false; });
+        allPill.classList.remove('active');
+      } else {
+        document.querySelectorAll('#sources-list input[type="checkbox"]:not(:disabled)').forEach(cb => { cb.checked = true; });
+        allPill.classList.add('active');
+      }
+      saveSettings();
+    });
+    allRow.appendChild(allPill);
+
+    sources.forEach(src => {
+      SOURCE_CONFIG_MAP[src.id] = src;
+      const isLinkOnly = src.pull_status === 'link_only';
+      // Link-only sources belong in Other job sites, not the Sources panel
+      if (isLinkOnly) return;
+      const isLinkedIn = src.id === 'LINKEDIN_EU';
+      const isKarriere = src.id === 'KARRIERE_AT';
+      const isIndeedEU = src.id === 'INDEED_EU';
+      const item = document.createElement('label');
+      item.className = 'source-item';
+
+      const icon = `<span class="src-info-trigger">ⓘ</span>`;
+
+      const labelExtra = (isKarriere || isLinkedIn || isIndeedEU) ? icon : '';
+
+      item.innerHTML = `
+        <input type="checkbox" value="${src.id}" checked>
+        <span class="source-label">
+          <span class="source-item-label">${src.label}</span>
+          ${labelExtra}
+        </span>
+      `;
+      if (!isLinkOnly) {
+        item.querySelector('input[type="checkbox"]').addEventListener('change', () => {
+          syncSourcesAllPill();
+          saveSettings();
+        });
+      }
+      list.appendChild(item);
+    });
+
+    // Wire ⓘ icons to the shared body tooltip
+    const _TIP_TEXTS = {
+      'INDEED_EU':      'When no countries are selected, Indeed EU returns Germany-based remote jobs only. Select specific countries for full coverage.',
+      'LINKEDIN_EU':    'LinkedIn blocks automated requests after repeated use. If results drop to 0, your IP is temporarily rate-limited. Wait a few hours before retrying.',
+      'KARRIERE_AT':    'Austria only.',
+      'ARBEITNOW':      'Germany, Austria, and Switzerland only.',
+      'REMOTIVE':       'Remote roles only – results are not filtered by country.',
+      'JOBICY':         'Remote roles only – results are not filtered by country.',
+      'WEWORKREMOTELY': 'Remote roles only – results are not filtered by country.',
+    };
+
+    // Arbeitnow icon appears on the label (same pattern as Karriere.at)
+    list.querySelectorAll('label').forEach(lbl => {
+      const cb = lbl.querySelector('input');
+      if (!cb) return;
+      if (cb.value === 'ARBEITNOW') {
+        const nameSpan = lbl.querySelector('.source-item-label');
+        if (nameSpan && !lbl.querySelector('.src-info-trigger')) {
+          nameSpan.insertAdjacentHTML('afterend', '<span class="src-info-trigger">ⓘ</span>');
+        }
+      }
+    });
+    list.querySelectorAll('.src-info-trigger').forEach(icon => {
+      const srcId = icon.closest('label')?.querySelector('input')?.value;
+      const text  = _TIP_TEXTS[srcId];
+      if (!text) return;
+      icon.addEventListener('mouseenter', () => _showSrcTooltip(icon, text));
+      icon.addEventListener('mouseleave', _hideSrcTooltip);
+    });
+
+    // Karriere.at disabled-state tooltip (row hover when Austria is deselected)
+    const karriereCb    = list.querySelector('input[value="KARRIERE_AT"]');
+    const karriereLabel = karriereCb?.closest('label');
+    if (karriereLabel) {
+      karriereLabel.addEventListener('mouseenter', () => {
+        if (!karriereCb.disabled) return;
+        _showSrcTooltip(karriereLabel, 'Select Austria in Countries to enable Karriere.at.');
+      });
+      karriereLabel.addEventListener('mouseleave', _hideSrcTooltip);
+    }
+
+    // Apply restored source selection after checkboxes exist in the DOM
+    // New sources (_NEW_SOURCES) default to checked even if absent from saved state
+    if (_restoredSettings && Array.isArray(_restoredSettings.sources)) {
+      document.querySelectorAll('#sources-list input[type="checkbox"]').forEach(cb => {
+        if (_NEW_SOURCES.has(cb.value) && !_restoredSettings.sources.includes(cb.value)) {
+          cb.checked = true;
+        } else {
+          cb.checked = _restoredSettings.sources.includes(cb.value);
+        }
+      });
+    }
+
+    // Sync country-gated sources with initial country state, then sync All pill
+    syncKarriereAt();
+    syncArbeitnow();
+    syncSourcesAllPill();
+  } catch (e) {
+    console.error('Failed to load sources config:', e);
+  }
+}
+
+function getSelectedSources() {
+  return [...document.querySelectorAll('#sources-list input[type="checkbox"]:checked')]
+    .map(cb => cb.value);
+}
+
+// ============================================================
+// Search
+// ============================================================
+document.getElementById('search-btn').addEventListener('click', runSearch);
+document.getElementById('keywords').addEventListener('keydown', e => {
+  if (e.key === 'Enter') runSearch();
+});
+document.getElementById('keywords').addEventListener('input', saveSettings);
+document.getElementById('title-only').addEventListener('change', saveSettings);
+
+async function runSearch() {
+  const keywords = document.getElementById('keywords').value.trim();
+  if (!keywords) {
+    document.getElementById('keywords').focus();
+    return;
+  }
+  state.keywords = keywords;
+
+  const countries = getSelectedCountries();
+  const sources = getSelectedSources();
+  const hoursOld = getHoursOld();
+  const titleOnly = document.getElementById('title-only').checked;
+  const workModels = [...state.activeWorkModels];
+
+  showLoading();
+
+  try {
+    const resp = await fetch('/api/search', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ keywords, countries, sources, hours_old: hoursOld, title_only: titleOnly, work_models: workModels }),
+    });
+
+    if (!resp.ok) {
+      const err = await resp.json().catch(() => ({}));
+      showError(err.error || `Server error ${resp.status}`);
+      return;
+    }
+
+    const data = await resp.json();
+    state.allResults = data.results || [];
+    state.activeSourceFilter = 'ALL';
+    state.activeCountries = new Set();
+
+    showResults(data);
+  } catch (e) {
+    showError('Network error – is the server running?');
+  }
+}
+
+// ============================================================
+// Filtering & sorting
+// ============================================================
+
+
+// ============================================================
+// Country detection and filter row
+// ============================================================
+const _COUNTRY_DETECT = [
+  // Western Europe
+  { key: 'austria',        label: 'Austria',        flag: '🇦🇹', terms: ['austria', 'at,', ', at', 'wien', 'vienna', 'graz', 'linz', 'salzburg'] },
+  { key: 'belgium',        label: 'Belgium',        flag: '🇧🇪', terms: ['belgium', 'be,', ', be', 'brussels', 'bruxelles', 'antwerp', 'ghent'] },
+  { key: 'france',         label: 'France',         flag: '🇫🇷', terms: ['france', 'fr,', ', fr', 'paris', 'lyon', 'marseille', 'toulouse'] },
+  { key: 'germany',        label: 'Germany',        flag: '🇩🇪', terms: ['germany', ', de', 'berlin', 'munich', 'münchen', 'hamburg', 'frankfurt'] },
+  { key: 'ireland',        label: 'Ireland',        flag: '🇮🇪', terms: ['ireland', ', ie', 'dublin', 'cork', 'galway'] },
+  { key: 'luxembourg',     label: 'Luxembourg',     flag: '🇱🇺', terms: ['luxembourg', 'lu,', ', lu'] },
+  { key: 'netherlands',    label: 'Netherlands',    flag: '🇳🇱', terms: ['netherlands', 'nl,', ', nl', 'amsterdam', 'rotterdam', 'utrecht'] },
+  { key: 'switzerland',    label: 'Switzerland',    flag: '🇨🇭', terms: ['switzerland', ', ch', 'zurich', 'zürich', 'geneva', 'bern'] },
+  { key: 'united_kingdom', label: 'United Kingdom', flag: '🇬🇧', terms: ['united kingdom', 'uk,', ', uk', 'england', 'scotland', 'wales', 'london', 'manchester', 'edinburgh', 'birmingham', 'bristol'] },
+  // Northern Europe
+  { key: 'denmark',        label: 'Denmark',        flag: '🇩🇰', terms: ['denmark', 'dk,', ', dk', 'copenhagen', 'københavn'] },
+  { key: 'estonia',        label: 'Estonia',        flag: '🇪🇪', terms: ['estonia', ', ee', 'tallinn'] },
+  { key: 'finland',        label: 'Finland',        flag: '🇫🇮', terms: ['finland', ', fi', 'helsinki'] },
+  { key: 'iceland',        label: 'Iceland',        flag: '🇮🇸', terms: ['iceland', ', is', 'reykjavik'] },
+  { key: 'latvia',         label: 'Latvia',         flag: '🇱🇻', terms: ['latvia', 'lv,', ', lv', 'riga'] },
+  { key: 'lithuania',      label: 'Lithuania',      flag: '🇱🇹', terms: ['lithuania', 'lt,', ', lt', 'vilnius'] },
+  { key: 'norway',         label: 'Norway',         flag: '🇳🇴', terms: ['norway', ', no', 'oslo'] },
+  { key: 'sweden',         label: 'Sweden',         flag: '🇸🇪', terms: ['sweden', 'sverige', 'stockholm', 'gothenburg', 'göteborg', 'malmö',
+                                                                             'uppsala', 'linköping', 'västerås', 'örebro', 'norrköping',
+                                                                             'helsingborg', 'jönköping', 'umeå', 'lund', 'borås', 'sundsvall'] },
+  // Southern Europe
+  { key: 'croatia',        label: 'Croatia',        flag: '🇭🇷', terms: ['croatia', 'hr,', ', hr', 'zagreb'] },
+  { key: 'cyprus',         label: 'Cyprus',         flag: '🇨🇾', terms: ['cyprus', ', cy', 'nicosia'] },
+  { key: 'greece',         label: 'Greece',         flag: '🇬🇷', terms: ['greece', 'gr,', ', gr', 'athens', 'αθήνα', 'thessaloniki'] },
+  { key: 'italy',          label: 'Italy',          flag: '🇮🇹', terms: ['italy', 'it,', ', it', 'milan', 'milano', 'rome', 'turin'] },
+  { key: 'malta',          label: 'Malta',          flag: '🇲🇹', terms: ['malta', 'mt,', ', mt', 'valletta'] },
+  { key: 'portugal',       label: 'Portugal',       flag: '🇵🇹', terms: ['portugal', 'pt,', ', pt', 'lisbon', 'lisboa', 'porto'] },
+  { key: 'spain',          label: 'Spain',          flag: '🇪🇸', terms: ['spain', ', es', 'barcelona', 'madrid', 'valencia', 'seville'] },
+  // Central & Eastern Europe
+  { key: 'czech_republic', label: 'Czech Republic', flag: '🇨🇿', terms: ['czech', ', cz', 'prague', 'praha', 'brno'] },
+  { key: 'poland',         label: 'Poland',         flag: '🇵🇱', terms: ['poland', 'pl,', ', pl', 'warsaw', 'warszawa', 'krakow', 'wroclaw'] },
+  { key: 'romania',        label: 'Romania',        flag: '🇷🇴', terms: ['romania', ', ro', 'bucharest', 'bucurești', 'cluj', 'iași'] },
+  { key: 'slovakia',       label: 'Slovakia',       flag: '🇸🇰', terms: ['slovakia', ', sk', 'bratislava', 'košice'] },
+];
+
+function _countryMeta(key, job) {
+  if (key === 'remote') return { key: 'remote', label: 'Remote', flag: '🌐' };
+  const detect = _COUNTRY_DETECT.find(c => c.key === key);
+  if (detect) return { key: detect.key, label: detect.label, flag: detect.flag };
+  const truncated = (job.location || '').split(',')[0].trim();
+  return { key: `other:${truncated}`, label: truncated || 'Unknown', flag: '📍' };
+}
+
+// Return all country keys for a job (may be multiple for multi-city postings).
+function _jobCountryKeys(job) {
+  const keys = job.detected_countries;
+  if (Array.isArray(keys) && keys.length > 0) return keys;
+  // Fallback for legacy/offline use
+  return [detectJobCountry(job).key];
+}
+
+function detectJobCountry(job) {
+  // Primary path: read the server-computed list (single source of truth).
+  // _detect_job_countries() in app.py stamps detected_countries on every job.
+  const keys = job.detected_countries;
+  if (Array.isArray(keys)) {
+    if (keys.length === 0) {
+      // No EU country detected (non-EU onsite job not yet excluded, or unknown)
+      const truncated = (job.location || '').split(',')[0].trim();
+      return { key: `other:${truncated}`, label: truncated || 'Unknown', flag: '📍' };
+    }
+    return _countryMeta(keys[0], job); // First entry as display country
+  }
+  // Fallback: legacy detected_country (singular) or local computation
+  const key = job.detected_country;
+  if (key) {
+    if (key === 'remote') return { key: 'remote', label: 'Remote', flag: '🌐' };
+    if (key === 'other') {
+      const truncated = (job.location || '').split(',')[0].trim();
+      return { key: `other:${truncated}`, label: truncated, flag: '📍' };
+    }
+    const detect = _COUNTRY_DETECT.find(c => c.key === key);
+    if (detect) return { key: detect.key, label: detect.label, flag: detect.flag };
+  }
+  // Local computation fallback (should not fire for server results)
+  const loc = (job.location || '').toLowerCase();
+  if (!job.location || !job.location.trim() || loc.includes('remote')) {
+    return { key: 'remote', label: 'Remote', flag: '🌐' };
+  }
+  for (const c of _COUNTRY_DETECT) {
+    if (c.terms.some(t => loc.includes(t))) {
+      return { key: c.key, label: c.label, flag: c.flag };
+    }
+  }
+  if (job.is_remote) return { key: 'remote', label: 'Remote', flag: '🌐' };
+  const truncated = (job.location || '').split(',')[0].trim();
+  return { key: `other:${truncated}`, label: truncated, flag: '📍' };
+}
+
+function buildCountryFilters() {
+  // Base: source + WM filtered (excludes country filter)
+  const base = state.allResults.filter(j => _srcPredicate(j) && _wmPredicate(j));
+  const row = document.getElementById('country-filters');
+  row.innerHTML = '';
+
+  // Count by detected country — multi-city jobs contribute to every matching chip.
+  const countMap = {};
+  base.forEach(j => {
+    _jobCountryKeys(j).forEach(k => {
+      if (!countMap[k]) {
+        const { label, flag } = _countryMeta(k, j);
+        countMap[k] = { label, flag, count: 0 };
+      }
+      countMap[k].count++;
+    });
+  });
+
+  const selectedKeys = getSelectedCountries();
+  // "All countries" mode: All pill active, or no specific subset chosen.
+  // In this mode show only countries that actually appear in results (case b).
+  // In specific-selection mode show every selected country, even at 0 (case a).
+  const isAllMode = _allCountryPill.classList.contains('active') || selectedKeys.length === 0;
+
+  let toRender;
+  if (isAllMode) {
+    toRender = Object.entries(countMap)
+      .map(([k, { label, flag, count }]) => ({ key: k, label, flag, count }))
+      .sort((a, b) => b.count - a.count);
+  } else {
+    toRender = selectedKeys.map(k => {
+      const entry = countMap[k];
+      const detect = _COUNTRY_DETECT.find(c => c.key === k);
+      return {
+        key: k,
+        label: entry ? entry.label : (detect ? detect.label : k),
+        flag:  entry ? entry.flag  : (detect ? detect.flag  : '📍'),
+        count: entry ? entry.count : 0,
+      };
+    }).sort((a, b) => b.count - a.count);
+  }
+
+  toRender.forEach(({ key, label, flag, count }) => {
+    const btn = document.createElement('button');
+    btn.dataset.countryKey = key;
+    btn.textContent = `${flag} ${label} (${count})`;
+    if (count === 0) {
+      btn.className = 'source-filter-btn zero';
+    } else {
+      btn.className = 'source-filter-btn';
+      if (state.activeCountries.has(key)) {
+        btn.style.cssText = 'background:#5b6ef5;color:#ffffff;border:1px solid #5b6ef5;';
+      } else {
+        btn.style.cssText = 'background:transparent;color:#9098b1;border:1px solid #2e3248;';
+      }
+      btn.addEventListener('click', () => {
+        if (state.activeCountries.has(key)) {
+          state.activeCountries.delete(key);
+        } else {
+          state.activeCountries.add(key);
+        }
+        state.currentPage = 1;
+        renderJobList();
+      });
+    }
+    row.appendChild(btn);
+  });
+}
+
+// Composable filter predicates – each omits only its own filter
+function _srcPredicate(job) {
+  return state.activeSourceFilter === 'ALL' || job.source === state.activeSourceFilter;
+}
+function _wmPredicate(job) {
+  const sz = state.activeWorkModels.size;
+  return sz === 0 || sz === 3 || state.activeWorkModels.has(getWorkModel(job));
+}
+function _countryPredicate(job) {
+  return state.activeCountries.size === 0
+    || _jobCountryKeys(job).some(k => state.activeCountries.has(k));
+}
+
+function applyFilters(jobs) {
+  let list = jobs.filter(j => _srcPredicate(j) && _wmPredicate(j) && _countryPredicate(j));
+
+  list.sort((a, b) => {
+    if (!a.date_posted && !b.date_posted) return 0;
+    if (!a.date_posted) return 1;
+    if (!b.date_posted) return -1;
+    return b.date_posted.localeCompare(a.date_posted);
+  });
+
+  return list;
+}
+
+function _updateWmButtonCounts() {
+  // Base: source + country filtered (excludes WM filter)
+  const base = state.allResults.filter(j => _srcPredicate(j) && _countryPredicate(j));
+  const wmLabels = { remote: '🌐 Remote', hybrid: '🏢 Hybrid', onsite: '🏛 On-site' };
+  const counts = { remote: 0, hybrid: 0, onsite: 0 };
+  base.forEach(j => { counts[getWorkModel(j)]++; });
+  document.querySelectorAll('#workmodel-filters [data-workmodel]').forEach(btn => {
+    const m = btn.dataset.workmodel;
+    if (!m) return;
+    // Only selected-model chips exist in DOM; treat zero-count as greyed non-clickable.
+    const count = counts[m];
+    btn.textContent = `${wmLabels[m]} (${count})`;
+    if (count === 0) {
+      btn.className = 'source-filter-btn zero';
+      btn.style.cssText = '';
+    } else {
+      btn.className = 'source-filter-btn';
+      btn.style.cssText = 'background:#5b6ef5;color:#ffffff;border:1px solid #5b6ef5;';
+    }
+  });
+}
+
+function _updateSourceButtonCounts() {
+  // Base: WM + country filtered (excludes source filter)
+  const base = state.allResults.filter(j => _wmPredicate(j) && _countryPredicate(j));
+  document.querySelectorAll('#source-filters [data-source]').forEach(btn => {
+    const src = btn.dataset.source;
+    if (src === 'ALL') return;
+    const label = (SOURCE_CONFIG_MAP[src] || {}).label || src;
+    const count = base.filter(j => j.source === src).length;
+    btn.textContent = `${label} (${count})`;
+  });
+}
+
+function _renderPagination(total, currentPage, totalPages) {
+  ['pagination-top', 'pagination'].forEach(id => {
+    const container = document.getElementById(id);
+    container.innerHTML = '';
+    if (totalPages <= 1) return;
+
+    const prevBtn = document.createElement('button');
+    prevBtn.className = 'source-filter-btn';
+    prevBtn.textContent = '← Previous';
+    if (currentPage === 1) {
+      prevBtn.style.opacity = '0.4';
+      prevBtn.style.cursor = 'default';
+    } else {
+      prevBtn.addEventListener('click', () => {
+        state.currentPage--;
+        renderJobList();
+        document.getElementById('results-state').scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
+    }
+
+    const pageInfo = document.createElement('span');
+    pageInfo.style.cssText = 'color:#9098b1;font-size:13px;padding:0 0.25rem;';
+    pageInfo.textContent = `Page ${currentPage} of ${totalPages}`;
+
+    const nextBtn = document.createElement('button');
+    nextBtn.className = 'source-filter-btn';
+    nextBtn.textContent = 'Next →';
+    if (currentPage === totalPages) {
+      nextBtn.style.opacity = '0.4';
+      nextBtn.style.cursor = 'default';
+    } else {
+      nextBtn.addEventListener('click', () => {
+        state.currentPage++;
+        renderJobList();
+        document.getElementById('results-state').scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
+    }
+
+    container.appendChild(prevBtn);
+    container.appendChild(pageInfo);
+    container.appendChild(nextBtn);
+  });
+}
+
+function _updateResultsMeta(filteredTotal, from, to) {
+  const { sourcesCount, duration } = state.searchMeta;
+  document.getElementById('results-meta').innerHTML =
+    `Showing <strong>${from}–${to}</strong> of <strong>${filteredTotal}</strong> ` +
+    `job${filteredTotal !== 1 ? 's' : ''} across <strong>${sourcesCount}</strong> ` +
+    `source${sourcesCount !== 1 ? 's' : ''} in <strong>${duration}s</strong>`;
+}
+
+function renderJobList() {
+  _updateSourceButtonCounts();
+  _updateWmButtonCounts();
+  buildCountryFilters();
+  const filtered = applyFilters(state.allResults);
+  const list = document.getElementById('job-list');
+  const noResults = document.getElementById('no-results');
+
+  list.innerHTML = '';
+  document.getElementById('pagination').innerHTML = '';
+  document.getElementById('pagination-top').innerHTML = '';
+
+  if (filtered.length === 0) {
+    noResults.classList.remove('hidden');
+    if (state.allResults.length === 0) {
+      noResults.innerHTML =
+        `<p class="no-results-title">No jobs matched your search.</p>` +
+        `<p class="no-results p" style="color:var(--text-s);font-size:0.88rem;">A few things to try:</p>` +
+        `<ul class="no-results-tips">` +
+          `<li>Expand the timeframe (try 7 days or 30 days)</li>` +
+          `<li>Broaden your keywords (e.g. 'writer' instead of 'technical writer')</li>` +
+          `<li>Select more countries or add Remote</li>` +
+          `<li>Some sources may have returned errors – check the warnings above</li>` +
+        `</ul>`;
+    } else {
+      noResults.innerHTML =
+        `<p style="color:var(--text-s);font-size:0.95rem;">` +
+        `No jobs match the current filters. Try adjusting the source or remote filter.</p>`;
+    }
+    return;
+  }
+  noResults.classList.add('hidden');
+
+  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+  if (state.currentPage > totalPages) state.currentPage = totalPages;
+  const startIdx = (state.currentPage - 1) * PAGE_SIZE;
+  const endIdx   = Math.min(startIdx + PAGE_SIZE, filtered.length);
+
+  _updateResultsMeta(filtered.length, startIdx + 1, endIdx);
+  filtered.slice(startIdx, endIdx).forEach(job => {
+    list.appendChild(buildJobCard(job));
+  });
+  _renderPagination(filtered.length, state.currentPage, totalPages);
+}
+
+// ============================================================
+// Source filter buttons
+// ============================================================
+function buildSourceFilters(results, queriedSources) {
+  const countMap = {};
+  results.forEach(j => { countMap[j.source] = (countMap[j.source] || 0) + 1; });
+
+  const container = document.getElementById('source-filters');
+  container.innerHTML = '';
+
+  const allBtn = document.createElement('button');
+  allBtn.className = 'source-filter-btn active';
+  allBtn.textContent = 'All';
+  allBtn.dataset.source = 'ALL';
+  allBtn.addEventListener('click', () => setSourceFilter('ALL'));
+  container.appendChild(allBtn);
+
+  (queriedSources || []).forEach(sourceId => {
+    const label = (SOURCE_CONFIG_MAP[sourceId] || {}).label || sourceId;
+    const count = countMap[sourceId] || 0;
+    const btn = document.createElement('button');
+    btn.dataset.source = sourceId;
+    btn.textContent = `${label} (${count})`;
+    if (count === 0) {
+      btn.className = 'source-filter-btn zero';
+    } else {
+      btn.className = 'source-filter-btn';
+      btn.addEventListener('click', () => setSourceFilter(sourceId));
+    }
+    container.appendChild(btn);
+  });
+
+  // Work model counts – Row 2 (from source-filtered set, not all results)
+  const wmLabels = { remote: '🌐 Remote', hybrid: '🏢 Hybrid', onsite: '🏛 On-site' };
+  const wmCounts = { remote: 0, hybrid: 0, onsite: 0 };
+  const _sfForWm = state.activeSourceFilter === 'ALL'
+    ? results
+    : results.filter(j => j.source === state.activeSourceFilter);
+  _sfForWm.forEach(j => { wmCounts[getWorkModel(j)]++; });
+
+  const wmRow = document.getElementById('workmodel-filters');
+  wmRow.innerHTML = '';
+
+  ['remote', 'hybrid', 'onsite'].forEach(model => {
+    if (!state.activeWorkModels.has(model)) return;
+    const count = wmCounts[model];
+    const btn = document.createElement('button');
+    btn.dataset.workmodel = model;
+    btn.textContent = `${wmLabels[model]} (${count})`;
+    if (count === 0) {
+      btn.className = 'source-filter-btn zero';
+    } else {
+      btn.className = 'source-filter-btn';
+      btn.style.cssText = 'background:#5b6ef5;color:#ffffff;border:1px solid #5b6ef5;';
+      btn.addEventListener('click', () => {
+        state.activeWorkModels.delete(model);
+        document.querySelectorAll('#workmodel-pills .workmodel-pill').forEach(p => {
+          p.classList.toggle('active', state.activeWorkModels.has(p.dataset.workmodel));
+        });
+        document.getElementById('workmodel-pills').classList.toggle('wm-none', state.activeWorkModels.size === 0);
+        saveSettings();
+        state.currentPage = 1;
+        renderJobList();
+      });
+    }
+    wmRow.appendChild(btn);
+  });
+}
+
+function setSourceFilter(sourceId) {
+  state.activeSourceFilter = sourceId;
+  state.currentPage = 1;
+  document.querySelectorAll('.source-filter-btn').forEach(b => {
+    b.classList.toggle('active', b.dataset.source === sourceId);
+  });
+  renderJobList();
+}
+
+// ============================================================
+// Job card
+// ============================================================
+function buildJobCard(job) {
+  const card = document.createElement('div');
+  card.className = 'job-card';
+  card.title = '';
+  card.addEventListener('click', () => {
+    if (job.url) window.open(job.url, '_blank', 'noopener');
+  });
+
+  const dateStr = job.date_posted ? relativeDate(job.date_posted) : '';
+  const alsoOnStr = job.also_on && job.also_on.length
+    ? `<span class="also-on">Also on: ${job.also_on.join(', ')}</span>`
+    : '';
+  const remoteBadge = job.is_remote ? '<span class="remote-badge">Remote</span>' : '';
+
+  card.innerHTML = `
+    <span class="card-tooltip">Click to view job</span>
+    <div class="job-card-top">
+      <span class="job-title">${esc(job.title)}</span>
+      <span class="job-source-badge src-${job.source}">${esc(job.source_label)}</span>
+    </div>
+    <div class="job-card-mid">
+      <span class="job-company">${esc(job.company || '–')}</span>
+      ${job.location ? `<span class="job-location">📍 ${esc(job.location)}</span>` : ''}
+      ${remoteBadge}
+    </div>
+    <div class="job-card-bottom">
+      ${dateStr ? `<span class="job-date">${dateStr}</span>` : ''}
+      ${alsoOnStr}
+    </div>
+  `;
+
+  return card;
+}
+
+function esc(str) {
+  return String(str || '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+function relativeDate(dateStr) {
+  if (!dateStr) return '';
+  const d = new Date(dateStr);
+  if (isNaN(d)) return dateStr;
+  const now = Date.now();
+  const diff = Math.floor((now - d.getTime()) / 1000);
+  if (diff < 60) return 'just now';
+  if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
+  if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
+  const days = Math.floor(diff / 86400);
+  if (days === 1) return '1 day ago';
+  if (days < 30) return `${days} days ago`;
+  if (days < 60) return '1 month ago';
+  return `${Math.floor(days / 30)} months ago`;
+}
+
+// ============================================================
+// UI state transitions
+// ============================================================
+function hideAll() {
+  document.getElementById('empty-state').classList.add('hidden');
+  document.getElementById('loading-state').classList.add('hidden');
+  document.getElementById('results-state').classList.add('hidden');
+  document.getElementById('search-btn').disabled = false;
+}
+
+function showLoading() {
+  hideAll();
+  document.getElementById('loading-state').classList.remove('hidden');
+  document.getElementById('search-btn').disabled = true;
+  document.getElementById('search-btn').textContent = 'Searching…';
+}
+
+function showResults(data) {
+  hideAll();
+  document.getElementById('search-btn').textContent = 'Search';
+  document.getElementById('results-state').classList.remove('hidden');
+
+  state.queriedSources = data.sources_queried || [];
+
+  // LinkedIn rate-limit: auto-deselect and show toast only when rate-limited AND returned 0 results
+  if (data.linkedin_rate_limited) {
+    const liCb = document.querySelector('#sources-list input[value="LINKEDIN_EU"]');
+    const liResultCount = (data.results || []).filter(r => r.source === 'LINKEDIN_EU').length;
+    if (liCb && liCb.checked && liResultCount === 0) {
+      liCb.checked = false;
+      saveSettings();
+      showLinkedInRateLimitModal();
+    }
+  }
+
+  // Store meta for dynamic results-meta line in renderJobList
+  state.searchMeta = {
+    sourcesCount: new Set(data.results.map(r => r.source)).size,
+    duration: data.duration_seconds,
+  };
+  state.currentPage = 1;
+
+  // Warnings – collapsible, subtle
+  const warnBox = document.getElementById('warnings-box');
+  warnBox.classList.remove('is-error');
+  if (data.warnings && data.warnings.length > 0) {
+    const n = data.warnings.length;
+    const toggleId = 'warn-details-inner';
+    warnBox.innerHTML =
+      `<button class="warn-toggle" onclick="
+        var d=document.getElementById('${toggleId}');
+        d.classList.toggle('hidden');
+        this.textContent=d.classList.contains('hidden')
+          ?'⚠ ${n} source${n !== 1 ? 's' : ''} had issues – click to expand'
+          :'⚠ ${n} source${n !== 1 ? 's' : ''} had issues – click to collapse';
+      ">⚠ ${n} source${n !== 1 ? 's' : ''} had issues – click to expand</button>` +
+      `<div class="warn-details hidden" id="${toggleId}">` +
+        data.warnings.map(w => `<p>${esc(w)}</p>`).join('') +
+      `</div>`;
+    warnBox.classList.remove('hidden');
+  } else {
+    warnBox.classList.add('hidden');
+  }
+
+  buildSourceFilters(data.results, state.queriedSources);
+  renderJobList();
+}
+
+function showError(msg) {
+  hideAll();
+  document.getElementById('search-btn').textContent = 'Search';
+  document.getElementById('results-state').classList.remove('hidden');
+
+  const warnBox = document.getElementById('warnings-box');
+  warnBox.innerHTML = `<p>✖ ${esc(msg)}</p>`;
+  warnBox.classList.remove('hidden');
+  warnBox.classList.add('is-error');
+
+  document.getElementById('results-meta').textContent = '';
+  document.getElementById('job-list').innerHTML = '';
+  document.getElementById('source-filters').innerHTML = '';
+  document.getElementById('workmodel-filters').innerHTML = '';
+  document.getElementById('country-filters').innerHTML = '';
+}
+
+// ============================================================
+// Get Set Up section
+// ============================================================
+const SITE_DATA = [
+  {
+    category: 'GENERAL',
+    sites: [
+      // Green: automatically pulled
+      { name: 'Indeed Europe',  desc: 'Largest job aggregator with strong EU coverage.',          pull: 'ok',   pullLabel: '✅ Results pulled', acct: 'partial', acctLabel: 'Account: for Easy Apply only', url: 'https://www.indeed.com',          color: '#003A9B' },
+      { name: 'LinkedIn',       desc: 'Professional network with EU job listings.',                pull: 'warn', pullLabel: '⚠ Unstable',       acct: 'req',     acctLabel: 'Account required',            url: 'https://www.linkedin.com/jobs',   color: '#0A66C2' },
+      { name: 'EuroJobs',       desc: 'Pan-European job board.',                                  pull: 'ok',   pullLabel: '✅ Results pulled', acct: 'partial', acctLabel: 'Account: for applying',       url: 'https://www.eurojobs.com',        color: '#2196f3' },
+      // Blue: manual, no registration
+      { name: 'Google Jobs',    desc: 'Aggregates listings across the web.',                      pull: 'link', pullLabel: '🔗 Link only',     acct: 'free',    acctLabel: 'No account needed',           url: 'https://jobs.google.com',         color: '#4285f4' },
+      { name: 'Adzuna',         desc: 'Pan-European job aggregator with salary data.',            pull: 'link', pullLabel: '🔗 Link only',     acct: 'free',    acctLabel: 'No account needed',           url: 'https://www.adzuna.co.uk',        color: '#ef5a25' },
+      { name: 'EuropeRemotely', desc: 'Remote jobs from European companies.',                     pull: 'link', pullLabel: '🔗 Link only',     acct: 'free',    acctLabel: 'No account needed',           url: 'https://europeremotely.com',      color: '#6366f1' },
+      // Red: manual, registration required
+      { name: 'Glassdoor',      desc: 'Jobs with company reviews and salaries.',                  pull: 'link', pullLabel: '🔗 Link only',     acct: 'req',     acctLabel: 'Account required',            url: 'https://www.glassdoor.com/Job',   color: '#0caa41' },
+      { name: 'Relocate.me',    desc: 'Jobs with relocation support.',                            pull: 'link', pullLabel: '🔗 Link only',     acct: 'req',     acctLabel: 'Account required',            url: 'https://relocate.me',             color: '#f97316' },
+    ],
+  },
+  {
+    category: 'COUNTRY-SPECIFIC',
+    sites: [
+      // Green: automatically pulled
+      { name: 'Karriere.at',   desc: "Austria's leading job board.",              pull: 'ok',   pullLabel: '✅ Results pulled', acct: 'req', acctLabel: 'Account required', url: 'https://www.karriere.at',     color: '#e63946' },
+      // Blue: manual, no registration
+      { name: 'No Fluff Jobs', desc: 'Tech jobs in Poland and CEE.',              pull: 'link', pullLabel: '🔗 Link only',     acct: 'free',acctLabel: 'No account needed',url: 'https://nofluffjobs.com',     color: '#e63f6a' },
+      // Red: manual, registration required
+      { name: 'Pracuj.pl',     desc: "Poland's leading job board.",               pull: 'link', pullLabel: '🔗 Link only',     acct: 'req', acctLabel: 'Account required', url: 'https://pracuj.pl',           color: '#cc0000' },
+      { name: 'Jobs.cz',       desc: "Czech Republic's main job board.",          pull: 'link', pullLabel: '🔗 Link only',     acct: 'req', acctLabel: 'Account required', url: 'https://www.jobs.cz',         color: '#0052cc' },
+      { name: 'eJobs.ro',      desc: "Romania's top job platform.",               pull: 'link', pullLabel: '🔗 Link only',     acct: 'req', acctLabel: 'Account required', url: 'https://www.ejobs.ro',        color: '#d62828' },
+      { name: 'StepStone DE/AT',desc: 'Major board for Germany and Austria.',     pull: 'link', pullLabel: '🔗 Link only',     acct: 'req', acctLabel: 'Account required', url: 'https://www.stepstone.de',    color: '#e6002d' },
+    ],
+  },
+  {
+    category: 'TECH & DEVELOPER',
+    sites: [
+      // Blue: manual, no registration
+      { name: 'No Fluff Jobs',      desc: 'Tech-focused, strong CEE coverage.',         pull: 'link', pullLabel: '🔗 Link only', acct: 'free', acctLabel: 'No account needed', url: 'https://nofluffjobs.com',          color: '#e63f6a' },
+      { name: 'JustJoinIT',         desc: 'Tech jobs in Poland and remotely.',          pull: 'link', pullLabel: '🔗 Link only', acct: 'free', acctLabel: 'No account needed', url: 'https://justjoin.it',              color: '#0a0e27' },
+      { name: "HN Who's Hiring",    desc: 'Hacker News monthly thread.',               pull: 'link', pullLabel: '🔗 Link only', acct: 'free', acctLabel: 'No account needed', url: 'https://news.ycombinator.com/jobs',color: '#ff6600' },
+      // Red: manual, registration required
+      { name: 'Stack Overflow Jobs', desc: 'Developer-focused listings.',               pull: 'link', pullLabel: '🔗 Link only', acct: 'req',  acctLabel: 'Account required',  url: 'https://stackoverflow.com/jobs',   color: '#f48024' },
+      { name: 'Wellfound (AngelList)',desc: 'Startup and tech jobs.',                   pull: 'link', pullLabel: '🔗 Link only', acct: 'req',  acctLabel: 'Account required',  url: 'https://wellfound.com/jobs',       color: '#000000' },
+    ],
+  },
+  {
+    category: 'UX & DESIGN',
+    sites: [
+      // Blue: manual, no registration
+      { name: 'UX Jobs Board', desc: 'Specialist UX listings.', pull: 'link', pullLabel: '🔗 Link only', acct: 'free', acctLabel: 'No account needed', url: 'https://www.uxjobsboard.com', color: '#7c3aed' },
+      // Red: manual, registration required
+      { name: 'Dribbble Jobs', desc: 'Design and UX roles.', pull: 'link', pullLabel: '🔗 Link only', acct: 'req', acctLabel: 'Account required', url: 'https://dribbble.com/jobs', color: '#ea4c89' },
+    ],
+  },
+  {
+    category: 'CONTENT & TECHNICAL WRITING',
+    sites: [
+      // Blue: manual, no registration
+      { name: 'Write the Docs Job Board', desc: 'Technical writing community board.', pull: 'link', pullLabel: '🔗 Link only', acct: 'free', acctLabel: 'No account needed', url: 'https://jobs.writethedocs.org', color: '#2d6a4f' },
+      { name: 'Knowledgeowl Job Board', desc: 'Technical writing and docs roles.', pull: 'link', pullLabel: '🔗 Link only', acct: 'free', acctLabel: 'No account needed', url: 'https://jobs.knowledgeowl.com', color: '#5a4fcf' },
+      // Red: manual, registration required
+      { name: 'Working in Content', desc: 'Content strategy, UX writing, technical writing.', pull: 'link', pullLabel: '🔗 Link only', acct: 'req', acctLabel: 'Account: required to apply', url: 'https://workingincontent.com/jobs', color: '#06b6d4' },
+    ],
+  },
+  {
+    category: 'REMOTE',
+    sites: [
+      // Blue: manual, no registration
+      { name: 'Michael Page',      desc: 'Recruitment agency specializing in senior EU roles.',pull: 'link', pullLabel: '🔗 Link only',     acct: 'free', acctLabel: 'No account needed', url: 'https://www.michaelpage.com',            color: '#e30613' },
+      // Red: manual, registration required
+      { name: 'WeAreDevelopers',   desc: 'Developer jobs with strong European coverage.',      pull: 'link', pullLabel: '🔗 Link only',     acct: 'req',  acctLabel: 'Account required',  url: 'https://www.wearedevelopers.com/jobs',   color: '#1b2a4a' },
+    ],
+  },
+];
+
+function buildGetSetup() {
+  const container = document.getElementById('site-categories');
+  container.innerHTML = '';
+
+  SITE_DATA.forEach(({ category, sites }) => {
+    const group = document.createElement('div');
+    group.className = 'category-group';
+
+    const title = document.createElement('p');
+    title.className = 'category-title';
+    title.textContent = category;
+    group.appendChild(title);
+
+    const grid = document.createElement('div');
+    grid.className = 'site-cards-grid';
+
+    sites.forEach(site => {
+      const card = document.createElement('div');
+      card.className = 'site-card';
+
+      const initial = site.name.charAt(0);
+      const isPulled  = site.pull === 'ok' || site.pull === 'warn';
+      const needsAcct = site.acct === 'req' || site.acct === 'partial';
+      const isLinkedInCard = site.name === 'LinkedIn';
+
+      let badgeClass, badgeText;
+      if (isPulled && needsAcct) {
+        badgeClass = 'meta-pull-ok';
+        badgeText  = 'Automatically pulled, requires registration';
+      } else if (!isPulled && needsAcct) {
+        badgeClass = 'meta-acct-req';
+        badgeText  = 'Manual search, requires registration';
+      } else {
+        badgeClass = 'meta-pull-link';
+        badgeText  = 'Manual search, no registration required';
+      }
+
+      const linkedInIconHtml = isLinkedInCard
+        ? ' <span class="src-info-trigger" data-linkedin-card-tip>ⓘ</span>'
+        : '';
+
+      card.innerHTML = `
+        <div class="site-card-top">
+          <div class="site-initial" style="background:${site.color}">${esc(initial)}</div>
+          <span class="site-name">${esc(site.name)}</span>
+        </div>
+        <p class="site-desc">${esc(site.desc)}</p>
+        <div class="site-meta">
+          <span class="meta-badge ${badgeClass}">${esc(badgeText)}${linkedInIconHtml}</span>
+        </div>
+        <a class="site-visit-btn" href="${esc(site.url)}" target="_blank" rel="noopener noreferrer">${site.acct === 'free' ? 'Visit →' : 'Visit &amp; Register →'}</a>
+      `;
+
+      if (isLinkedInCard) {
+        const icon = card.querySelector('[data-linkedin-card-tip]');
+        const tip  = 'LinkedIn blocks automated requests after repeated use. If results drop to 0, your IP is temporarily rate-limited. Wait a few hours before retrying.';
+        icon.addEventListener('mouseenter', () => _showSrcTooltip(icon, tip));
+        icon.addEventListener('mouseleave', _hideSrcTooltip);
+      }
+
+      grid.appendChild(card);
+    });
+
+    group.appendChild(grid);
+    container.appendChild(group);
+  });
+}
+
+// Other job sites toggle
+document.getElementById('recommended-sites-toggle').addEventListener('click', () => {
+  const toggle = document.getElementById('recommended-sites-toggle');
+  const body = document.getElementById('getsetup-body');
+  const isOpen = body.classList.contains('visible');
+  body.classList.toggle('visible', !isOpen);
+  toggle.classList.toggle('open', !isOpen);
+});
+
+// "→ See other job sites" link – expand section and scroll into view
+document.getElementById('get-setup-link').addEventListener('click', e => {
+  e.preventDefault();
+  document.getElementById('recommended-sites-toggle').click();
+  setTimeout(() => {
+    document.getElementById('recommended-sites').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, 50);
+});
+
+// ============================================================
+// LinkedIn rate-limit toast
+// ============================================================
+document.getElementById('rl-toast-close').addEventListener('click', () => {
+  document.getElementById('rl-toast').classList.remove('visible');
+});
+
+function showLinkedInRateLimitModal() {
+  const toast = document.getElementById('rl-toast');
+  toast.classList.remove('visible');
+  // Re-trigger animation by forcing reflow
+  void toast.offsetWidth;
+  toast.classList.add('visible');
+}
+
+// ============================================================
+// Init
+// ============================================================
+const _didRestore = restoreSettings();
+loadSources();
+buildGetSetup();
+if (_didRestore) showRestoreNotice();
+</script>
+
+</body>
+</html>
