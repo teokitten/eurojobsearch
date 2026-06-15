@@ -1,9 +1,10 @@
 # EuroJobSearch
 
-A Flask-based job search aggregator focused on European job markets. It pulls
-listings from public job boards, ATS career page APIs (Greenhouse, Lever,
-Ashby), and RSS feeds – all in parallel, deduplicated, and presented in a
-single clean interface.
+European jobs only. Search across job boards and company career pages – all in one place.
+
+A Flask-based job search aggregator for the European job market. It searches eight sources in parallel – Indeed EU, LinkedIn, Greenhouse, Karriere.at, Arbeitnow, Remotive, Jobicy, and We Work Remotely – deduplicates results, and presents them in one filterable view: country, work model, source, and keyword, all combinable.
+
+Try the [interactive demo](https://teokitten.github.io/eurojobsearch/) with sample data – no install required.
 
 ## Setup
 
@@ -65,40 +66,33 @@ Requires Python 3.10 or later.
 
 To stop the app, press Ctrl+C in the terminal.
 
-## Source reliability notes
+## Sources
 
-| Source | Reliability | Notes |
-|---|---|---|
-| Indeed EU | ✅ Stable | Best coverage; searches per country |
-| LinkedIn | ⚠ Unstable | Rate-limits quickly; partial results expected |
-| Greenhouse | ✅ Stable | Queries public ATS APIs directly |
-| Lever | ✅ Stable | Queries public ATS APIs directly |
-| Ashby | ✅ Stable | Queries public ATS APIs directly |
-| Karriere.at | ✅ Stable | Austria only; RSS feed |
-| EuroJobs | ✅ Stable | Pan-European RSS feed |
-| Working in Content | ✅ Stable | Niche – content/UX writing roles |
+| Source | Notes |
+|---|---|
+| Indeed EU | Per-country search. If no countries are selected, falls back to Germany-remote-only results. |
+| LinkedIn | May rate-limit after repeated use. Requires a free account to view full listings and apply. |
+| Greenhouse | Queries a curated list of company job boards via the public Greenhouse API. |
+| Karriere.at | Austria only. |
+| Arbeitnow | Germany, Austria, and Switzerland only. |
+| Remotive | Remote roles only. |
+| Jobicy | Remote roles only. |
+| We Work Remotely | Remote roles only. |
 
-## ATS sources
+## Known limitations
 
-Greenhouse, Lever, and Ashby expose public JSON APIs for company job boards.
-No account or API key is needed. The app queries a curated list of European
-tech company slugs and filters results by keyword and location.
+- **Indeed EU**: if no countries are selected, results are limited to Germany-based remote jobs.
+- **Greenhouse**: locations formatted like "Germany (Remote); Ireland (Remote)" are detected as remote only, not as all listed countries.
+- **Arbeitnow**: its API does not support a search-term parameter; results are filtered by keyword after fetching.
+- **LinkedIn**: automated requests may be rate-limited after repeated use.
 
-## Adding target companies
+## Company career pages (Greenhouse)
 
-The app only searches companies explicitly listed in `companies.json` for
-Greenhouse, Lever, and Ashby. To find the slug for a company:
+Greenhouse exposes a public JSON API for company job boards – no account or API key needed. The app queries a curated list of European company career pages (`companies.json`) and filters results by keyword, country, and work model, same as every other source.
 
-- **Greenhouse:** Go to the company's career page. If the URL contains
-  `boards.greenhouse.io/{slug}`, that `{slug}` is what to add under
-  `"greenhouse"` in `companies.json`.
-- **Lever:** If the URL contains `jobs.lever.co/{slug}`, use that `{slug}`
-  under `"lever"`.
-- **Ashby:** If the URL contains `jobs.ashbyhq.com/{slug}`, use that `{slug}`
-  under `"ashby"`.
+## Adding companies to the Greenhouse source
 
-You can also edit the list directly in the app via the **Target companies**
-panel in the sidebar – changes are saved to `companies.json` on the server.
+Only companies listed under `"greenhouse"` in `companies.json` are searched. To add one, find the `{slug}` portion of the company's Greenhouse-hosted careers page URL and add it to the list in `companies.json`.
 
 ## License
 
