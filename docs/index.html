@@ -989,7 +989,7 @@
 <div id="demo-banner" style="background:#1e1f2e; border-bottom:1px solid #2e3152; padding:10px 20px; font-size:0.82rem; color:#AFA9EC; display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
   <span style="background:#5b6ef5; color:#fff; border-radius:4px; padding:2px 8px; font-size:0.75rem; font-weight:600; letter-spacing:0.04em;">DEMO</span>
   This is a static preview with sample data — no server required.
-  <a href="https://github.com/teokitten79/EuroJobSearch" target="_blank" rel="noopener" style="color:#7b8cde; margin-left:auto; text-decoration:none;">View on GitHub ↗</a>
+  <a href="https://github.com/teokitten/eurojobsearch" target="_blank" rel="noopener" style="color:#7b8cde; margin-left:auto; text-decoration:none;">View on GitHub ↗</a>
 </div>
 
 <div class="app-wrapper">
@@ -1812,6 +1812,9 @@ async function runSearch() {
 
   showLoading();
 
+  const controller = new AbortController();
+  state.searchAbortController = controller;
+
   try {
     const data = await mockSearchApi({ keywords, countries, sources, hours_old: hoursOld, title_only: titleOnly, work_models: workModels }, controller.signal);
     state.allResults = data.results || [];
@@ -1820,7 +1823,19 @@ async function runSearch() {
 
     showResults(data);
   } catch (e) {
-    showError('Network error – is the server running?');
+    if (e.name === 'AbortError') {
+      hideAll();
+      document.getElementById('search-btn').textContent = 'Search';
+      if (state.allResults.length > 0) {
+        document.getElementById('results-state').classList.remove('hidden');
+      } else {
+        document.getElementById('empty-state').classList.remove('hidden');
+      }
+    } else {
+      showError('Something went wrong with the demo search.');
+    }
+  } finally {
+    state.searchAbortController = null;
   }
 }
 
