@@ -1130,10 +1130,11 @@
           </div>
           <div class="toolbar-row-2" id="workmodel-filters"></div>
           <div class="toolbar-row-countries" id="country-filters"></div>
-          <div style="width:100%; border-top:1px solid var(--border); padding-top:8px;">
-            <p style="font-size:0.78rem; color:var(--text-s); margin:0;">
-              ⓘ <a href="https://www.linkedin.com/signup" target="_blank" rel="noopener noreferrer" style="color:var(--accent);">LinkedIn</a> requires a free account to view full listings and apply.
+          <div id="linkedin-account-note" style="width:100%; border-top:1px solid var(--border); padding-top:8px; position:relative;">
+            <p style="font-size:0.78rem; color:var(--text-s); margin:0; padding-right:20px;">
+              ⓘ LinkedIn requires a <a href="https://www.linkedin.com/signup" target="_blank" rel="noopener noreferrer" style="color:var(--accent);">free account</a> to view full listings and apply.
             </p>
+            <button id="linkedin-account-note-close" aria-label="Dismiss" style="position:absolute; top:6px; right:0; background:none; border:none; color:var(--text-s); font-size:16px; cursor:pointer; line-height:1; padding:0;">×</button>
           </div>
         </div>
 
@@ -2409,6 +2410,16 @@ function buildGetSetup() {
 // ============================================================
 document.getElementById('rl-toast-close').addEventListener('click', () => {
   document.getElementById('rl-toast').classList.remove('visible');
+});
+
+const LI_ACCOUNT_NOTE_KEY = 'eurojobsearch_linkedin_note_dismissed';
+const _liAccountNote = document.getElementById('linkedin-account-note');
+if (localStorage.getItem(LI_ACCOUNT_NOTE_KEY)) {
+  _liAccountNote.style.display = 'none';
+}
+document.getElementById('linkedin-account-note-close').addEventListener('click', () => {
+  _liAccountNote.style.display = 'none';
+  try { localStorage.setItem(LI_ACCOUNT_NOTE_KEY, '1'); } catch (_) {}
 });
 
 function showLinkedInRateLimitModal() {
