@@ -660,8 +660,7 @@ def _fetch_linkedin(keywords: str, countries: list[str], hours_old: int,
             elapsed = time.time() - t0
             if df is None or df.empty:
                 if elapsed > 15:
-                    print(f"[DEBUG][LINKEDIN] {location}: took {elapsed:.1f}s, 0 results – possible rate-limit")
-                    return [], True, True
+                    print(f"[DEBUG][LINKEDIN] {location}: took {elapsed:.1f}s, 0 results")
                 return [], True, False
             results = []
             for _, row in df.iterrows():
@@ -1650,7 +1649,7 @@ def api_search():
 
         for name, future in futures_map.items():
             try:
-                result = future.result()
+                result = future.result(timeout=45)
                 if name == "LINKEDIN_EU":
                     jobs, warnings, rl = result
                     linkedin_rate_limited = rl
@@ -1660,6 +1659,9 @@ def api_search():
                 print(f"[{name}] returned {len(jobs)} results")
                 all_jobs.extend(jobs)
                 all_warnings.extend(warnings)
+            except concurrent.futures.TimeoutError:
+                print(f"[{name}] timed out after 45s")
+                all_warnings.append(f"{name}: timed out – source skipped")
             except Exception as e:
                 print(f"[{name}] unexpected error – {e}")
                 all_warnings.append(f"{name}: unexpected error – {e}")
