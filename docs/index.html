@@ -985,11 +985,19 @@
 </style>
 </head>
 <body>
-
-<div id="demo-banner" style="background:#1e1f2e; border-bottom:1px solid #2e3152; padding:10px 20px; font-size:0.82rem; color:#AFA9EC; display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+<div id="demo-banner" style="background:#1e1f2e; border-bottom:1px solid #2e3248; padding:10px 20px; font-size:0.82rem; color:#AFA9EC; display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
   <span style="background:#5b6ef5; color:#fff; border-radius:4px; padding:2px 8px; font-size:0.75rem; font-weight:600; letter-spacing:0.04em;">DEMO</span>
-  This is a static preview with sample data — no server required.
+  This is a static preview with sample data – no server required.
   <a href="https://github.com/teokitten/eurojobsearch" target="_blank" rel="noopener" style="color:#7b8cde; margin-left:auto; text-decoration:none;">View on GitHub ↗</a>
+</div>
+<div id="demo-keywords-bar" style="border-bottom:1px solid #2e3248; padding:10px 20px; font-size:0.82rem; color:#9098b1; display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+  <span>Try a search:</span>
+  <button class="source-filter-btn demo-keyword-chip" data-keyword="technical writer">technical writer</button>
+  <button class="source-filter-btn demo-keyword-chip" data-keyword="writer">writer</button>
+  <button class="source-filter-btn demo-keyword-chip" data-keyword="developer">developer</button>
+  <button class="source-filter-btn demo-keyword-chip" data-keyword="designer">designer</button>
+  <button class="source-filter-btn demo-keyword-chip" data-keyword="product manager">product manager</button>
+  <button class="source-filter-btn demo-keyword-chip" data-keyword="project manager">project manager</button>
 </div>
 
 <div class="app-wrapper">
@@ -1235,12 +1243,57 @@ const MOCK_DATA = {
     { "id": "job-33", "title": "Content Designer", "company": "Greenfield Robotics", "source": "WEWORKREMOTELY", "source_label": "We Work Remotely", "location": "Remote – Worldwide", "url": null, "date_posted": "2026-06-11T11:00:00Z", "is_remote": true, "is_hybrid": false, "job_type": "Full-time", "detected_countries": ["remote"], "description": "Write microcopy, help center articles, and onboarding emails for a robotics SaaS platform. Async-first team across time zones.", "also_on": ["Remotive"] },
     { "id": "job-34", "title": "Backend Developer (Node.js)", "company": "Brightside Tech", "source": "WEWORKREMOTELY", "source_label": "We Work Remotely", "location": "Remote – EU", "url": null, "date_posted": "2026-06-07T09:00:00Z", "is_remote": true, "is_hybrid": false, "job_type": "Full-time", "detected_countries": ["remote"], "description": "Maintain Node.js microservices for a media streaming platform. Experience with GraphQL and PostgreSQL preferred." },
     { "id": "job-35", "title": "Documentation Engineer", "company": "Nordlicht Systems", "source": "WEWORKREMOTELY", "source_label": "We Work Remotely", "location": "Remote – EU", "url": null, "date_posted": "2026-05-27T09:00:00Z", "is_remote": true, "is_hybrid": false, "job_type": "Full-time", "detected_countries": ["remote"], "description": "Build and maintain a docs site with Markdown, versioning, and search for a developer tools company.", "also_on": ["Jobicy", "LinkedIn"] },
-    { "id": "job-36", "title": "Customer Support Specialist", "company": "BrightPath Software", "source": "WEWORKREMOTELY", "source_label": "We Work Remotely", "location": "Remote – Worldwide", "url": null, "date_posted": "2026-05-19T08:00:00Z", "is_remote": true, "is_hybrid": false, "job_type": "Part-time", "detected_countries": ["remote"], "description": "Provide email support for a small SaaS team. Flexible part-time hours across European time zones." }
+    { "id": "job-36", "title": "Customer Support Specialist", "company": "BrightPath Software", "source": "WEWORKREMOTELY", "source_label": "We Work Remotely", "location": "Remote – Worldwide", "url": null, "date_posted": "2026-05-19T08:00:00Z", "is_remote": true, "is_hybrid": false, "job_type": "Part-time", "detected_countries": ["remote"], "description": "Provide email support for a small SaaS team. Flexible part-time hours across European time zones." },
+    { "id": "job-37", "title": "Senior Frontend Developer (Angular)", "company": "Falkland Systems", "source": "GREENHOUSE", "source_label": "Greenhouse", "location": "Stockholm, Sweden", "url": null, "date_posted": "2026-06-13T08:00:00Z", "is_remote": false, "is_hybrid": true, "job_type": "Full-time", "detected_countries": ["sweden"], "description": "Build and maintain a design-system-driven Angular application for a fintech dashboard. Hybrid, two days per week in our Stockholm office." },
+    { "id": "job-38", "title": "Java Developer", "company": "Ashgrove Tech", "source": "INDEED_EU", "source_label": "Indeed EU", "location": "Brussels, Belgium", "url": null, "date_posted": "2026-06-10T09:00:00Z", "is_remote": false, "is_hybrid": false, "job_type": "Full-time", "detected_countries": ["belgium"], "description": "Maintain backend services in Java and Spring Boot for a logistics platform. On-site role in our Brussels office, five days a week." },
+    { "id": "job-39", "title": "Mobile Developer (iOS)", "company": "Mira Cloud Co", "source": "LINKEDIN_EU", "source_label": "LinkedIn", "location": "Lisbon, Portugal", "url": null, "date_posted": "2026-06-05T10:00:00Z", "is_remote": false, "is_hybrid": true, "job_type": "Full-time", "detected_countries": ["portugal"], "description": "Develop and maintain our Swift-based iOS app. Hybrid schedule, collaborating closely with backend and design teams in Lisbon." },
+    { "id": "job-40", "title": "Junior Software Developer", "company": "Birchwood Software", "source": "KARRIERE_AT", "source_label": "Karriere.at", "location": "Vienna, Austria", "url": null, "date_posted": "2026-06-12T08:00:00Z", "is_remote": false, "is_hybrid": false, "job_type": "Full-time", "detected_countries": ["austria"], "description": "Support our engineering team building internal tools in C# and .NET. Great entry-level role with mentorship, on-site in Vienna." },
+    { "id": "job-41", "title": "Full Stack Developer (Java/Angular)", "company": "Solace Digital", "source": "GREENHOUSE", "source_label": "Greenhouse", "location": "Berlin, Germany", "url": null, "date_posted": "2026-05-28T09:00:00Z", "is_remote": false, "is_hybrid": true, "job_type": "Full-time", "detected_countries": ["germany"], "description": "Build features across a Java Spring backend and Angular frontend for a B2B marketplace. Hybrid, three days per week in Berlin." },
+    { "id": "job-42", "title": "Senior Project Manager", "company": "Cinderpath Logistics", "source": "GREENHOUSE", "source_label": "Greenhouse", "location": "Helsinki, Finland", "url": null, "date_posted": "2026-06-09T10:00:00Z", "is_remote": false, "is_hybrid": false, "job_type": "Full-time", "detected_countries": ["finland"], "description": "Lead cross-functional delivery for a Nordic logistics platform. Coordinate engineering, ops, and customer success teams from our Helsinki office." },
+    { "id": "job-43", "title": "Product Manager", "company": "Lighthouse Data", "source": "REMOTIVE", "source_label": "Remotive", "location": "Remote – EU", "url": null, "date_posted": "2026-06-11T09:00:00Z", "is_remote": true, "is_hybrid": false, "job_type": "Full-time", "detected_countries": ["remote"], "description": "Own the roadmap for a B2B analytics product. Work closely with design and engineering to prioritize features based on customer feedback." },
+    { "id": "job-44", "title": "Project Manager", "company": "Alpenrose Systems", "source": "KARRIERE_AT", "source_label": "Karriere.at", "location": "Vienna, Austria", "url": null, "date_posted": "2026-06-13T11:00:00Z", "is_remote": false, "is_hybrid": true, "job_type": "Full-time", "detected_countries": ["austria"], "description": "Manage timelines and stakeholder communication for a renewable-energy software platform. Hybrid role, two office days per week in Vienna." },
+    { "id": "job-45", "title": "Associate Product Manager", "company": "Castlewood Tech", "source": "LINKEDIN_EU", "source_label": "LinkedIn", "location": "Copenhagen, Denmark", "url": null, "date_posted": "2026-06-06T09:00:00Z", "is_remote": false, "is_hybrid": true, "job_type": "Full-time", "detected_countries": ["denmark"], "description": "Support roadmap planning and user research for a consumer subscription app. Hybrid schedule based in our Copenhagen office." },
+    { "id": "job-46", "title": "Technical Writer", "company": "Birchgate Software", "source": "INDEED_EU", "source_label": "Indeed EU", "location": "Vienna, Austria", "url": null, "date_posted": "2026-06-15T05:00:00Z", "is_remote": false, "is_hybrid": true, "job_type": "Full-time", "detected_countries": ["austria"], "description": "Own user-facing documentation for a DevOps tooling platform. Hybrid role, two office days per week in Vienna. Docs-as-code workflow with Markdown and Git." },
+    { "id": "job-47", "title": "Frontend Developer", "company": "Pinecrest Digital", "source": "ARBEITNOW", "source_label": "Arbeitnow", "location": "Graz, Austria", "url": null, "date_posted": "2026-06-15T07:30:00Z", "is_remote": false, "is_hybrid": false, "job_type": "Full-time", "detected_countries": ["austria"], "description": "Build customer-facing features in React and TypeScript for a logistics scheduling tool. On-site role in our Graz office." }
   ]
 };
 
+// Source homepages – used as job.url fallback so result cards
+// open something real on click, matching the live app's behavior.
+const SOURCE_HOMEPAGES = {
+  INDEED_EU: 'https://www.indeed.com',
+  LINKEDIN_EU: 'https://www.linkedin.com/jobs',
+  GREENHOUSE: 'https://www.greenhouse.io',
+  KARRIERE_AT: 'https://www.karriere.at',
+  ARBEITNOW: 'https://www.arbeitnow.com',
+  REMOTIVE: 'https://remotive.com',
+  JOBICY: 'https://jobicy.com',
+  WEWORKREMOTELY: 'https://weworkremotely.com',
+};
+
+// Fixed reference point for "how old is this job" calculations, derived
+// from the dataset's own dates rather than the real clock - results are
+// identical no matter when this demo is opened. Set 3 hours after the
+// most recent posting in the dataset.
+const MOCK_NOW = MOCK_DATA.jobs.reduce((max, j) => {
+  const t = new Date(j.date_posted).getTime();
+  return t > max ? t : max;
+}, 0) + (3 * 3600000);
+
+// Fill in a source-homepage URL for click-through where none is set.
+MOCK_DATA.jobs.forEach(j => {
+  if (!j.url) j.url = SOURCE_HOMEPAGES[j.source] || null;
+});
+
+document.querySelectorAll('.demo-keyword-chip').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.getElementById('keywords').value = btn.dataset.keyword;
+    runSearch();
+  });
+});
+
 function _mockHoursAgo(dateStr) {
-  return (Date.now() - new Date(dateStr).getTime()) / 3600000;
+  return (MOCK_NOW - new Date(dateStr).getTime()) / 3600000;
 }
 
 function _mockMatchesWorkModel(job, workModels) {
@@ -1259,7 +1312,6 @@ function mockSearchApi({ keywords, countries, sources, hours_old, title_only, wo
       const kw = (keywords || '').toLowerCase();
       const results = MOCK_DATA.jobs.filter(job => {
         if (!sources.includes(job.source)) return false;
-        if (hours_old && _mockHoursAgo(job.date_posted) > hours_old) return false;
         if (countries && countries.length) {
           const dc = job.detected_countries || [];
           if (!dc.includes('remote') && !countries.some(c => dc.includes(c))) return false;
@@ -1303,6 +1355,7 @@ const state = {
   queriedSources: [],
   activeWorkModels: new Set(['remote', 'hybrid', 'onsite']),
   activeCountries: new Set(),
+  activeWorkModelFilter: new Set(),
   currentPage: 1,
   searchMeta: { sourcesCount: 0, duration: 0 },
 };
@@ -1812,30 +1865,16 @@ async function runSearch() {
 
   showLoading();
 
-  const controller = new AbortController();
-  state.searchAbortController = controller;
-
   try {
-    const data = await mockSearchApi({ keywords, countries, sources, hours_old: hoursOld, title_only: titleOnly, work_models: workModels }, controller.signal);
+    const data = await mockSearchApi({ keywords, countries, sources, hours_old: hoursOld, title_only: titleOnly, work_models: workModels });
     state.allResults = data.results || [];
     state.activeSourceFilter = 'ALL';
     state.activeCountries = new Set();
+    state.activeWorkModelFilter = new Set();
 
     showResults(data);
   } catch (e) {
-    if (e.name === 'AbortError') {
-      hideAll();
-      document.getElementById('search-btn').textContent = 'Search';
-      if (state.allResults.length > 0) {
-        document.getElementById('results-state').classList.remove('hidden');
-      } else {
-        document.getElementById('empty-state').classList.remove('hidden');
-      }
-    } else {
-      showError('Something went wrong with the demo search.');
-    }
-  } finally {
-    state.searchAbortController = null;
+    showError('Network error – is the server running?');
   }
 }
 
@@ -1938,6 +1977,45 @@ function detectJobCountry(job) {
   return { key: `other:${truncated}`, label: truncated, flag: '📍' };
 }
 
+function buildWorkModelFilters() {
+  // Base: source + country filtered (excludes work-model filter)
+  const base = state.allResults.filter(j => _srcPredicate(j) && _countryPredicate(j));
+  const row = document.getElementById('workmodel-filters');
+  row.innerHTML = '';
+
+  const wmLabels = { remote: '🌐 Remote', hybrid: '🏢 Hybrid', onsite: '🏛 On-site' };
+  const counts = { remote: 0, hybrid: 0, onsite: 0 };
+  base.forEach(j => { counts[getWorkModel(j)]++; });
+
+  ['remote', 'hybrid', 'onsite'].forEach(model => {
+    if (!state.activeWorkModels.has(model)) return;
+    const count = counts[model];
+    const btn = document.createElement('button');
+    btn.dataset.workmodel = model;
+    btn.textContent = `${wmLabels[model]} (${count})`;
+    if (count === 0) {
+      btn.className = 'source-filter-btn zero';
+    } else {
+      btn.className = 'source-filter-btn';
+      if (state.activeWorkModelFilter.has(model)) {
+        btn.style.cssText = 'background:#5b6ef5;color:#ffffff;border:1px solid #5b6ef5;';
+      } else {
+        btn.style.cssText = 'background:transparent;color:#9098b1;border:1px solid #2e3248;';
+      }
+      btn.addEventListener('click', () => {
+        if (state.activeWorkModelFilter.has(model)) {
+          state.activeWorkModelFilter.delete(model);
+        } else {
+          state.activeWorkModelFilter.add(model);
+        }
+        state.currentPage = 1;
+        renderJobList();
+      });
+    }
+    row.appendChild(btn);
+  });
+}
+
 function buildCountryFilters() {
   // Base: source + WM filtered (excludes country filter)
   const base = state.allResults.filter(j => _srcPredicate(j) && _wmPredicate(j));
@@ -2032,8 +2110,8 @@ function _srcPredicate(job) {
   return state.activeSourceFilter === 'ALL' || job.source === state.activeSourceFilter;
 }
 function _wmPredicate(job) {
-  const sz = state.activeWorkModels.size;
-  return sz === 0 || sz === 3 || state.activeWorkModels.has(getWorkModel(job));
+  return state.activeWorkModelFilter.size === 0
+    || state.activeWorkModelFilter.has(getWorkModel(job));
 }
 function _countryPredicate(job) {
   return state.activeCountries.size === 0
@@ -2051,28 +2129,6 @@ function applyFilters(jobs) {
   });
 
   return list;
-}
-
-function _updateWmButtonCounts() {
-  // Base: source + country filtered (excludes WM filter)
-  const base = state.allResults.filter(j => _srcPredicate(j) && _countryPredicate(j));
-  const wmLabels = { remote: '🌐 Remote', hybrid: '🏢 Hybrid', onsite: '🏛 On-site' };
-  const counts = { remote: 0, hybrid: 0, onsite: 0 };
-  base.forEach(j => { counts[getWorkModel(j)]++; });
-  document.querySelectorAll('#workmodel-filters [data-workmodel]').forEach(btn => {
-    const m = btn.dataset.workmodel;
-    if (!m) return;
-    // Only selected-model chips exist in DOM; treat zero-count as greyed non-clickable.
-    const count = counts[m];
-    btn.textContent = `${wmLabels[m]} (${count})`;
-    if (count === 0) {
-      btn.className = 'source-filter-btn zero';
-      btn.style.cssText = '';
-    } else {
-      btn.className = 'source-filter-btn';
-      btn.style.cssText = 'background:#5b6ef5;color:#ffffff;border:1px solid #5b6ef5;';
-    }
-  });
 }
 
 function _updateSourceButtonCounts() {
@@ -2133,15 +2189,18 @@ function _renderPagination(total, currentPage, totalPages) {
 
 function _updateResultsMeta(filteredTotal, from, to) {
   const { sourcesCount, duration } = state.searchMeta;
+  const rangeText = filteredTotal === 0
+    ? `<strong>0</strong>`
+    : `<strong>${from}–${to}</strong> of <strong>${filteredTotal}</strong>`;
   document.getElementById('results-meta').innerHTML =
-    `Showing <strong>${from}–${to}</strong> of <strong>${filteredTotal}</strong> ` +
+    `Showing ${rangeText} ` +
     `job${filteredTotal !== 1 ? 's' : ''} across <strong>${sourcesCount}</strong> ` +
     `source${sourcesCount !== 1 ? 's' : ''} in <strong>${duration}s</strong>`;
 }
 
 function renderJobList() {
   _updateSourceButtonCounts();
-  _updateWmButtonCounts();
+  buildWorkModelFilters();
   buildCountryFilters();
   const filtered = applyFilters(state.allResults);
   const list = document.getElementById('job-list');
@@ -2152,6 +2211,7 @@ function renderJobList() {
   document.getElementById('pagination-top').innerHTML = '';
 
   if (filtered.length === 0) {
+    _updateResultsMeta(0, 0, 0);
     noResults.classList.remove('hidden');
     if (state.allResults.length === 0) {
       noResults.innerHTML =
@@ -2218,41 +2278,6 @@ function buildSourceFilters(results, queriedSources) {
     container.appendChild(btn);
   });
 
-  // Work model counts – Row 2 (from source-filtered set, not all results)
-  const wmLabels = { remote: '🌐 Remote', hybrid: '🏢 Hybrid', onsite: '🏛 On-site' };
-  const wmCounts = { remote: 0, hybrid: 0, onsite: 0 };
-  const _sfForWm = state.activeSourceFilter === 'ALL'
-    ? results
-    : results.filter(j => j.source === state.activeSourceFilter);
-  _sfForWm.forEach(j => { wmCounts[getWorkModel(j)]++; });
-
-  const wmRow = document.getElementById('workmodel-filters');
-  wmRow.innerHTML = '';
-
-  ['remote', 'hybrid', 'onsite'].forEach(model => {
-    if (!state.activeWorkModels.has(model)) return;
-    const count = wmCounts[model];
-    const btn = document.createElement('button');
-    btn.dataset.workmodel = model;
-    btn.textContent = `${wmLabels[model]} (${count})`;
-    if (count === 0) {
-      btn.className = 'source-filter-btn zero';
-    } else {
-      btn.className = 'source-filter-btn';
-      btn.style.cssText = 'background:#5b6ef5;color:#ffffff;border:1px solid #5b6ef5;';
-      btn.addEventListener('click', () => {
-        state.activeWorkModels.delete(model);
-        document.querySelectorAll('#workmodel-pills .workmodel-pill').forEach(p => {
-          p.classList.toggle('active', state.activeWorkModels.has(p.dataset.workmodel));
-        });
-        document.getElementById('workmodel-pills').classList.toggle('wm-none', state.activeWorkModels.size === 0);
-        saveSettings();
-        state.currentPage = 1;
-        renderJobList();
-      });
-    }
-    wmRow.appendChild(btn);
-  });
 }
 
 function setSourceFilter(sourceId) {
