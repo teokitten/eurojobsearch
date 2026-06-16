@@ -614,12 +614,45 @@
     box-shadow: 0 0 0 1px var(--accent), 0 4px 16px rgba(91,110,245,0.12);
   }
 
+  .job-card.viewed {
+    border-color: var(--border);
+    opacity: 0.6;
+  }
+
+  .job-card.viewed:hover {
+    opacity: 0.8;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 1px var(--accent), 0 4px 16px rgba(91,110,245,0.12);
+  }
+
+  .viewed-badge {
+    font-size: 0.68rem;
+    color: var(--text-s);
+    background: var(--surface-r);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: 0.1rem 0.5rem;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
   .job-card-top {
     display: flex;
     align-items: flex-start;
     justify-content: space-between;
     gap: 0.75rem;
     margin-bottom: 0.35rem;
+  }
+
+  .job-title-group {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+  }
+
+  .viewed-badge {
+    margin-left: 0.5rem;
+    vertical-align: middle;
   }
 
   .job-title {
@@ -1078,7 +1111,6 @@
 
       <div class="field-group">
         <span class="field-label">Sources</span>
-        <div id="sources-all-row" style="margin-bottom:0.45rem;"></div>
         <div class="source-list" id="sources-list">
           <!-- Populated by JS from /api/sources -->
         </div>
@@ -1712,8 +1744,6 @@ const _NEW_SOURCES = new Set(['REMOTIVE', 'ARBEITNOW', 'JOBICY', 'WEWORKREMOTELY
 
 function syncSourcesAllPill() {
   const cbs = document.querySelectorAll('#sources-list input[type="checkbox"]:not(:disabled)');
-  const allChecked = cbs.length > 0 && [...cbs].every(cb => cb.checked);
-  document.getElementById('sources-all-pill')?.classList.toggle('active', allChecked);
 }
 
 async function loadSources() {
@@ -1722,24 +1752,6 @@ async function loadSources() {
     const list = document.getElementById('sources-list');
     list.innerHTML = '';
 
-    // Inject Sources "All" pill above the list
-    const allRow = document.getElementById('sources-all-row');
-    allRow.innerHTML = '';
-    const allPill = document.createElement('button');
-    allPill.className = 'all-pill active';
-    allPill.id = 'sources-all-pill';
-    allPill.textContent = 'All';
-    allPill.addEventListener('click', () => {
-      if (allPill.classList.contains('active')) {
-        document.querySelectorAll('#sources-list input[type="checkbox"]:not(:disabled)').forEach(cb => { cb.checked = false; });
-        allPill.classList.remove('active');
-      } else {
-        document.querySelectorAll('#sources-list input[type="checkbox"]:not(:disabled)').forEach(cb => { cb.checked = true; });
-        allPill.classList.add('active');
-      }
-      saveSettings();
-    });
-    allRow.appendChild(allPill);
 
     sources.forEach(src => {
       SOURCE_CONFIG_MAP[src.id] = src;
@@ -1875,6 +1887,38 @@ async function runSearch() {
     showResults(data);
   } catch (e) {
     showError('Network error – is the server running?');
+  }
+}
+
+const VIEWED_KEY = 'eurojobsearch_viewed';
+
+function _getViewed() {
+  try { return new Set(JSON.parse(localStorage.getItem(VIEWED_KEY) || '[]')); }
+  catch { return new Set(); }
+}
+
+function _markViewed(id, card) {
+  const viewed = _getViewed();
+  viewed.add(id);
+  try { localStorage.setItem(VIEWED_KEY, JSON.stringify([...viewed])); } catch {}
+  card.classList.add('viewed');
+  const existing = card.querySelector('.viewed-badge');
+  if (!existing) {
+    const badge = document.createElement('span');
+    badge.className = 'viewed-badge';
+    badge.textContent = 'Viewed';
+    card.querySelector('.job-title-group').appendChild(badge);
+  }
+}
+
+function _applyViewed(card, id) {
+  const viewed = _getViewed();
+  if (viewed.has(id)) {
+    card.classList.add('viewed');
+    const badge = document.createElement('span');
+    badge.className = 'viewed-badge';
+    badge.textContent = 'Viewed';
+    card.querySelector('.job-title-group').appendChild(badge);
   }
 }
 
@@ -2241,7 +2285,9 @@ function renderJobList() {
 
   _updateResultsMeta(filtered.length, startIdx + 1, endIdx);
   filtered.slice(startIdx, endIdx).forEach(job => {
-    list.appendChild(buildJobCard(job));
+    const _card = buildJobCard(job);
+    _applyViewed(_card, job.id);
+    list.appendChild(_card);
   });
   _renderPagination(filtered.length, state.currentPage, totalPages);
 }
@@ -2297,7 +2343,10 @@ function buildJobCard(job) {
   card.className = 'job-card';
   card.title = '';
   card.addEventListener('click', () => {
-    if (job.url) window.open(job.url, '_blank', 'noopener');
+    if (job.url) {
+      window.open(job.url, '_blank', 'noopener');
+      _markViewed(job.id, card);
+    }
   });
 
   const dateStr = job.date_posted ? relativeDate(job.date_posted) : '';
@@ -2309,7 +2358,9 @@ function buildJobCard(job) {
   card.innerHTML = `
     <span class="card-tooltip">Click to view job</span>
     <div class="job-card-top">
-      <span class="job-title">${esc(job.title)}</span>
+      <div class="job-title-group">
+        <span class="job-title">${esc(job.title)}</span>
+      </div>
       <span class="job-source-badge src-${job.source}">${esc(job.source_label)}</span>
     </div>
     <div class="job-card-mid">
