@@ -87,6 +87,7 @@ To stop the app, press Ctrl+C in the terminal.
 - **Greenhouse**: locations formatted like "Germany (Remote); Ireland (Remote)" are detected as remote only, not as all listed countries.
 - **Arbeitnow**: its API does not support a search-term parameter; results are filtered by keyword after fetching.
 - **LinkedIn**: automated requests may be rate-limited after repeated use.
+- **LinkedIn hybrid detection**: LinkedIn does not expose work type (hybrid/remote/on-site) through the scraping layer used by this app. Hybrid jobs from LinkedIn will not be tagged as hybrid in results – this is a platform limitation, not a bug.
 
 ## Company career pages (Greenhouse)
 
