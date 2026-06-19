@@ -1530,7 +1530,10 @@ _HYBRID_TERMS = [
     'homeoffice', 'home office', 'home-office', 'mobiles arbeiten',
     'mobil arbeiten', 'bürotage', 'officetage', 'im büro',
     'tage im büro', 'tage vor ort', 'vor ort und remote',
-    'remote und vor ort', 'flexibles arbeiten', 'flexibel',
+    'remote und vor ort', 'flexibles arbeiten',
+    'home office possible', 'work from home', 'wfh',
+    'büro und remote', 'remote möglich', 'office and remote',
+    'flexible working', 'hybrides arbeiten',
 ]
 _FULLY_REMOTE_TERMS = [
     'fully remote', '100% remote', 'remote only', 'remote-first',
