@@ -1241,7 +1241,6 @@
 
   @page { size: A4 landscape; margin: 1.2cm; }
 }
-
 </style>
 </head>
 <body>
@@ -2993,10 +2992,19 @@ function trOpenModal(id) {
   }
   document.getElementById('tr-overlay').classList.add('open');
   document.getElementById('tr-fCompany').focus();
+  setTimeout(trInitAllAutocomplete, 0);
 }
 
 function trSetF(id, val) { const el = document.getElementById(id); if (el) el.value = val; }
-function trCloseModal() { document.getElementById('tr-overlay').classList.remove('open'); trEditId = null; }
+function trModalHasContent() {
+  return ['tr-fCompany','tr-fTitle','tr-fLocation','tr-fPlatform','tr-fUrl','tr-fNotes']
+    .some(id => (document.getElementById(id)?.value || '').trim() !== '');
+}
+function trCloseModal(force) {
+  if (!force && trModalHasContent()) return;
+  document.getElementById('tr-overlay').classList.remove('open');
+  trEditId = null;
+}
 
 function trSaveJob() {
   const company = document.getElementById('tr-fCompany').value.trim();
@@ -3045,6 +3053,70 @@ function trRefreshCardStates() {
       });
     }
   });
+}
+
+const TR_PLATFORM_BASE = [
+  'Indeed EU', 'LinkedIn', 'Greenhouse', 'Karriere.at', 'Arbeitnow',
+  'Remotive', 'Jobicy', 'We Work Remotely', 'Glassdoor', 'Malt',
+  'Stepstone', 'Xing', 'Monster', 'EuroJobs'
+];
+
+function trGetSuggestions(field) {
+  if (field === 'platform') {
+    const fromTracker = trJobs.map(j => j.platform).filter(Boolean);
+    return [...new Set([...TR_PLATFORM_BASE, ...fromTracker])];
+  }
+  if (field === 'location') {
+    return [...new Set(trJobs.map(j => j.location).filter(Boolean))];
+  }
+  if (field === 'company') {
+    return [...new Set(trJobs.map(j => j.company).filter(v => v && v !== 'Unknown'))];
+  }
+  if (field === 'title') {
+    return [...new Set(trJobs.map(j => j.title).filter(Boolean))];
+  }
+  return [];
+}
+
+function trTypeahead(inputId, field) {
+  const input = document.getElementById(inputId);
+  if (!input) return;
+
+  input.addEventListener('input', e => {
+    const val = input.value;
+    if (!val) return;
+    if (e.inputType === 'deleteContentBackward' || e.inputType === 'deleteContentForward') return;
+
+    const match = trGetSuggestions(field).find(s =>
+      s.toLowerCase().startsWith(val.toLowerCase()) &&
+      s.toLowerCase() !== val.toLowerCase()
+    );
+
+    if (match) {
+      input.value = match;
+      input.setSelectionRange(val.length, match.length);
+    }
+  });
+
+  input.addEventListener('keydown', e => {
+    if ((e.key === 'Enter' || e.key === 'Tab') && input.selectionStart < input.value.length) {
+      e.preventDefault();
+      const accepted = input.value;
+      input.value = accepted;
+      input.setSelectionRange(accepted.length, accepted.length);
+    } else if (e.key === 'Escape') {
+      const pos = input.selectionStart;
+      input.value = input.value.substring(0, pos);
+      input.setSelectionRange(pos, pos);
+    }
+  });
+}
+
+function trInitAllAutocomplete() {
+  trTypeahead('tr-fPlatform', 'platform');
+  trTypeahead('tr-fLocation', 'location');
+  trTypeahead('tr-fCompany',  'company');
+  trTypeahead('tr-fTitle',    'title');
 }
 
 function trToast(msg) {
@@ -3179,7 +3251,7 @@ function switchTab(tab) {
 }
 
 document.addEventListener('keydown', e => {
-  if (e.key === 'Escape') trCloseModal();
+  if (e.key === 'Escape') trCloseModal(false);
 });
 
 trLoad();
@@ -3227,7 +3299,7 @@ document.addEventListener('DOMContentLoaded', function() {
     </div>
   </div>
 
-  <div id="tr-overlay" class="tr-overlay" onclick="if(event.target===this)trCloseModal()">
+  <div id="tr-overlay" class="tr-overlay" onclick="if(event.target===this)trCloseModal(false)">
     <div class="tr-modal">
       <div class="tr-modal-head">
         <span id="tr-modal-title">Add Job</span>
@@ -3235,27 +3307,33 @@ document.addEventListener('DOMContentLoaded', function() {
       </div>
       <div class="tr-modal-body">
         <div class="tr-row2">
-          <div class="tr-field"><label>Company *</label><input id="tr-fCompany" type="text" placeholder="Anthropic"></div>
+          <div class="tr-field"><label>Company</label>
+            <input id="tr-fCompany" type="text" placeholder="Anthropic" autocomplete="off">
+          </div>
           <div class="tr-field"><label>Status</label>
             <select id="tr-fStatus"><option>Saved</option><option>Applied</option><option>Interviewing</option><option>Rejected</option></select>
           </div>
         </div>
-        <div class="tr-field"><label>Job Title *</label><input id="tr-fTitle" type="text" placeholder="Senior Technical Writer"></div>
+        <div class="tr-field"><label>Job Title</label><input id="tr-fTitle" type="text" placeholder="Senior Technical Writer" autocomplete="off"></div>
         <div class="tr-row2">
-          <div class="tr-field"><label>Location</label><input id="tr-fLocation" type="text" placeholder="Vienna, Austria"></div>
+          <div class="tr-field"><label>Location</label>
+            <input id="tr-fLocation" type="text" placeholder="Vienna, Austria" autocomplete="off">
+          </div>
           <div class="tr-field"><label>Work Model</label>
             <select id="tr-fWorkModel"><option>Remote</option><option>Hybrid</option><option>On-site</option><option value="">Unknown</option></select>
           </div>
         </div>
         <div class="tr-row2">
-          <div class="tr-field"><label>Platform / Source</label><input id="tr-fPlatform" type="text" placeholder="LinkedIn"></div>
+          <div class="tr-field"><label>Platform / Source</label>
+            <input id="tr-fPlatform" type="text" placeholder="LinkedIn" autocomplete="off">
+          </div>
           <div class="tr-field"><label>Date Added</label><input id="tr-fDate" type="date"></div>
         </div>
-        <div class="tr-field"><label>URL</label><input id="tr-fUrl" type="url" placeholder="https://…"></div>
+        <div class="tr-field"><label>URL</label><input id="tr-fUrl" type="url" placeholder="https://…" autocomplete="off"></div>
         <div class="tr-field"><label>Notes</label><textarea id="tr-fNotes" placeholder="Context, contacts, follow-ups…"></textarea></div>
       </div>
       <div class="tr-modal-foot">
-        <button class="tr-btn" onclick="trCloseModal()">Cancel</button>
+        <button class="tr-btn" onclick="trCloseModal(true)">Cancel</button>
         <button class="tr-btn tr-btn-primary" onclick="trSaveJob()">Save</button>
       </div>
     </div>
