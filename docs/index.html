@@ -2605,8 +2605,10 @@ function buildJobCard(job) {
       ${dateStr ? `<span class="job-date">${dateStr}</span>` : ''}
       ${alsoOnStr}
     </div>
-    <button class="card-track-btn" data-track="true">Add to Tracker</button>
+    <button class="card-track-btn" data-track="true" data-job-url="${job.url || ''}">Add to Tracker</button>
   `;
+
+  card._jobData = job;
 
   const trackBtn = card.querySelector('[data-track]');
   if (trackBtn) {
@@ -3026,6 +3028,23 @@ function trDelJob(id) {
   if (!confirm('Delete this entry?')) return;
   trJobs = trJobs.filter(j => j.id !== id);
   trPersist(); trRender(); trToast('Deleted.');
+  trRefreshCardStates();
+}
+
+function trRefreshCardStates() {
+  document.querySelectorAll('.card-track-btn').forEach(btn => {
+    const url = btn.dataset.jobUrl;
+    const stillTracked = url && trJobs.some(tj => tj.url && tj.url === url);
+    if (!stillTracked && btn.classList.contains('tracked')) {
+      btn.textContent = 'Add to Tracker';
+      btn.classList.remove('tracked');
+      btn.addEventListener('click', e => {
+        e.stopPropagation();
+        const card = btn.closest('.job-card');
+        if (card) trAddFromCard(card._jobData, btn);
+      });
+    }
+  });
 }
 
 function trToast(msg) {
