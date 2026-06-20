@@ -81,6 +81,18 @@ To stop the app, press Ctrl+C in the terminal.
 | Jobicy | Remote roles only. |
 | We Work Remotely | Remote roles only. |
 
+## Keyword search
+
+The keyword field supports comma-separated AND queries. All terms must appear in the job title or description for a result to be returned.
+
+- `technical writer` – standard single-term search
+- `technical writer, freelance` – returns only jobs matching both terms
+- `technical writer, contract` – same pattern for contract roles
+
+The primary term (before the first comma) is sent to each source's search API. Secondary terms are matched locally against fetched results.
+
+Common employment-type terms expand automatically to synonyms. Searching for `freelance` also matches: contractor, contract, B2B, CDD, Werkvertrag, freiberuflich. Searching for `contract` matches: contractor, freelance, B2B, CDD, Werkvertrag. Searching for `part time` or `part-time` matches: Teilzeit.
+
 ## Known limitations
 
 - **Indeed EU**: if no countries are selected, results are limited to Germany-based remote jobs.
@@ -88,6 +100,7 @@ To stop the app, press Ctrl+C in the terminal.
 - **Arbeitnow**: its API does not support a search-term parameter; results are filtered by keyword after fetching.
 - **LinkedIn**: automated requests may be rate-limited after repeated use.
 - **LinkedIn hybrid detection**: LinkedIn does not expose work type (hybrid/remote/on-site) through the scraping layer used by this app. Hybrid jobs from LinkedIn will not be tagged as hybrid in results – this is a platform limitation, not a bug.
+- **Czech Republic / LinkedIn**: JobSpy internally misinterprets "Czech Republic" as "Dominican Republic". Czech Republic results still appear via LinkedIn's Europe-wide call.
 
 ## Company career pages (Greenhouse)
 
