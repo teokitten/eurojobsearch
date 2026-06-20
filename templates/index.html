@@ -999,9 +999,258 @@
     transition: color 0.2s ease;
   }
   .footer-link:hover { color: #c5cae0; }
+/* ── Tab navigation ── */
+#main-tabs {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  padding: 16px 20px 0;
+  background: var(--bg);
+  border-bottom: 1px solid var(--border, #2e3248);
+}
+.main-tab {
+  padding: 10px 24px;
+  background: transparent;
+  border: 1px solid var(--border, #2e3248);
+  border-bottom: none;
+  border-radius: 8px 8px 0 0;
+  color: var(--text-s, #9098b1);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: color .15s, background .15s, border-color .15s;
+}
+.main-tab:hover {
+  color: var(--text, #e6edf3);
+  background: var(--surface, #161b22);
+  border-color: var(--accent, #5b6ef5);
+}
+.main-tab.active {
+  background: var(--surface, #161b22);
+  border-color: var(--accent, #5b6ef5);
+  color: var(--text, #e6edf3);
+  font-weight: 600;
+}
+
+/* ── Panels ── */
+#panel-search, #panel-tracker {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 24px 32px;
+}
+
+/* ── Tracker panel ── */
+#panel-tracker {
+  padding-bottom: 48px;
+}
+.tr-stats { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 14px; align-items: center; }
+.tr-stat-btn {
+  padding: 4px 14px; border-radius: 20px;
+  border: 1px solid var(--border, #2e3248);
+  background: transparent; color: var(--text-s, #9098b1);
+  font-size: 12px; cursor: pointer; transition: all .15s;
+}
+.tr-stat-btn:hover { color: var(--text, #e6edf3); border-color: var(--text, #e6edf3); }
+.tr-stat-btn.active-all { border-color: var(--text, #e6edf3); color: var(--text, #e6edf3); }
+.tr-stat-btn.active-Applied { border-color: #388bfd; color: #388bfd; }
+.tr-stat-btn.active-Interviewing { border-color: #3fb950; color: #3fb950; }
+.tr-stat-btn.active-Rejected { border-color: #e5534b; color: #e5534b; }
+.tr-stat-btn.active-Saved { border-color: #d29922; color: #d29922; }
+
+.tr-toolbar {
+  display: flex; gap: 8px; flex-wrap: wrap;
+  align-items: center; margin-bottom: 16px;
+}
+.tr-search {
+  flex: 1; min-width: 200px; padding: 7px 10px;
+  background: var(--surface, #161b22);
+  border: 1px solid var(--border, #2e3248);
+  border-radius: 6px; color: var(--text, #e6edf3); font-size: 13px;
+}
+.tr-search:focus { outline: none; border-color: var(--accent, #5b6ef5); }
+.tr-sort {
+  padding: 7px 10px; background: var(--surface, #161b22);
+  border: 1px solid var(--border, #2e3248); border-radius: 6px;
+  color: var(--text, #e6edf3); font-size: 13px; cursor: pointer;
+}
+.tr-btn {
+  padding: 7px 14px; background: var(--surface, #161b22);
+  border: 1px solid var(--border, #2e3248); border-radius: 6px;
+  color: var(--text, #e6edf3); font-size: 13px; cursor: pointer;
+  white-space: nowrap; transition: background .15s;
+}
+.tr-btn:hover { background: var(--surface2, #21262d); }
+.tr-btn-primary { background: var(--accent, #5b6ef5); border-color: var(--accent, #5b6ef5); color: #fff; }
+.tr-btn-primary:hover { background: var(--accent-h, #4a5ce0); }
+
+.tr-table-wrap { overflow-x: auto; }
+.tr-table { width: 100%; border-collapse: collapse; min-width: 800px; }
+.tr-table thead th {
+  text-align: left; padding: 8px 10px; font-size: 11px; font-weight: 600;
+  color: var(--text-s, #9098b1); text-transform: uppercase;
+  letter-spacing: .05em; border-bottom: 1px solid var(--border, #2e3248); white-space: nowrap;
+}
+.tr-table tbody tr { border-bottom: 1px solid var(--border, #2e3248); transition: background .1s; }
+.tr-table tbody tr:hover { background: var(--surface, #161b22); }
+.tr-table tbody td { padding: 9px 10px; vertical-align: middle; font-size: 13px; color: var(--text, #e6edf3); }
+.tr-td-role { color: var(--text-s, #9098b1); max-width: 200px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.tr-td-notes { max-width: 200px; color: var(--text-s, #9098b1); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: pointer; }
+.tr-td-notes.open { white-space: normal; overflow: visible; }
+.tr-badge { display: inline-block; padding: 2px 10px; border-radius: 20px; font-size: 12px; font-weight: 500; }
+.tr-badge-Applied { background: #1c2d4a; color: #388bfd; }
+.tr-stat-btn.active-allApplied { border-color: #388bfd; color: #388bfd; }
+.tr-stat-btn.active-Applied { border-color: #388bfd; color: #388bfd; }
+.tr-badge-Interviewing { background: #1a3a1f; color: #3fb950; }
+.tr-badge-Rejected { background: #311c1c; color: #e5534b; }
+.tr-badge-Saved { background: #3a2e0e; color: #d29922; }
+.tr-plat-link {
+  color: var(--accent, #5b6ef5);
+  text-decoration: none;
+  font-size: 12px;
+  font-weight: 500;
+}
+.tr-plat-link:hover { text-decoration: underline; }
+.tr-btn-icon { padding: 4px 8px; background: transparent; border: 1px solid transparent; border-radius: 4px; color: var(--text-s, #9098b1); cursor: pointer; font-size: 12px; }
+.tr-btn-icon:hover { background: var(--surface2, #21262d); color: var(--text, #e6edf3); }
+.tr-btn-icon.del:hover { border-color: #e5534b; color: #e5534b; }
+.tr-empty { text-align: center; padding: 48px 24px; color: var(--text-s, #9098b1); }
+
+.tr-overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,.7);
+  z-index: 300; display: none;
+  align-items: center; justify-content: center; padding: 20px;
+}
+.tr-overlay.open { display: flex; }
+.tr-modal {
+  background: var(--surface, #161b22); border: 1px solid var(--border, #2e3248);
+  border-radius: 10px; width: 100%; max-width: 520px; max-height: 90vh; overflow-y: auto;
+}
+.tr-modal-head {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 18px; border-bottom: 1px solid var(--border, #2e3248);
+  font-size: 14px; font-weight: 600;
+}
+.tr-modal-x { background: none; border: none; color: var(--text-s, #9098b1); cursor: pointer; font-size: 16px; padding: 2px 6px; border-radius: 4px; }
+.tr-modal-x:hover { color: var(--text, #e6edf3); }
+.tr-modal-body { padding: 16px 18px; display: grid; gap: 12px; }
+.tr-field { display: grid; gap: 4px; }
+.tr-field label { font-size: 11px; font-weight: 600; color: var(--text-s, #9098b1); text-transform: uppercase; letter-spacing: .05em; }
+.tr-field input, .tr-field select, .tr-field textarea {
+  padding: 7px 10px; background: var(--bg, #0d1117);
+  border: 1px solid var(--border, #2e3248); border-radius: 6px;
+  color: var(--text, #e6edf3); font-size: 13px; font-family: inherit; width: 100%;
+}
+.tr-field input:focus, .tr-field select:focus, .tr-field textarea:focus { outline: none; border-color: var(--accent, #5b6ef5); }
+.tr-field textarea { resize: vertical; min-height: 68px; }
+.tr-row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.tr-modal-foot { display: flex; justify-content: flex-end; gap: 8px; padding: 12px 18px; border-top: 1px solid var(--border, #2e3248); }
+
+.tr-toast {
+  position: fixed; bottom: 20px; right: 20px;
+  background: var(--surface2, #21262d); border: 1px solid var(--border, #2e3248);
+  border-radius: 6px; padding: 9px 16px; font-size: 13px; color: var(--text, #e6edf3);
+  z-index: 400; opacity: 0; transform: translateY(6px); transition: all .2s; pointer-events: none;
+}
+.tr-toast.show { opacity: 1; transform: translateY(0); }
+
+.card-track-btn {
+  margin-top: 8px;
+  padding: 5px 14px;
+  background: transparent;
+  border: 1px solid var(--accent, #5b6ef5);
+  border-radius: 5px;
+  color: var(--accent, #5b6ef5);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all .15s;
+  display: inline-block;
+}
+.card-track-btn:hover {
+  background: var(--accent, #5b6ef5);
+  color: #fff;
+}
+.card-track-btn.tracked {
+  border-color: #3fb950;
+  color: #3fb950;
+  cursor: default;
+  background: transparent;
+}
+@media print {
+  #main-tabs,
+  #panel-search,
+  .tr-toolbar,
+  .tr-stats,
+  #tr-overlay,
+  #tr-toast,
+  .tr-btn-icon,
+  #panel-tracker .tr-table thead th:last-child,
+  #panel-tracker .tr-table tbody td:last-child {
+    display: none !important;
+  }
+
+  #panel-tracker {
+    display: block !important;
+    padding: 0 !important;
+    max-width: 100% !important;
+  }
+
+  body {
+    background: #fff !important;
+    color: #000 !important;
+    font-size: 11px;
+  }
+
+  .tr-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 10px;
+  }
+
+  .tr-table th,
+  .tr-table td {
+    border: 1px solid #bbb !important;
+    padding: 4px 6px !important;
+    color: #000 !important;
+  }
+
+  .tr-table thead th {
+    background: #f0f0f0 !important;
+    font-weight: 600;
+  }
+
+  .tr-badge {
+    background: none !important;
+    border: none !important;
+    padding: 0 !important;
+    color: #000 !important;
+    font-size: 10px;
+  }
+
+  .tr-plat-link {
+    color: #000 !important;
+    text-decoration: none !important;
+  }
+
+  .tr-td-role,
+  .tr-td-notes {
+    white-space: normal !important;
+    overflow: visible !important;
+    max-width: none !important;
+  }
+
+  @page { size: A4 landscape; margin: 1.2cm; }
+}
+
 </style>
 </head>
 <body>
+
+<div id="main-tabs">
+  <button class="main-tab active" id="tab-btn-search" onclick="switchTab('search')">🔍 EuroJobSearch</button>
+  <button class="main-tab" id="tab-btn-tracker" onclick="switchTab('tracker')">📋 Job Application Tracker</button>
+</div>
+<div id="panel-search">
 
 <div class="app-wrapper">
 
@@ -2204,7 +2453,22 @@ function buildJobCard(job) {
       ${dateStr ? `<span class="job-date">${dateStr}</span>` : ''}
       ${alsoOnStr}
     </div>
+    <button class="card-track-btn" data-track="true">Add to Tracker</button>
   `;
+
+  const trackBtn = card.querySelector('[data-track]');
+  if (trackBtn) {
+    const alreadyTracked = job.url && trJobs.some(tj => tj.url && tj.url === job.url);
+    if (alreadyTracked) {
+      trackBtn.textContent = '✓ Tracked';
+      trackBtn.classList.add('tracked');
+    } else {
+      trackBtn.addEventListener('click', e => {
+        e.stopPropagation();
+        trAddFromCard(job, trackBtn);
+      });
+    }
+  }
 
   return card;
 }
@@ -2460,7 +2724,374 @@ const _didRestore = restoreSettings();
 loadSources();
 buildGetSetup();
 if (_didRestore) showRestoreNotice();
+
+// ── Tracker ──────────────────────────────────────────────────────────────
+const TR_KEY = 'ejs_tracker_v1';
+const TR_STATUSES = ['Saved', 'Applied', 'Interviewing', 'Rejected'];
+let trJobs = [];
+let trFilter = 'all';
+let trEditId = null;
+let trToastTimer;
+
+function trLoad() {
+  try { const raw = localStorage.getItem(TR_KEY); trJobs = raw ? JSON.parse(raw) : []; }
+  catch { trJobs = []; }
+}
+
+function trPersist() { localStorage.setItem(TR_KEY, JSON.stringify(trJobs)); }
+
+function trRender() {
+  const q = (document.getElementById('tr-search').value || '').toLowerCase();
+  const srt = document.getElementById('tr-sort').value;
+  const ORDER = { Applied: 0, Interviewing: 1, Saved: 2, Rejected: 3 };
+
+  let list = trJobs.filter(j => {
+    if (trFilter === 'allApplied') return ['Applied', 'Interviewing', 'Rejected'].includes(j.status);
+    if (trFilter !== 'all' && j.status !== trFilter) return false;
+    if (q) {
+      const hay = [j.company, j.title, j.platform, j.location, j.notes].join(' ').toLowerCase();
+      if (!hay.includes(q)) return false;
+    }
+    return true;
+  });
+
+  list.sort((a, b) => {
+    if (srt === 'company') return (a.company || '').localeCompare(b.company || '');
+    if (srt === 'status') return (ORDER[a.status] ?? 9) - (ORDER[b.status] ?? 9);
+    if (srt === 'lastModified') {
+      const ma = a.lastModified ? new Date(a.lastModified) : null;
+      const mb = b.lastModified ? new Date(b.lastModified) : null;
+      if (!ma && !mb) return 0; if (!ma) return 1; if (!mb) return -1; return mb - ma;
+    }
+    const da = a.dateAdded ? new Date(a.dateAdded) : null;
+    const db = b.dateAdded ? new Date(b.dateAdded) : null;
+    if (!da && !db) return 0; if (!da) return 1; if (!db) return -1;
+    return srt === 'dateAsc' ? da - db : db - da;
+  });
+
+  const counts = { Saved: 0, Applied: 0, Interviewing: 0, Rejected: 0 };
+  trJobs.forEach(j => { if (counts[j.status] !== undefined) counts[j.status]++; });
+  const allAppliedCount = counts.Applied + counts.Interviewing + counts.Rejected;
+  const statDefs = [
+    { key: 'all',          label: 'All',              count: trJobs.length },
+    { key: 'Saved',        label: 'Saved',            count: counts.Saved },
+    { key: 'Applied',      label: 'Applied',          count: counts.Applied },
+    { key: 'Interviewing', label: 'Interviewing',     count: counts.Interviewing },
+    { key: 'Rejected',     label: 'Rejected',         count: counts.Rejected },
+    { key: 'allApplied',   label: 'All Applications', count: allAppliedCount },
+  ];
+
+  document.getElementById('tr-stats').innerHTML = statDefs.map(f =>
+    `<button class="tr-stat-btn${trFilter === f.key ? ' active-' + f.key : ''}" onclick="trSetFilter('${f.key}')">${f.label} <strong>${f.count}</strong></button>`
+  ).join('');
+
+  const tbody = document.getElementById('tr-tbody');
+  const empty = document.getElementById('tr-empty');
+  if (!list.length) { tbody.innerHTML = ''; empty.style.display = 'block'; return; }
+  empty.style.display = 'none';
+
+  tbody.innerHTML = list.map(j => {
+    const co = trX(j.company || '—');
+    const platCell = j.url
+      ? `<a href="${trX(j.url)}" target="_blank" rel="noopener" class="tr-plat-link">${trX(j.platform || 'Link')} ↗</a>`
+      : `<span style="color:var(--text-s,#9098b1);font-size:12px">${trX(j.platform || '')}</span>`;
+    const loc = [j.location, j.workModel].filter(Boolean).join(' · ');
+    const dateStr = j.dateAdded
+      ? new Date(j.dateAdded + 'T00:00:00').toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })
+      : '—';
+    return `<tr>
+      <td style="font-weight:600">${co}</td>
+      <td class="tr-td-role" title="${trX(j.title)}">${trX(j.title)}</td>
+      <td style="color:var(--text-s);font-size:12px">${trX(loc)}</td>
+      <td>${platCell}</td>
+      <td><span class="tr-badge tr-badge-${trX(j.status)}">${trX(j.status)}</span></td>
+      <td style="color:var(--text-s);font-size:12px;white-space:nowrap">${dateStr}</td>
+      <td class="tr-td-notes" onclick="this.classList.toggle('open')" title="${trX(j.notes || '')}">${j.notes ? trX(j.notes) : '<span style="opacity:.4">—</span>'}</td>
+      <td style="white-space:nowrap">
+        <button class="tr-btn-icon" title="Edit" onclick="trOpenModal('${j.id}')">✎</button>
+        <button class="tr-btn-icon del" title="Delete" onclick="trDelJob('${j.id}')">✕</button>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+function trSetFilter(f) { trFilter = f; trRender(); }
+
+function trX(s) {
+  return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function trOpenModal(id) {
+  trEditId = id || null;
+  document.getElementById('tr-modal-title').textContent = id ? 'Edit Job' : 'Add Job';
+  if (id) {
+    const j = trJobs.find(j => j.id === id);
+    if (!j) return;
+    trSetF('tr-fCompany', j.company); trSetF('tr-fTitle', j.title);
+    trSetF('tr-fLocation', j.location || ''); trSetF('tr-fWorkModel', j.workModel || '');
+    trSetF('tr-fPlatform', j.platform || ''); trSetF('tr-fStatus', j.status);
+    trSetF('tr-fUrl', j.url || ''); trSetF('tr-fNotes', j.notes || '');
+    trSetF('tr-fDate', j.dateAdded || '');
+  } else {
+    ['tr-fCompany','tr-fTitle','tr-fLocation','tr-fPlatform','tr-fUrl','tr-fNotes'].forEach(id => trSetF(id, ''));
+    trSetF('tr-fWorkModel', 'Remote'); trSetF('tr-fStatus', 'Saved');
+    trSetF('tr-fDate', new Date().toISOString().slice(0, 10));
+  }
+  document.getElementById('tr-overlay').classList.add('open');
+  document.getElementById('tr-fCompany').focus();
+}
+
+function trSetF(id, val) { const el = document.getElementById(id); if (el) el.value = val; }
+function trCloseModal() { document.getElementById('tr-overlay').classList.remove('open'); trEditId = null; }
+
+function trSaveJob() {
+  const company = document.getElementById('tr-fCompany').value.trim();
+  const title   = document.getElementById('tr-fTitle').value.trim();
+  if (!title) { trToast('Job title is required.'); return; }
+  const data = {
+    company, title,
+    location:  document.getElementById('tr-fLocation').value.trim(),
+    workModel: document.getElementById('tr-fWorkModel').value,
+    platform:  document.getElementById('tr-fPlatform').value.trim(),
+    status:    document.getElementById('tr-fStatus').value,
+    url:       document.getElementById('tr-fUrl').value.trim(),
+    notes:     document.getElementById('tr-fNotes').value.trim(),
+    dateAdded: document.getElementById('tr-fDate').value || new Date().toISOString().slice(0, 10),
+    lastModified: new Date().toISOString(),
+  };
+  if (trEditId) {
+    const i = trJobs.findIndex(j => j.id === trEditId);
+    if (i !== -1) trJobs[i] = { ...trJobs[i], ...data };
+    trToast('Updated.');
+  } else {
+    trJobs.unshift({ id: 'tr' + Date.now(), ...data });
+    trToast('Added.');
+  }
+  trPersist(); trCloseModal(); trRender();
+}
+
+function trDelJob(id) {
+  if (!confirm('Delete this entry?')) return;
+  trJobs = trJobs.filter(j => j.id !== id);
+  trPersist(); trRender(); trToast('Deleted.');
+}
+
+function trToast(msg) {
+  const el = document.getElementById('tr-toast');
+  el.textContent = msg; el.classList.add('show');
+  clearTimeout(trToastTimer);
+  trToastTimer = setTimeout(() => el.classList.remove('show'), 2400);
+}
+
+function trExportCSV() {
+  if (!trJobs.length) { trToast('Nothing to export.'); return; }
+  const headers = ['Company','Role','Location','Work Model','Platform','Status','URL','Date Added','Last Modified','Notes'];
+  const rows = trJobs.map(j => [
+    j.company, j.title, j.location||'', j.workModel||'', j.platform||'',
+    j.status||'', j.url||'', j.dateAdded||'',
+    j.lastModified ? j.lastModified.slice(0,10) : '',
+    (j.notes||'').replace(/\n/g,' ')
+  ].map(v => `"${String(v).replace(/"/g,'""')}"`).join(','));
+  const csv = [headers.join(','), ...rows].join('\r\n');
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([csv], {type:'text/csv'}));
+  a.download = `job-applications-${new Date().toISOString().slice(0,10)}.csv`;
+  a.click();
+}
+
+function trExportPDF() {
+  window.print();
+}
+
+function trImportCSV(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    const lines = e.target.result.split(/\r?\n/).filter(Boolean);
+    if (lines.length < 2) { trToast('CSV appears empty.'); return; }
+    const headers = lines[0].split(',').map(h => h.replace(/"/g,'').trim().toLowerCase());
+    const idx = {
+      company:   headers.indexOf('company'),
+      title:     headers.indexOf('role'),
+      location:  headers.indexOf('location'),
+      workModel: headers.indexOf('work model'),
+      platform:  headers.indexOf('platform'),
+      status:    headers.indexOf('status'),
+      url:       headers.indexOf('url'),
+      dateAdded: headers.indexOf('date added'),
+      notes:     headers.indexOf('notes'),
+    };
+    const parseRow = line => {
+      const cols = []; let cur = ''; let inQ = false;
+      for (const ch of line) {
+        if (ch === '"') { inQ = !inQ; }
+        else if (ch === ',' && !inQ) { cols.push(cur); cur = ''; }
+        else { cur += ch; }
+      }
+      cols.push(cur);
+      return cols.map(c => c.trim());
+    };
+    let added = 0;
+    for (let i = 1; i < lines.length; i++) {
+      const cols = parseRow(lines[i]);
+      const company = idx.company >= 0 ? cols[idx.company] : '';
+      const title   = idx.title   >= 0 ? cols[idx.title]   : '';
+      if (!company && !title) continue;
+      const statusRaw = idx.status >= 0 ? cols[idx.status] : '';
+      const status = TR_STATUSES.includes(statusRaw) ? statusRaw : 'Saved';
+      trJobs.push({
+        id: 'imp' + Date.now() + i,
+        company, title,
+        location:  idx.location  >= 0 ? cols[idx.location]  : '',
+        workModel: idx.workModel >= 0 ? cols[idx.workModel] : '',
+        platform:  idx.platform  >= 0 ? cols[idx.platform]  : '',
+        status,
+        url:       idx.url       >= 0 ? cols[idx.url]       : '',
+        dateAdded: idx.dateAdded >= 0 ? cols[idx.dateAdded] : '',
+        notes:     idx.notes     >= 0 ? cols[idx.notes]     : '',
+        lastModified: new Date().toISOString(),
+      });
+      added++;
+    }
+    trPersist(); trRender();
+    trToast(`Imported ${added} job${added !== 1 ? 's' : ''}.`);
+    event.target.value = '';
+  };
+  reader.readAsText(file);
+}
+
+function trAddFromCard(job, btnEl) {
+  if (btnEl.classList.contains('tracked')) return;
+
+  const titleNorm   = (job.title   || '').trim().toLowerCase();
+  const companyNorm = (job.company || '').trim().toLowerCase();
+
+  const duplicate = trJobs.find(tj =>
+    tj.title.trim().toLowerCase()   === titleNorm &&
+    tj.company.trim().toLowerCase() === companyNorm
+  );
+
+  if (duplicate) {
+    const via = duplicate.platform || duplicate.url || 'another source';
+    const proceed = confirm(`"${job.title}" at ${job.company || 'this company'} is already in your tracker (added via ${via}). Add again anyway?`);
+    if (!proceed) return;
+  }
+
+  const workModel = job.is_remote ? 'Remote' : job.is_hybrid ? 'Hybrid' : 'On-site';
+  trJobs.unshift({
+    id: 'tr' + Date.now(),
+    company:  job.company || 'Unknown',
+    title:    job.title || '',
+    location: job.location || '',
+    workModel,
+    platform: job.source_label || job.source || '',
+    status:   'Saved',
+    url:      job.url || '',
+    notes:    '',
+    dateAdded: new Date().toISOString().slice(0, 10),
+    lastModified: new Date().toISOString(),
+  });
+  trPersist();
+  btnEl.textContent = '✓ Tracked';
+  btnEl.classList.add('tracked');
+  trToast(`${job.company || 'Job'} added to Tracker.`);
+}
+
+function switchTab(tab) {
+  document.getElementById('panel-search').style.display = tab === 'search' ? '' : 'none';
+  document.getElementById('panel-tracker').style.display = tab === 'tracker' ? '' : 'none';
+  document.getElementById('tab-btn-search').classList.toggle('active', tab === 'search');
+  document.getElementById('tab-btn-tracker').classList.toggle('active', tab === 'tracker');
+  if (tab === 'tracker') trRender();
+  localStorage.setItem('ejs_active_tab', tab);
+}
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') trCloseModal();
+});
+
+trLoad();
+document.addEventListener('DOMContentLoaded', function() {
+  const _savedTab = localStorage.getItem('ejs_active_tab');
+  if (_savedTab === 'tracker') switchTab('tracker');
+});
 </script>
+
+</div><!-- end panel-search -->
+
+<div id="panel-tracker" style="display:none">
+
+  <div id="tr-stats" class="tr-stats"></div>
+
+  <div class="tr-toolbar">
+    <input class="tr-search" id="tr-search" type="text" placeholder="Search company, role, notes…" oninput="trRender()">
+    <select class="tr-sort" id="tr-sort" onchange="trRender()">
+      <option value="dateDesc">Date (newest first)</option>
+      <option value="dateAsc">Date (oldest first)</option>
+      <option value="company">Company A–Z</option>
+      <option value="status">Status</option>
+      <option value="lastModified">Recently updated</option>
+    </select>
+    <button class="tr-btn tr-btn-primary" onclick="trOpenModal(null)">+ Add Job</button>
+    <button class="tr-btn" onclick="trExportCSV()">⬇ Export CSV</button>
+    <button class="tr-btn" onclick="trExportPDF()">🖨 Print / PDF</button>
+    <button class="tr-btn" onclick="document.getElementById('tr-import-input').click()">⬆ Import CSV</button>
+    <input type="file" id="tr-import-input" accept=".csv" style="display:none" onchange="trImportCSV(event)">
+  </div>
+
+  <div class="tr-table-wrap">
+    <table class="tr-table">
+      <thead>
+        <tr>
+          <th>Company</th><th>Role</th><th>Location</th>
+          <th>Platform</th><th>Status</th><th>Date</th>
+          <th>Notes</th><th></th>
+        </tr>
+      </thead>
+      <tbody id="tr-tbody"></tbody>
+    </table>
+    <div id="tr-empty" class="tr-empty" style="display:none">
+      No entries yet. Add a job manually or click "+ Track" on any search result.
+    </div>
+  </div>
+
+  <div id="tr-overlay" class="tr-overlay" onclick="if(event.target===this)trCloseModal()">
+    <div class="tr-modal">
+      <div class="tr-modal-head">
+        <span id="tr-modal-title">Add Job</span>
+        <button class="tr-modal-x" onclick="trCloseModal()">✕</button>
+      </div>
+      <div class="tr-modal-body">
+        <div class="tr-row2">
+          <div class="tr-field"><label>Company *</label><input id="tr-fCompany" type="text" placeholder="Anthropic"></div>
+          <div class="tr-field"><label>Status</label>
+            <select id="tr-fStatus"><option>Saved</option><option>Applied</option><option>Interviewing</option><option>Rejected</option></select>
+          </div>
+        </div>
+        <div class="tr-field"><label>Job Title *</label><input id="tr-fTitle" type="text" placeholder="Senior Technical Writer"></div>
+        <div class="tr-row2">
+          <div class="tr-field"><label>Location</label><input id="tr-fLocation" type="text" placeholder="Vienna, Austria"></div>
+          <div class="tr-field"><label>Work Model</label>
+            <select id="tr-fWorkModel"><option>Remote</option><option>Hybrid</option><option>On-site</option><option value="">Unknown</option></select>
+          </div>
+        </div>
+        <div class="tr-row2">
+          <div class="tr-field"><label>Platform / Source</label><input id="tr-fPlatform" type="text" placeholder="LinkedIn"></div>
+          <div class="tr-field"><label>Date Added</label><input id="tr-fDate" type="date"></div>
+        </div>
+        <div class="tr-field"><label>URL</label><input id="tr-fUrl" type="url" placeholder="https://…"></div>
+        <div class="tr-field"><label>Notes</label><textarea id="tr-fNotes" placeholder="Context, contacts, follow-ups…"></textarea></div>
+      </div>
+      <div class="tr-modal-foot">
+        <button class="tr-btn" onclick="trCloseModal()">Cancel</button>
+        <button class="tr-btn tr-btn-primary" onclick="trSaveJob()">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="tr-toast" class="tr-toast"></div>
+</div>
 
 </body>
 </html>

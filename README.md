@@ -2,7 +2,7 @@
 
 European jobs only. Search across job boards and company career pages – all in one place.
 
-A Flask-based job search aggregator for the European job market. It searches eight sources in parallel – Indeed EU, LinkedIn, Greenhouse, Karriere.at, Arbeitnow, Remotive, Jobicy, and We Work Remotely – deduplicates results, and presents them in one filterable view: country, work model, source, and keyword, all combinable.
+A Flask-based job search aggregator for the European job market. It searches eight sources in parallel – Indeed EU, LinkedIn, Greenhouse, Karriere.at, Arbeitnow, Remotive, Jobicy, and We Work Remotely – deduplicates results, and presents them in one filterable view: country, work model, source, and keyword, all combinable. A built-in Job Application Tracker lets you save and manage applications directly in the app.
 
 Try the [interactive demo](https://teokitten.github.io/eurojobsearch/) with sample data – no install required.
 
@@ -92,6 +92,37 @@ The keyword field supports comma-separated AND queries. All terms must appear in
 The primary term (before the first comma) is sent to each source's search API. Secondary terms are matched locally against fetched results.
 
 Common employment-type terms expand automatically to synonyms. Searching for `freelance` also matches: contractor, contract, B2B, CDD, Werkvertrag, freiberuflich. Searching for `contract` matches: contractor, freelance, B2B, CDD, Werkvertrag. Searching for `part time` or `part-time` matches: Teilzeit.
+
+## Job Application Tracker
+
+A built-in tracker tab lets you manage job applications without leaving the app. Data is stored locally in your browser (localStorage) and persists across sessions.
+
+### Adding jobs
+
+- **From search results**: click "Add to Tracker" on any job card. Company, title, location, platform, and URL are pre-filled automatically.
+- **Manually**: switch to the Job Application Tracker tab and click "+ Add Job" to enter details by hand. Useful for jobs found outside EuroJobSearch.
+
+### Application statuses
+
+| Status | Meaning |
+|---|---|
+| Saved | Shortlisted, not yet applied |
+| Applied | Applied, waiting to hear back |
+| Interviewing | Active interview process |
+| Rejected | Application closed |
+
+The **All Applications** chip shows a combined count of Applied, Interviewing, and Rejected – your total application volume at a glance.
+
+### Import and export
+
+- **Export CSV**: downloads your full tracker list as a CSV file compatible with Excel and Google Sheets.
+- **Import CSV**: loads jobs from a CSV file. Expects the same column headers as the export (Company, Role, Location, Work Model, Platform, Status, URL, Date Added, Notes). Use this to migrate from the standalone [Job Tracker](https://teokitten.github.io/job-tracker) or any other CSV-based tracker.
+- **Print / PDF**: opens the browser print dialog with a clean print stylesheet applied – tracker table only, no UI chrome.
+
+### Notes
+
+- Tracker data is stored under the key `ejs_tracker_v1` in your browser's localStorage. Clearing browser data will erase it – export regularly.
+- Company names are not always available from all sources (Karriere.at in particular uses image-based logos). In those cases the company field defaults to "Unknown" and can be edited manually.
 
 ## Known limitations
 
