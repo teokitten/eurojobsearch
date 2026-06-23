@@ -1466,6 +1466,7 @@ _WWR_UA = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 Chrome/120.0.0.0 S
 _WWR_FEEDS = [
     "https://weworkremotely.com/remote-jobs.rss",
     "https://weworkremotely.com/categories/remote-sales-and-marketing-jobs.rss",
+    "https://weworkremotely.com/categories/remote-writing-editing-jobs.rss",
 ]
 
 
