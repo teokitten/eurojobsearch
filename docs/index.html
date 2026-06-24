@@ -2251,13 +2251,18 @@ async function runSearch() {
       }
     } catch (_) {}
 
-    // Demo only: on the very first search, mark the 3 newest matching results as NEW.
-    // After that, behaves identically to the real app – viewed jobs stay viewed.
-    if (!sessionStorage.getItem('ejs_demo_initialized')) {
-      sessionStorage.setItem('ejs_demo_initialized', '1');
+    // Demo only: on every search, mark the 3 newest matching results as NEW
+    // unless they have already been viewed (clicked) by the user.
+    (function() {
+      const viewedIds = _getViewed();
+      const viewedSids = _getViewedSeenIds();
       const sorted = [...(state.allResults || [])].sort((a, b) => new Date(b.date_posted) - new Date(a.date_posted));
-      sorted.slice(0, 3).forEach(j => newJobIds.add(_jobSeenId(j)));
-    }
+      sorted.slice(0, 3).forEach(j => {
+        if (!viewedIds.has(j.id) && !viewedSids.has(_jobSeenId(j))) {
+          newJobIds.add(_jobSeenId(j));
+        }
+      });
+    })();
     state.activeSourceFilter = 'ALL';
     state.activeCountries = new Set();
     state.activeWorkModelFilter = new Set();
@@ -2684,13 +2689,17 @@ function renderJobList() {
   buildCountryFilters();
   const filtered = applyFilters(state.allResults);
 
-  // Float NEW jobs to the top, preserving server order within each group.
-  // Using filter+concat avoids sort instability with undated jobs.
-  const _newJobs = filtered.filter(j =>  newJobIds.has(_jobSeenId(j)));
-  const _oldJobs = filtered.filter(j => !newJobIds.has(_jobSeenId(j)));
+  // Sort order: NEW first, then unseen, then viewed – server order preserved within each group.
+  const _viewed = _getViewed();
+  const _viewedSids = _getViewedSeenIds();
+  const _isViewed = j => _viewed.has(j.id) || _viewedSids.has(_jobSeenId(j));
+  const _newJobs  = filtered.filter(j =>  newJobIds.has(_jobSeenId(j)));
+  const _oldJobs  = filtered.filter(j => !newJobIds.has(_jobSeenId(j)) && !_isViewed(j));
+  const _viewJobs = filtered.filter(j => !newJobIds.has(_jobSeenId(j)) &&  _isViewed(j));
   filtered.length = 0;
   _newJobs.forEach(j => filtered.push(j));
   _oldJobs.forEach(j => filtered.push(j));
+  _viewJobs.forEach(j => filtered.push(j));
 
   const list = document.getElementById('job-list');
   const noResults = document.getElementById('no-results');
