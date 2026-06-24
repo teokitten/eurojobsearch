@@ -139,6 +139,28 @@ MOCK_DATA.jobs.forEach(j => {
   if (!j.url) j.url = SOURCE_HOMEPAGES[j.source] || null;
 });
 
+// Pre-populate NEW badge baseline for the demo – runs once per browser.
+// Seeds baselines for all demo keyword chips with all jobs EXCEPT the
+// 3 most recently dated ones, which will appear as NEW on first search.
+(function() {
+  const DEMO_SEED_KEY = 'ejs_demo_seeded_v1';
+  if (localStorage.getItem(DEMO_SEED_KEY)) return;
+  function _sid(j) {
+    return (j.title||'').toLowerCase().replace(/\\s+/g,' ').trim()+'|'+(j.company||'').toLowerCase().replace(/\\s+/g,' ').trim();
+  }
+  const sorted = [...MOCK_DATA.jobs].sort((a,b) => new Date(b.date_posted)-new Date(a.date_posted));
+  const newOnes = new Set(sorted.slice(0,3).map(_sid));
+  const baseline = MOCK_DATA.jobs.map(_sid).filter(id => !newOnes.has(id));
+  const seen = {};
+  ['technical writer','writer','developer','designer','product manager','project manager'].forEach(kw => {
+    seen[kw+'||||hybrid,onsite,remote'] = baseline;
+  });
+  try {
+    localStorage.setItem('ejs_seen_v4', JSON.stringify(seen));
+    localStorage.setItem(DEMO_SEED_KEY, '1');
+  } catch(_) {}
+})();
+
 document.querySelectorAll('.demo-keyword-chip').forEach(btn => {
   btn.addEventListener('click', () => {
     document.getElementById('keywords').value = btn.dataset.keyword;
@@ -237,6 +259,21 @@ new = "    const data = await mockSearchApi({ keywords, countries, sources, hour
 if content.count(old) != 1:
     sys.exit(f"ERROR: expected exactly 1 occurrence of /api/search fetch block, found {content.count(old)}")
 content = content.replace(old, new, 1)
+
+# ------------------------------------------------------------------
+# 5. Demo NEW badge: mark 3 newest results as NEW after each search
+# ------------------------------------------------------------------
+old5 = "    const data = await mockSearchApi({ keywords, countries, sources, hours_old: hoursOld, title_only: titleOnly, work_models: workModels });\n"
+new5 = """    const data = await mockSearchApi({ keywords, countries, sources, hours_old: hoursOld, title_only: titleOnly, work_models: workModels });
+    // Demo only: mark the 3 most recently posted results as NEW so the badge is always visible.
+    (function() {
+      const sorted = [...(data.results || [])].sort((a, b) => new Date(b.date_posted) - new Date(a.date_posted));
+      sorted.slice(0, 3).forEach(j => newJobIds.add(_jobSeenId(j)));
+    })();
+"""
+if content.count(old5) != 1:
+    sys.exit(f"ERROR: expected exactly 1 occurrence of mockSearchApi call, found {content.count(old5)}")
+content = content.replace(old5, new5, 1)
 
 with open(DST, "w", encoding="utf-8") as f:
     f.write(content)
