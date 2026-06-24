@@ -135,8 +135,11 @@ const MOCK_NOW = MOCK_DATA.jobs.reduce((max, j) => {
 }, 0) + (3 * 3600000);
 
 // Fill in a source-homepage URL for click-through where none is set.
+// Strip dates so no misleading "8 days ago" labels appear and the
+// posted-within filter chips are cosmetic only (as in the real demo).
 MOCK_DATA.jobs.forEach(j => {
   if (!j.url) j.url = SOURCE_HOMEPAGES[j.source] || null;
+  j.date_posted = null;
 });
 
 // Pre-populate NEW badge baseline for the demo – runs once per browser.
@@ -171,6 +174,10 @@ document.querySelectorAll('.demo-keyword-chip').forEach(btn => {
 function _mockHoursAgo(dateStr) {
   return (MOCK_NOW - new Date(dateStr).getTime()) / 3600000;
 }
+
+// Demo: strip dates from all jobs so posted-within filter has no effect
+// and no misleading "8 days ago" labels appear.
+MOCK_DATA.jobs.forEach(j => { j.date_posted = null; });
 
 function _mockMatchesWorkModel(job, workModels) {
   const wm = new Set(workModels || []);
