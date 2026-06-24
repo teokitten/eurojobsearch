@@ -93,6 +93,16 @@ The primary term (before the first comma) is sent to each source's search API. S
 
 Common employment-type terms expand automatically to synonyms. Searching for `freelance` also matches: contractor, contract, B2B, CDD, Werkvertrag, freiberuflich. Searching for `contract` matches: contractor, freelance, B2B, CDD, Werkvertrag. Searching for `part time` or `part-time` matches: Teilzeit.
 
+## Browsing results
+
+Once results load, you can narrow them further without running a new search. The filter bar above the results accepts any text – company name, job title, or location – and updates the list instantly.
+
+Jobs that weren't in your previous search with the same filters are marked **NEW** and sorted to the top. The badge stays on the card until you click it. This is most useful when you run the same search daily – new postings since yesterday will surface immediately without you having to scan through everything again.
+
+## Other Sources
+
+The **Other Sources** tab lists job boards and company career pages that don't have a public API and can't be searched automatically. Open them directly to search manually. These complement the automated sources rather than replace them – some boards have strong regional coverage or niche audiences worth checking separately.
+
 ## Job Application Tracker
 
 A built-in tracker tab lets you manage job applications without leaving the app. Data is stored locally in your browser (localStorage) and persists across sessions.
@@ -131,7 +141,9 @@ The **All Applications** chip shows a combined count of Applied, Interviewing, a
 - **Arbeitnow**: its API does not support a search-term parameter; results are filtered by keyword after fetching.
 - **LinkedIn**: automated requests may be rate-limited after repeated use.
 - **LinkedIn hybrid detection**: LinkedIn does not expose work type (hybrid/remote/on-site) through the scraping layer used by this app. Hybrid jobs from LinkedIn will not be tagged as hybrid in results – this is a platform limitation, not a bug.
+- **LinkedIn NEW badge**: LinkedIn returns different jobs on every search regardless of filters. The NEW badge may be inconsistent for LinkedIn results as a consequence.
 - **Czech Republic / LinkedIn**: JobSpy internally misinterprets "Czech Republic" as "Dominican Republic". Czech Republic results still appear via LinkedIn's Europe-wide call.
+- **Karriere.at**: company name and date are not available for Karriere.at results. Their RSS feed was removed in 2017; the app falls back to HTML scraping which can only extract job titles and URLs.
 
 ## Company career pages (Greenhouse)
 
