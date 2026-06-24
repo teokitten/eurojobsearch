@@ -2503,13 +2503,17 @@ function renderJobList() {
   buildCountryFilters();
   const filtered = applyFilters(state.allResults);
 
-  // Float NEW jobs to the top, preserving server order within each group.
-  // Using filter+concat avoids sort instability with undated jobs.
-  const _newJobs = filtered.filter(j =>  newJobIds.has(_jobSeenId(j)));
-  const _oldJobs = filtered.filter(j => !newJobIds.has(_jobSeenId(j)));
+  // Sort order: NEW first, then unseen, then viewed – server order preserved within each group.
+  const _viewed = _getViewed();
+  const _viewedSids = _getViewedSeenIds();
+  const _isViewed = j => _viewed.has(j.id) || _viewedSids.has(_jobSeenId(j));
+  const _newJobs  = filtered.filter(j =>  newJobIds.has(_jobSeenId(j)));
+  const _oldJobs  = filtered.filter(j => !newJobIds.has(_jobSeenId(j)) && !_isViewed(j));
+  const _viewJobs = filtered.filter(j => !newJobIds.has(_jobSeenId(j)) &&  _isViewed(j));
   filtered.length = 0;
   _newJobs.forEach(j => filtered.push(j));
   _oldJobs.forEach(j => filtered.push(j));
+  _viewJobs.forEach(j => filtered.push(j));
 
   const list = document.getElementById('job-list');
   const noResults = document.getElementById('no-results');
