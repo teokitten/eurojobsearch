@@ -263,13 +263,15 @@ content = content.replace(old, new, 1)
 # ------------------------------------------------------------------
 # 5. Demo NEW badge: mark 3 newest results as NEW after each search
 # ------------------------------------------------------------------
-old5 = "    const data = await mockSearchApi({ keywords, countries, sources, hours_old: hoursOld, title_only: titleOnly, work_models: workModels });\n"
-new5 = """    const data = await mockSearchApi({ keywords, countries, sources, hours_old: hoursOld, title_only: titleOnly, work_models: workModels });
-    // Demo only: mark the 3 most recently posted results as NEW so the badge is always visible.
+old5 = "    state.activeSourceFilter = 'ALL';\n    state.activeCountries = new Set();\n    state.activeWorkModelFilter = new Set();\n"
+new5 = """    // Demo only: mark the 3 most recently posted results as NEW so the badge is always visible.
     (function() {
-      const sorted = [...(data.results || [])].sort((a, b) => new Date(b.date_posted) - new Date(a.date_posted));
+      const sorted = [...(state.allResults || [])].sort((a, b) => new Date(b.date_posted) - new Date(a.date_posted));
       sorted.slice(0, 3).forEach(j => newJobIds.add(_jobSeenId(j)));
     })();
+    state.activeSourceFilter = 'ALL';
+    state.activeCountries = new Set();
+    state.activeWorkModelFilter = new Set();
 """
 if content.count(old5) != 1:
     sys.exit(f"ERROR: expected exactly 1 occurrence of mockSearchApi call, found {content.count(old5)}")

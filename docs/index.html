@@ -2216,11 +2216,6 @@ async function runSearch() {
 
   try {
     const data = await mockSearchApi({ keywords, countries, sources, hours_old: hoursOld, title_only: titleOnly, work_models: workModels });
-    // Demo only: mark the 3 most recently posted results as NEW so the badge is always visible.
-    (function() {
-      const sorted = [...(data.results || [])].sort((a, b) => new Date(b.date_posted) - new Date(a.date_posted));
-      sorted.slice(0, 3).forEach(j => newJobIds.add(_jobSeenId(j)));
-    })();
     state.allResults = data.results || [];
 
     // Clear results filter on new search
@@ -2256,6 +2251,11 @@ async function runSearch() {
       }
     } catch (_) {}
 
+    // Demo only: mark the 3 most recently posted results as NEW so the badge is always visible.
+    (function() {
+      const sorted = [...(state.allResults || [])].sort((a, b) => new Date(b.date_posted) - new Date(a.date_posted));
+      sorted.slice(0, 3).forEach(j => newJobIds.add(_jobSeenId(j)));
+    })();
     state.activeSourceFilter = 'ALL';
     state.activeCountries = new Set();
     state.activeWorkModelFilter = new Set();
