@@ -656,6 +656,56 @@
     vertical-align: middle;
   }
 
+  .results-filter-wrap {
+    margin: 8px 0 4px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .results-filter-input {
+    width: 280px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius, 6px);
+    color: var(--text);
+    font-size: 0.82rem;
+    padding: 5px 10px;
+    outline: none;
+  }
+
+  .results-filter-input:focus {
+    border-color: var(--accent);
+  }
+
+  .results-filter-clear {
+    font-size: 0.78rem;
+    color: var(--text-s);
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    display: none;
+  }
+
+  .results-filter-clear.visible {
+    display: inline;
+  }
+
+  .new-badge {
+    display: inline-flex;
+    align-items: center;
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    padding: 0.12rem 0.45rem;
+    border-radius: 3px;
+    background: #f0a030;
+    color: #0a0a0a;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
   .job-title {
     font-size: 0.97rem;
     font-weight: 600;
@@ -1033,7 +1083,7 @@
 }
 
 /* ── Panels ── */
-#panel-search, #panel-tracker {
+#panel-search, #panel-tracker, #panel-sites {
   max-width: 1400px;
   margin: 0 auto;
   padding: 24px 32px;
@@ -1261,6 +1311,7 @@
 
 <div id="main-tabs">
   <button class="main-tab active" id="tab-btn-search" onclick="switchTab('search')">🔍 EuroJobSearch</button>
+  <button class="main-tab" id="tab-btn-sites" onclick="switchTab('sites')">🔗 Other Sources</button>
   <button class="main-tab" id="tab-btn-tracker" onclick="switchTab('tracker')">📋 Job Application Tracker</button>
 </div>
 <div id="panel-search">
@@ -1419,7 +1470,12 @@
 
         <div id="warnings-box" class="warnings-box hidden"></div>
 
-        <div id="pagination-top" style="display:flex;align-items:center;gap:10px;margin-bottom:1rem;flex-wrap:wrap;"></div>
+        <div id="pagination-top" style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:1rem;flex-wrap:wrap;">
+          <div class="results-filter-wrap">
+            <input class="results-filter-input" id="results-filter" type="text" placeholder="Filter by company, title, location…">
+            <button class="results-filter-clear" id="results-filter-clear">✕ Clear</button>
+          </div>
+        </div>
 
         <div class="job-list" id="job-list"></div>
 
@@ -1432,21 +1488,9 @@
 
   </div><!-- end main-grid -->
 
-  <!-- Other job sites (full width, below grid) -->
-  <section class="getsetup" id="recommended-sites" style="margin-top:1.5rem;">
-    <div class="getsetup-header">
-      <h2>Other job sites (manual search)</h2>
-      <p style="color:var(--text-muted);font-size:0.8rem;">The sites below don't have a public feed or API this app can search, so they're not included in your results above. Look for jobs manually.</p>
-      <p>Job boards require a free account to apply. Company career pages (via Greenhouse) do not.</p>
-    </div>
-    <div id="site-categories"></div>
-  </section>
 
 </div><!-- end app-wrapper -->
 
-<footer style="text-align:center;padding:1.5rem 1rem;font-size:0.8rem;color:var(--text-s);">
-  Built by <a href="https://teokitten.github.io" target="_blank" rel="noopener noreferrer" class="footer-link">Teo Moldovanu</a>
-</footer>
 
 <!-- LinkedIn rate-limit toast (must be in DOM before script runs) -->
 <div class="rl-toast" id="rl-toast">
@@ -1610,6 +1654,31 @@ function mockSearchApi({ keywords, countries, sources, hours_old, title_only, wo
       }, { once: true });
     }
   });
+}
+
+const EJS_SEEN_KEY = 'ejs_seen_v4';
+const EJS_VIEWED_SEENIDS_KEY = 'ejs_viewed_seenids';
+
+function _getViewedSeenIds() {
+  try { return new Set(JSON.parse(localStorage.getItem(EJS_VIEWED_SEENIDS_KEY) || '[]')); }
+  catch { return new Set(); }
+}
+
+// Module-level Set of job seen-IDs for the current search result only.
+// Reset on every search so stale IDs never bleed across searches.
+let newJobIds = new Set();
+
+function _jobSeenId(job) {
+  const t = (job.title   || '').toLowerCase().replace(/\s+/g, ' ').trim();
+  const c = (job.company || '').toLowerCase().replace(/\s+/g, ' ').trim();
+  return t + '|' + c;
+}
+
+function _buildFingerprint(keywords, countries, workModels) {
+  const kw = (keywords || '').toLowerCase().trim();
+  const co = [...(countries || [])].map(s => s.toLowerCase()).sort().join(',');
+  const wm = [...(workModels || [])].map(s => s.toLowerCase()).sort().join(',');
+  return kw + '||' + co + '||' + wm;
 }
 
 const state = {
@@ -2089,6 +2158,18 @@ function getSelectedSources() {
 // Search
 // ============================================================
 document.getElementById('search-btn').addEventListener('click', runSearch);
+document.getElementById('results-filter').addEventListener('input', () => {
+  const val = document.getElementById('results-filter').value;
+  document.getElementById('results-filter-clear').classList.toggle('visible', val.length > 0);
+  state.currentPage = 1;
+  renderJobList();
+});
+document.getElementById('results-filter-clear').addEventListener('click', () => {
+  document.getElementById('results-filter').value = '';
+  document.getElementById('results-filter-clear').classList.remove('visible');
+  state.currentPage = 1;
+  renderJobList();
+});
 document.getElementById('keywords').addEventListener('keydown', e => {
   if (e.key === 'Enter') runSearch();
 });
@@ -2114,6 +2195,40 @@ async function runSearch() {
   try {
     const data = await mockSearchApi({ keywords, countries, sources, hours_old: hoursOld, title_only: titleOnly, work_models: workModels });
     state.allResults = data.results || [];
+
+    // Clear results filter on new search
+    const _rf = document.getElementById('results-filter');
+    const _rfc = document.getElementById('results-filter-clear');
+    if (_rf) _rf.value = '';
+    if (_rfc) _rfc.classList.remove('visible');
+
+    // Compute NEW badges for this search.
+    // newJobIds is reset first so no stale IDs from previous searches remain.
+    try {
+      newJobIds = new Set();
+      const fp = _buildFingerprint(keywords, countries, workModels);
+      const seen = JSON.parse(localStorage.getItem(EJS_SEEN_KEY) || '{}');
+      if (Object.prototype.hasOwnProperty.call(seen, fp)) {
+        // Baseline exists – compare against it, never overwrite it.
+        // NEW = not in baseline and not viewed (checked by both id and seenId).
+        const prev = new Set(seen[fp]);
+        const viewedIds = _getViewed();
+        const viewedSids = _getViewedSeenIds();
+        state.allResults.forEach(j => {
+          const sid = _jobSeenId(j);
+          if (!prev.has(sid) && !viewedIds.has(j.id) && !viewedSids.has(sid)) {
+            newJobIds.add(sid);
+          }
+        });
+      } else {
+        // First search for this fingerprint – establish baseline, no badges yet.
+        seen[fp] = state.allResults.map(_jobSeenId);
+        const keys = Object.keys(seen);
+        if (keys.length > 30) delete seen[keys[0]];
+        localStorage.setItem(EJS_SEEN_KEY, JSON.stringify(seen));
+      }
+    } catch (_) {}
+
     state.activeSourceFilter = 'ALL';
     state.activeCountries = new Set();
     state.activeWorkModelFilter = new Set();
@@ -2136,6 +2251,26 @@ function _markViewed(id, card) {
   viewed.add(id);
   try { localStorage.setItem(VIEWED_KEY, JSON.stringify([...viewed])); } catch {}
   card.classList.add('viewed');
+  card.querySelector('.new-badge')?.remove();
+  if (card._jobData) {
+    const sid = _jobSeenId(card._jobData);
+    newJobIds.delete(sid);
+    // Persist seenId so next search knows this job was viewed
+    try {
+      const vsids = _getViewedSeenIds();
+      vsids.add(sid);
+      localStorage.setItem(EJS_VIEWED_SEENIDS_KEY, JSON.stringify([...vsids]));
+    } catch {}
+    // Move card below all remaining NEW cards
+    const list = card.parentElement;
+    if (list) {
+      const newCards = [...list.children].filter(c => c !== card && c.querySelector('.new-badge'));
+      if (newCards.length > 0) {
+        const lastNew = newCards[newCards.length - 1];
+        list.insertBefore(card, lastNew.nextSibling);
+      }
+    }
+  }
   const existing = card.querySelector('.viewed-badge');
   if (!existing) {
     const badge = document.createElement('span');
@@ -2395,8 +2530,19 @@ function _countryPredicate(job) {
   return state.activeCountries.size === 0
     || _jobCountryKeys(job).some(k => state.activeCountries.has(k));
 }
+function _resultsFilterText() {
+  const el = document.getElementById('results-filter');
+  return el ? el.value.trim().toLowerCase() : '';
+}
+
 function applyFilters(jobs) {
-  let list = jobs.filter(j => _srcPredicate(j) && _wmPredicate(j) && _countryPredicate(j));
+  const filterText = _resultsFilterText();
+  let list = jobs.filter(j => {
+    if (!_srcPredicate(j) || !_wmPredicate(j) || !_countryPredicate(j)) return false;
+    if (!filterText) return true;
+    const hay = [j.title, j.company, j.location].join(' ').toLowerCase();
+    return hay.includes(filterText);
+  });
 
   list.sort((a, b) => {
     if (!a.date_posted && !b.date_posted) return 0;
@@ -2421,10 +2567,30 @@ function _updateSourceButtonCounts() {
 }
 
 function _renderPagination(total, currentPage, totalPages) {
+  const _scroll = () => document.getElementById('results-state').scrollIntoView({ behavior: 'smooth', block: 'start' });
+
   ['pagination-top', 'pagination'].forEach(id => {
     const container = document.getElementById(id);
-    container.innerHTML = '';
+
+    if (id === 'pagination-top') {
+      // Preserve the filter wrap – remove only the page buttons wrapper if it exists
+      const existingBtns = container.querySelector('.pagination-btns');
+      if (existingBtns) existingBtns.remove();
+    } else {
+      container.innerHTML = '';
+    }
+
     if (totalPages <= 1) return;
+
+    const firstBtn = document.createElement('button');
+    firstBtn.className = 'source-filter-btn';
+    firstBtn.textContent = '« First';
+    if (currentPage === 1) {
+      firstBtn.style.opacity = '0.4';
+      firstBtn.style.cursor = 'default';
+    } else {
+      firstBtn.addEventListener('click', () => { state.currentPage = 1; renderJobList(); _scroll(); });
+    }
 
     const prevBtn = document.createElement('button');
     prevBtn.className = 'source-filter-btn';
@@ -2433,11 +2599,7 @@ function _renderPagination(total, currentPage, totalPages) {
       prevBtn.style.opacity = '0.4';
       prevBtn.style.cursor = 'default';
     } else {
-      prevBtn.addEventListener('click', () => {
-        state.currentPage--;
-        renderJobList();
-        document.getElementById('results-state').scrollIntoView({ behavior: 'smooth', block: 'start' });
-      });
+      prevBtn.addEventListener('click', () => { state.currentPage--; renderJobList(); _scroll(); });
     }
 
     const pageInfo = document.createElement('span');
@@ -2451,16 +2613,28 @@ function _renderPagination(total, currentPage, totalPages) {
       nextBtn.style.opacity = '0.4';
       nextBtn.style.cursor = 'default';
     } else {
-      nextBtn.addEventListener('click', () => {
-        state.currentPage++;
-        renderJobList();
-        document.getElementById('results-state').scrollIntoView({ behavior: 'smooth', block: 'start' });
-      });
+      nextBtn.addEventListener('click', () => { state.currentPage++; renderJobList(); _scroll(); });
     }
 
-    container.appendChild(prevBtn);
-    container.appendChild(pageInfo);
-    container.appendChild(nextBtn);
+    const lastBtn = document.createElement('button');
+    lastBtn.className = 'source-filter-btn';
+    lastBtn.textContent = 'Last »';
+    if (currentPage === totalPages) {
+      lastBtn.style.opacity = '0.4';
+      lastBtn.style.cursor = 'default';
+    } else {
+      lastBtn.addEventListener('click', () => { state.currentPage = totalPages; renderJobList(); _scroll(); });
+    }
+
+    const btnsWrap = document.createElement('div');
+    btnsWrap.className = 'pagination-btns';
+    btnsWrap.style.cssText = 'display:flex;align-items:center;gap:6px;margin-left:auto;';
+    btnsWrap.appendChild(firstBtn);
+    btnsWrap.appendChild(prevBtn);
+    btnsWrap.appendChild(pageInfo);
+    btnsWrap.appendChild(nextBtn);
+    btnsWrap.appendChild(lastBtn);
+    container.appendChild(btnsWrap);
   });
 }
 
@@ -2480,12 +2654,23 @@ function renderJobList() {
   buildWorkModelFilters();
   buildCountryFilters();
   const filtered = applyFilters(state.allResults);
+
+  // Float NEW jobs to the top, preserving server order within each group.
+  // Using filter+concat avoids sort instability with undated jobs.
+  const _newJobs = filtered.filter(j =>  newJobIds.has(_jobSeenId(j)));
+  const _oldJobs = filtered.filter(j => !newJobIds.has(_jobSeenId(j)));
+  filtered.length = 0;
+  _newJobs.forEach(j => filtered.push(j));
+  _oldJobs.forEach(j => filtered.push(j));
+
   const list = document.getElementById('job-list');
   const noResults = document.getElementById('no-results');
 
   list.innerHTML = '';
   document.getElementById('pagination').innerHTML = '';
-  document.getElementById('pagination-top').innerHTML = '';
+  const _ptop = document.getElementById('pagination-top');
+  const _existingBtns = _ptop.querySelector('.pagination-btns');
+  if (_existingBtns) _existingBtns.remove();
 
   if (filtered.length === 0) {
     _updateResultsMeta(0, 0, 0);
@@ -2587,13 +2772,16 @@ function buildJobCard(job) {
     ? `<span class="also-on">Also on: ${job.also_on.join(', ')}</span>`
     : '';
   const remoteBadge = job.is_remote ? '<span class="remote-badge">Remote</span>' : '';
+  const isViewed = _getViewed().has(job.id);
+  const isNew    = !isViewed && newJobIds.has(_jobSeenId(job));
+  const newBadge = isNew ? `<span class="new-badge">NEW</span>` : '';
 
   card.innerHTML = `
     <div class="job-card-top">
       <div class="job-title-group">
         <span class="job-title">${esc(job.title)}</span>
       </div>
-      <span class="job-source-badge src-${job.source}">${esc(job.source_label)}</span>
+      <div style="display:flex;align-items:center;gap:4px;flex-shrink:0">${newBadge}<span class="job-source-badge src-${job.source}">${esc(job.source_label)}</span></div>
     </div>
     <div class="job-card-mid">
       <span class="job-company">${esc(job.company || '–')}</span>
@@ -2875,7 +3063,8 @@ function showLinkedInRateLimitModal() {
 // ============================================================
 const _didRestore = restoreSettings();
 loadSources();
-buildGetSetup();
+// Defer until DOM is fully parsed so panel-sites div exists
+document.addEventListener('DOMContentLoaded', buildGetSetup);
 if (_didRestore) showRestoreNotice();
 
 // ── Tracker ──────────────────────────────────────────────────────────────
@@ -3243,8 +3432,10 @@ function trAddFromCard(job, btnEl) {
 
 function switchTab(tab) {
   document.getElementById('panel-search').style.display = tab === 'search' ? '' : 'none';
+  document.getElementById('panel-sites').style.display = tab === 'sites' ? '' : 'none';
   document.getElementById('panel-tracker').style.display = tab === 'tracker' ? '' : 'none';
   document.getElementById('tab-btn-search').classList.toggle('active', tab === 'search');
+  document.getElementById('tab-btn-sites').classList.toggle('active', tab === 'sites');
   document.getElementById('tab-btn-tracker').classList.toggle('active', tab === 'tracker');
   if (tab === 'tracker') trRender();
   localStorage.setItem('ejs_active_tab', tab);
@@ -3262,6 +3453,16 @@ document.addEventListener('DOMContentLoaded', function() {
 </script>
 
 </div><!-- end panel-search -->
+
+<div id="panel-sites" style="display:none">
+  <section class="getsetup" id="recommended-sites" style="margin-top:1.5rem;">
+    <div class="getsetup-header">
+      <h2>Other Sources</h2>
+      <p style="color:var(--text-muted);font-size:0.8rem;">These sources don't have a public API and can't be searched automatically. Open them directly to search manually.</p>
+    </div>
+    <div id="site-categories"></div>
+  </section>
+</div><!-- end panel-sites -->
 
 <div id="panel-tracker" style="display:none">
 
@@ -3340,7 +3541,10 @@ document.addEventListener('DOMContentLoaded', function() {
   </div>
 
   <div id="tr-toast" class="tr-toast"></div>
-</div>
+</div><!-- end panel-tracker -->
+<footer style="text-align:center;padding:1.5rem 1rem;font-size:0.8rem;color:var(--text-s);">
+  Built by <a href="https://teokitten.github.io" target="_blank" rel="noopener noreferrer" class="footer-link">Teo Moldovanu</a>
+</footer>
 
 </body>
 </html>
