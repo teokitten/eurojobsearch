@@ -3167,7 +3167,7 @@ function trSaveJob() {
     trJobs.unshift({ id: 'tr' + Date.now(), ...data });
     trToast('Added.');
   }
-  trPersist(); trCloseModal(); trRender();
+  trPersist(); trCloseModal(true); trRender();
 }
 
 function trDelJob(id) {
@@ -3453,7 +3453,7 @@ document.addEventListener('DOMContentLoaded', function() {
     <div class="tr-modal">
       <div class="tr-modal-head">
         <span id="tr-modal-title">Add Job</span>
-        <button class="tr-modal-x" onclick="trCloseModal()">✕</button>
+        <button class="tr-modal-x" onclick="trCloseModal(true)">✕</button>
       </div>
       <div class="tr-modal-body">
         <div class="tr-row2">
