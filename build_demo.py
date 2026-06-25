@@ -141,9 +141,34 @@ const MOCK_NOW = MOCK_DATA.jobs.reduce((max, j) => {
 }, 0) + (3 * 3600000);
 
 // Fill in a source-homepage URL for click-through where none is set.
+// Strip dates so no misleading "8 days ago" labels appear and the
+// posted-within filter chips are cosmetic only (as in the real demo).
 MOCK_DATA.jobs.forEach(j => {
   if (!j.url) j.url = SOURCE_HOMEPAGES[j.source] || null;
+  j.date_posted = null;
 });
+
+// Pre-populate NEW badge baseline for the demo – runs once per browser.
+// Seeds baselines for all demo keyword chips with all jobs EXCEPT the
+// 3 most recently dated ones, which will appear as NEW on first search.
+(function() {
+  const DEMO_SEED_KEY = 'ejs_demo_seeded_v1';
+  if (localStorage.getItem(DEMO_SEED_KEY)) return;
+  function _sid(j) {
+    return (j.title||'').toLowerCase().replace(/\\s+/g,' ').trim()+'|'+(j.company||'').toLowerCase().replace(/\\s+/g,' ').trim();
+  }
+  const sorted = [...MOCK_DATA.jobs].sort((a,b) => new Date(b.date_posted)-new Date(a.date_posted));
+  const newOnes = new Set(sorted.slice(0,3).map(_sid));
+  const baseline = MOCK_DATA.jobs.map(_sid).filter(id => !newOnes.has(id));
+  const seen = {};
+  ['technical writer','writer','developer','designer','product manager','project manager'].forEach(kw => {
+    seen[kw+'||||hybrid,onsite,remote'] = baseline;
+  });
+  try {
+    localStorage.setItem('ejs_seen_v4', JSON.stringify(seen));
+    localStorage.setItem(DEMO_SEED_KEY, '1');
+  } catch(_) {}
+})();
 
 document.querySelectorAll('.demo-keyword-chip').forEach(btn => {
   btn.addEventListener('click', () => {
@@ -155,6 +180,10 @@ document.querySelectorAll('.demo-keyword-chip').forEach(btn => {
 function _mockHoursAgo(dateStr) {
   return (MOCK_NOW - new Date(dateStr).getTime()) / 3600000;
 }
+
+// Demo: strip dates from all jobs so posted-within filter has no effect
+// and no misleading "8 days ago" labels appear.
+MOCK_DATA.jobs.forEach(j => { j.date_posted = null; });
 
 function _mockMatchesWorkModel(job, workModels) {
   const wm = new Set(workModels || []);
@@ -243,6 +272,30 @@ new = "    const data = await mockSearchApi({ keywords, countries, sources, hour
 if content.count(old) != 1:
     sys.exit(f"ERROR: expected exactly 1 occurrence of /api/search fetch block, found {content.count(old)}")
 content = content.replace(old, new, 1)
+
+# ------------------------------------------------------------------
+# 5. Demo NEW badge: mark 3 newest results as NEW after each search
+# ------------------------------------------------------------------
+old5 = "    state.activeSourceFilter = 'ALL';\n    state.activeCountries = new Set();\n    state.activeWorkModelFilter = new Set();\n"
+new5 = """    // Demo only: on every search, mark the 3 newest matching results as NEW
+    // unless they have already been viewed (clicked) by the user.
+    (function() {
+      const viewedIds = _getViewed();
+      const viewedSids = _getViewedSeenIds();
+      const sorted = [...(state.allResults || [])].sort((a, b) => new Date(b.date_posted) - new Date(a.date_posted));
+      sorted.slice(0, 3).forEach(j => {
+        if (!viewedIds.has(j.id) && !viewedSids.has(_jobSeenId(j))) {
+          newJobIds.add(_jobSeenId(j));
+        }
+      });
+    })();
+    state.activeSourceFilter = 'ALL';
+    state.activeCountries = new Set();
+    state.activeWorkModelFilter = new Set();
+"""
+if content.count(old5) != 1:
+    sys.exit(f"ERROR: expected exactly 1 occurrence of mockSearchApi call, found {content.count(old5)}")
+content = content.replace(old5, new5, 1)
 
 with open(DST, "w", encoding="utf-8") as f:
     f.write(content)

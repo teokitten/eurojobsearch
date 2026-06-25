@@ -4,7 +4,9 @@
     "contentful", "typeform", "pipedrive",
     "revolut", "wise", "klarna", "spotify",
     "deliveroo", "monzo", "checkout", "pleo",
-    "personio", "mollie"
+    "personio", "mollie",
+    "storyblok", "phrase", "lokalise",
+    "appsflyer", "algolia", "figma"
   ],
   "lever": [],
   "ashby": []

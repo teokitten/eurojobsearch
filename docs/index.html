@@ -527,6 +527,7 @@
   }
 
 
+
   /* Warnings */
   .warnings-box {
     background: rgba(144,152,177,0.06);
@@ -657,6 +658,56 @@
     vertical-align: middle;
   }
 
+  .results-filter-wrap {
+    margin: 8px 0 4px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .results-filter-input {
+    width: 280px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius, 6px);
+    color: var(--text);
+    font-size: 0.82rem;
+    padding: 5px 10px;
+    outline: none;
+  }
+
+  .results-filter-input:focus {
+    border-color: var(--accent);
+  }
+
+  .results-filter-clear {
+    font-size: 0.78rem;
+    color: var(--text-s);
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    display: none;
+  }
+
+  .results-filter-clear.visible {
+    display: inline;
+  }
+
+  .new-badge {
+    display: inline-flex;
+    align-items: center;
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    padding: 0.12rem 0.45rem;
+    border-radius: 3px;
+    background: #f0a030;
+    color: #0a0a0a;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
   .job-title {
     font-size: 0.97rem;
     font-weight: 600;
@@ -731,23 +782,6 @@
     color: var(--text-s);
   }
 
-  .card-tooltip {
-    position: absolute;
-    top: 0.6rem;
-    right: 0.6rem;
-    font-size: 0.7rem;
-    color: var(--text-s);
-    opacity: 0;
-    transition: opacity 0.15s;
-    pointer-events: none;
-    background: var(--surface-r);
-    padding: 0.15rem 0.5rem;
-    border-radius: 4px;
-    border: 1px solid var(--border);
-    white-space: nowrap;
-  }
-
-  .job-card:hover .card-tooltip { opacity: 1; }
 
   /* Skeleton */
   .skeleton-list {
@@ -1019,6 +1053,294 @@
     transition: color 0.2s ease;
   }
   .footer-link:hover { color: #c5cae0; }
+/* ── Tab navigation ── */
+#main-tabs {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  padding: 16px 20px 0;
+  background: var(--bg);
+  border-bottom: 1px solid var(--border, #2e3248);
+}
+.main-tab {
+  padding: 10px 24px;
+  background: transparent;
+  border: 1px solid var(--border, #2e3248);
+  border-bottom: none;
+  border-radius: 8px 8px 0 0;
+  color: var(--text-s, #9098b1);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: color .15s, background .15s, border-color .15s;
+}
+.main-tab:hover {
+  color: var(--text, #e6edf3);
+  background: var(--surface, #161b22);
+  border-color: var(--accent, #5b6ef5);
+}
+.main-tab.active {
+  background: var(--surface, #161b22);
+  border-color: var(--accent, #5b6ef5);
+  color: var(--text, #e6edf3);
+  font-weight: 600;
+}
+
+/* ── Panels ── */
+#panel-search, #panel-tracker, #panel-sites {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 24px 32px;
+}
+
+/* ── Tracker panel ── */
+#panel-tracker {
+  padding-bottom: 48px;
+}
+.tr-stats { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 14px; align-items: center; }
+.tr-stat-btn {
+  padding: 4px 14px; border-radius: 20px;
+  border: 1px solid var(--border, #2e3248);
+  background: transparent; color: var(--text-s, #9098b1);
+  font-size: 12px; cursor: pointer; transition: all .15s;
+}
+.tr-stat-btn:hover { color: var(--text, #e6edf3); border-color: var(--text, #e6edf3); }
+.tr-stat-btn.active-all { border-color: var(--text, #e6edf3); color: var(--text, #e6edf3); }
+.tr-stat-btn.active-Applied { border-color: #388bfd; color: #388bfd; }
+.tr-stat-btn.active-Interviewing { border-color: #3fb950; color: #3fb950; }
+.tr-stat-btn.active-Rejected { border-color: #e5534b; color: #e5534b; }
+.tr-stat-btn.active-Saved { border-color: #d29922; color: #d29922; }
+
+.tr-toolbar {
+  display: flex; gap: 8px; flex-wrap: wrap;
+  align-items: center; margin-bottom: 16px;
+}
+.tr-search {
+  flex: 1; min-width: 200px; padding: 7px 10px;
+  background: var(--surface, #161b22);
+  border: 1px solid var(--border, #2e3248);
+  border-radius: 6px; color: var(--text, #e6edf3); font-size: 13px;
+}
+.tr-search:focus { outline: none; border-color: var(--accent, #5b6ef5); }
+.tr-sort {
+  padding: 7px 10px; background: var(--surface, #161b22);
+  border: 1px solid var(--border, #2e3248); border-radius: 6px;
+  color: var(--text, #e6edf3); font-size: 13px; cursor: pointer;
+}
+.tr-btn {
+  padding: 7px 14px; background: var(--surface, #161b22);
+  border: 1px solid var(--border, #2e3248); border-radius: 6px;
+  color: var(--text, #e6edf3); font-size: 13px; cursor: pointer;
+  white-space: nowrap; transition: background .15s;
+}
+.tr-btn:hover { background: var(--surface2, #21262d); }
+.tr-btn-primary { background: var(--accent, #5b6ef5); border-color: var(--accent, #5b6ef5); color: #fff; }
+.tr-btn-primary:hover { background: var(--accent-h, #4a5ce0); }
+
+.tr-table-wrap { overflow-x: auto; }
+.tr-table { width: 100%; border-collapse: collapse; min-width: 800px; }
+.tr-table thead th {
+  text-align: left; padding: 8px 10px; font-size: 11px; font-weight: 600;
+  color: var(--text-s, #9098b1); text-transform: uppercase;
+  letter-spacing: .05em; border-bottom: 1px solid var(--border, #2e3248); white-space: nowrap;
+}
+.tr-table tbody tr { border-bottom: 1px solid var(--border, #2e3248); transition: background .1s; }
+.tr-table tbody tr:hover { background: var(--surface, #161b22); }
+.tr-table tbody td { padding: 9px 10px; vertical-align: middle; font-size: 13px; color: var(--text, #e6edf3); }
+.tr-td-role { color: var(--text-s, #9098b1); max-width: 200px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.tr-td-notes { max-width: 200px; color: var(--text-s, #9098b1); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: pointer; }
+.tr-td-notes.open { white-space: normal; overflow: visible; }
+.tr-badge { display: inline-block; padding: 2px 10px; border-radius: 20px; font-size: 12px; font-weight: 500; }
+.tr-badge-Applied { background: #1c2d4a; color: #388bfd; }
+.tr-stat-btn.active-allApplied { border-color: #388bfd; color: #388bfd; }
+.tr-stat-btn.active-Applied { border-color: #388bfd; color: #388bfd; }
+.tr-badge-Interviewing { background: #1a3a1f; color: #3fb950; }
+.tr-badge-Rejected { background: #311c1c; color: #e5534b; }
+.tr-badge-Saved { background: #3a2e0e; color: #d29922; }
+.tr-plat-link {
+  color: var(--accent, #5b6ef5);
+  text-decoration: none;
+  font-size: 12px;
+  font-weight: 500;
+}
+.tr-plat-link:hover { text-decoration: underline; }
+.tr-btn-icon { padding: 4px 8px; background: transparent; border: 1px solid transparent; border-radius: 4px; color: var(--text-s, #9098b1); cursor: pointer; font-size: 12px; }
+.tr-btn-icon:hover { background: var(--surface2, #21262d); color: var(--text, #e6edf3); }
+.tr-btn-icon.del:hover { border-color: #e5534b; color: #e5534b; }
+.tr-empty { text-align: center; padding: 48px 24px; color: var(--text-s, #9098b1); }
+
+.tr-overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,.7);
+  z-index: 300; display: none;
+  align-items: center; justify-content: center; padding: 20px;
+}
+.tr-overlay.open { display: flex; }
+.tr-modal {
+  background: var(--surface, #161b22); border: 1px solid var(--border, #2e3248);
+  border-radius: 10px; width: 100%; max-width: 520px; max-height: 90vh; overflow-y: auto;
+}
+.tr-modal-head {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 18px; border-bottom: 1px solid var(--border, #2e3248);
+  font-size: 14px; font-weight: 600;
+}
+.tr-modal-x { background: none; border: none; color: var(--text-s, #9098b1); cursor: pointer; font-size: 16px; padding: 2px 6px; border-radius: 4px; }
+.tr-modal-x:hover { color: var(--text, #e6edf3); }
+.tr-modal-body { padding: 16px 18px; display: grid; gap: 12px; }
+.tr-field { display: grid; gap: 4px; }
+.tr-field label { font-size: 11px; font-weight: 600; color: var(--text-s, #9098b1); text-transform: uppercase; letter-spacing: .05em; }
+.tr-field input, .tr-field select, .tr-field textarea {
+  padding: 7px 10px; background: var(--bg, #0d1117);
+  border: 1px solid var(--border, #2e3248); border-radius: 6px;
+  color: var(--text, #e6edf3); font-size: 13px; font-family: inherit; width: 100%;
+}
+.tr-field input:focus, .tr-field select:focus, .tr-field textarea:focus { outline: none; border-color: var(--accent, #5b6ef5); }
+.tr-field textarea { resize: vertical; min-height: 68px; }
+.tr-row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.tr-modal-foot { display: flex; justify-content: flex-end; gap: 8px; padding: 12px 18px; border-top: 1px solid var(--border, #2e3248); }
+
+.tr-toast {
+  position: fixed; bottom: 20px; right: 20px;
+  background: var(--surface2, #21262d); border: 1px solid var(--border, #2e3248);
+  border-radius: 6px; padding: 9px 16px; font-size: 13px; color: var(--text, #e6edf3);
+  z-index: 400; opacity: 0; transform: translateY(6px); transition: all .2s; pointer-events: none;
+}
+.tr-toast.show { opacity: 1; transform: translateY(0); }
+
+.card-track-btn {
+  margin-top: 8px;
+  padding: 5px 14px;
+  background: transparent;
+  border: 1px solid var(--accent, #5b6ef5);
+  border-radius: 5px;
+  color: var(--accent, #5b6ef5);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all .15s;
+  display: inline-block;
+}
+.card-track-btn:hover {
+  background: var(--accent, #5b6ef5);
+  color: #fff;
+}
+.card-track-btn.tracked {
+  border-color: #3fb950;
+  color: #3fb950;
+  cursor: default;
+  background: transparent;
+}
+.card-remove-btn {
+  margin-top: 8px;
+  margin-left: 6px;
+  padding: 5px 14px;
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  color: var(--text-s);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all .15s;
+  display: inline-block;
+}
+.card-remove-btn:hover {
+  border-color: #f85149;
+  color: #f85149;
+}
+.card-confirm-wrap {
+  margin-top: 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--text-s);
+}
+.card-confirm-yes {
+  padding: 4px 12px;
+  background: transparent;
+  border: 1px solid #f85149;
+  border-radius: 5px;
+  color: #f85149;
+  font-size: 12px;
+  cursor: pointer;
+}
+.card-confirm-yes:hover { background: #f85149; color: #fff; }
+.card-confirm-no {
+  padding: 4px 12px;
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  color: var(--text-s);
+  font-size: 12px;
+  cursor: pointer;
+}
+.card-confirm-no:hover { border-color: var(--text-s); color: var(--text); }
+@media print {
+  #main-tabs,
+  #panel-search,
+  .tr-toolbar,
+  .tr-stats,
+  #tr-overlay,
+  #tr-toast,
+  .tr-btn-icon,
+  #panel-tracker .tr-table thead th:last-child,
+  #panel-tracker .tr-table tbody td:last-child {
+    display: none !important;
+  }
+
+  #panel-tracker {
+    display: block !important;
+    padding: 0 !important;
+    max-width: 100% !important;
+  }
+
+  body {
+    background: #fff !important;
+    color: #000 !important;
+    font-size: 11px;
+  }
+
+  .tr-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 10px;
+  }
+
+  .tr-table th,
+  .tr-table td {
+    border: 1px solid #bbb !important;
+    padding: 4px 6px !important;
+    color: #000 !important;
+  }
+
+  .tr-table thead th {
+    background: #f0f0f0 !important;
+    font-weight: 600;
+  }
+
+  .tr-badge {
+    background: none !important;
+    border: none !important;
+    padding: 0 !important;
+    color: #000 !important;
+    font-size: 10px;
+  }
+
+  .tr-plat-link {
+    color: #000 !important;
+    text-decoration: none !important;
+  }
+
+  .tr-td-role,
+  .tr-td-notes {
+    white-space: normal !important;
+    overflow: visible !important;
+    max-width: none !important;
+  }
+
+  @page { size: A4 landscape; margin: 1.2cm; }
+}
 </style>
 </head>
 <body>
@@ -1036,6 +1358,13 @@
   <button class="source-filter-btn demo-keyword-chip" data-keyword="product manager">product manager</button>
   <button class="source-filter-btn demo-keyword-chip" data-keyword="project manager">project manager</button>
 </div>
+
+<div id="main-tabs">
+  <button class="main-tab active" id="tab-btn-search" onclick="switchTab('search')">🔍 EuroJobSearch</button>
+  <button class="main-tab" id="tab-btn-sites" onclick="switchTab('sites')">🔗 Other Sources</button>
+  <button class="main-tab" id="tab-btn-tracker" onclick="switchTab('tracker')">📋 Job Application Tracker</button>
+</div>
+<div id="panel-search">
 
 <div class="app-wrapper">
 
@@ -1081,7 +1410,8 @@
           id="keywords"
           class="text-input"
           type="text"
-          placeholder="e.g. technical writer, UX designer, backend developer"
+          placeholder="e.g. technical writer, freelance"
+          title="Comma-separated AND filter: e.g. technical writer, freelance – returns jobs matching all terms"
           autocomplete="off"
         >
         <div class="toggle-row" style="margin-top:0.5rem;">
@@ -1190,7 +1520,12 @@
 
         <div id="warnings-box" class="warnings-box hidden"></div>
 
-        <div id="pagination-top" style="display:flex;align-items:center;gap:10px;margin-bottom:1rem;flex-wrap:wrap;"></div>
+        <div id="pagination-top" style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:1rem;flex-wrap:wrap;">
+          <div class="results-filter-wrap">
+            <input class="results-filter-input" id="results-filter" type="text" placeholder="Filter by company, title, location…">
+            <button class="results-filter-clear" id="results-filter-clear">✕ Clear</button>
+          </div>
+        </div>
 
         <div class="job-list" id="job-list"></div>
 
@@ -1203,21 +1538,9 @@
 
   </div><!-- end main-grid -->
 
-  <!-- Other job sites (full width, below grid) -->
-  <section class="getsetup" id="recommended-sites" style="margin-top:1.5rem;">
-    <div class="getsetup-header">
-      <h2>Other job sites (manual search)</h2>
-      <p style="color:var(--text-muted);font-size:0.8rem;">The sites below don't have a public feed or API this app can search, so they're not included in your results above. Look for jobs manually.</p>
-      <p>Job boards require a free account to apply. Company career pages (via Greenhouse) do not.</p>
-    </div>
-    <div id="site-categories"></div>
-  </section>
 
 </div><!-- end app-wrapper -->
 
-<footer style="text-align:center;padding:1.5rem 1rem;font-size:0.8rem;color:var(--text-s);">
-  Built by <a href="https://teokitten.github.io" target="_blank" rel="noopener noreferrer" class="footer-link">Teo Moldovanu</a>
-</footer>
 
 <!-- LinkedIn rate-limit toast (must be in DOM before script runs) -->
 <div class="rl-toast" id="rl-toast">
@@ -1323,9 +1646,34 @@ const MOCK_NOW = MOCK_DATA.jobs.reduce((max, j) => {
 }, 0) + (3 * 3600000);
 
 // Fill in a source-homepage URL for click-through where none is set.
+// Strip dates so no misleading "8 days ago" labels appear and the
+// posted-within filter chips are cosmetic only (as in the real demo).
 MOCK_DATA.jobs.forEach(j => {
   if (!j.url) j.url = SOURCE_HOMEPAGES[j.source] || null;
+  j.date_posted = null;
 });
+
+// Pre-populate NEW badge baseline for the demo – runs once per browser.
+// Seeds baselines for all demo keyword chips with all jobs EXCEPT the
+// 3 most recently dated ones, which will appear as NEW on first search.
+(function() {
+  const DEMO_SEED_KEY = 'ejs_demo_seeded_v1';
+  if (localStorage.getItem(DEMO_SEED_KEY)) return;
+  function _sid(j) {
+    return (j.title||'').toLowerCase().replace(/\s+/g,' ').trim()+'|'+(j.company||'').toLowerCase().replace(/\s+/g,' ').trim();
+  }
+  const sorted = [...MOCK_DATA.jobs].sort((a,b) => new Date(b.date_posted)-new Date(a.date_posted));
+  const newOnes = new Set(sorted.slice(0,3).map(_sid));
+  const baseline = MOCK_DATA.jobs.map(_sid).filter(id => !newOnes.has(id));
+  const seen = {};
+  ['technical writer','writer','developer','designer','product manager','project manager'].forEach(kw => {
+    seen[kw+'||||hybrid,onsite,remote'] = baseline;
+  });
+  try {
+    localStorage.setItem('ejs_seen_v4', JSON.stringify(seen));
+    localStorage.setItem(DEMO_SEED_KEY, '1');
+  } catch(_) {}
+})();
 
 document.querySelectorAll('.demo-keyword-chip').forEach(btn => {
   btn.addEventListener('click', () => {
@@ -1337,6 +1685,10 @@ document.querySelectorAll('.demo-keyword-chip').forEach(btn => {
 function _mockHoursAgo(dateStr) {
   return (MOCK_NOW - new Date(dateStr).getTime()) / 3600000;
 }
+
+// Demo: strip dates from all jobs so posted-within filter has no effect
+// and no misleading "8 days ago" labels appear.
+MOCK_DATA.jobs.forEach(j => { j.date_posted = null; });
 
 function _mockMatchesWorkModel(job, workModels) {
   const wm = new Set(workModels || []);
@@ -1389,6 +1741,44 @@ function mockSearchApi({ keywords, countries, sources, hours_old, title_only, wo
   });
 }
 
+const EJS_SEEN_KEY = 'ejs_seen_v5';
+
+const EJS_HIDDEN_KEY = 'ejs_hidden_jobs';
+
+function _getHidden() {
+  try { return new Set(JSON.parse(localStorage.getItem(EJS_HIDDEN_KEY) || '[]')); }
+  catch { return new Set(); }
+}
+
+function _addHidden(sid) {
+  try {
+    const h = _getHidden();
+    h.add(sid);
+    localStorage.setItem(EJS_HIDDEN_KEY, JSON.stringify([...h]));
+  } catch {}
+}
+
+const EJS_VIEWED_SEENIDS_KEY = 'ejs_viewed_seenids';
+
+function _getViewedSeenIds() {
+  try { return new Set(JSON.parse(localStorage.getItem(EJS_VIEWED_SEENIDS_KEY) || '[]')); }
+  catch { return new Set(); }
+}
+
+// Module-level Set of job seen-IDs for the current search result only.
+// Reset on every search so stale IDs never bleed across searches.
+let newJobIds = new Set();
+
+function _jobSeenId(job) {
+  const t = (job.title   || '').toLowerCase().replace(/\s+/g, ' ').trim();
+  const c = (job.company || '').toLowerCase().replace(/\s+/g, ' ').trim();
+  return t + '|' + c;
+}
+
+function _buildFingerprint(keywords) {
+  return (keywords || '').toLowerCase().trim();
+}
+
 const state = {
   allResults: [],
   filteredResults: [],
@@ -1401,6 +1791,7 @@ const state = {
   currentPage: 1,
   searchMeta: { sourcesCount: 0, duration: 0 },
 };
+
 
 // ============================================================
 // Settings persistence
@@ -1927,6 +2318,18 @@ function getSelectedSources() {
 // Search
 // ============================================================
 document.getElementById('search-btn').addEventListener('click', runSearch);
+document.getElementById('results-filter').addEventListener('input', () => {
+  const val = document.getElementById('results-filter').value;
+  document.getElementById('results-filter-clear').classList.toggle('visible', val.length > 0);
+  state.currentPage = 1;
+  renderJobList();
+});
+document.getElementById('results-filter-clear').addEventListener('click', () => {
+  document.getElementById('results-filter').value = '';
+  document.getElementById('results-filter-clear').classList.remove('visible');
+  state.currentPage = 1;
+  renderJobList();
+});
 document.getElementById('keywords').addEventListener('keydown', e => {
   if (e.key === 'Enter') runSearch();
 });
@@ -1952,6 +2355,52 @@ async function runSearch() {
   try {
     const data = await mockSearchApi({ keywords, countries, sources, hours_old: hoursOld, title_only: titleOnly, work_models: workModels });
     state.allResults = data.results || [];
+
+    // Clear results filter on new search
+    const _rf = document.getElementById('results-filter');
+    const _rfc = document.getElementById('results-filter-clear');
+    if (_rf) _rf.value = '';
+    if (_rfc) _rfc.classList.remove('visible');
+
+    // Compute NEW badges for this search.
+    // newJobIds is reset first so no stale IDs from previous searches remain.
+    try {
+      newJobIds = new Set();
+      const fp = _buildFingerprint(keywords);
+      const seen = JSON.parse(localStorage.getItem(EJS_SEEN_KEY) || '{}');
+      if (Object.prototype.hasOwnProperty.call(seen, fp)) {
+        // Baseline exists – compare against it, never overwrite it.
+        // NEW = not in baseline and not viewed (checked by both id and seenId).
+        const prev = new Set(seen[fp]);
+        const viewedIds = _getViewed();
+        const viewedSids = _getViewedSeenIds();
+        state.allResults.forEach(j => {
+          const sid = _jobSeenId(j);
+          if (!prev.has(sid) && !viewedIds.has(j.id) && !viewedSids.has(sid)) {
+            newJobIds.add(sid);
+          }
+        });
+      } else {
+        // First search for this fingerprint – establish baseline, no badges yet.
+        seen[fp] = state.allResults.map(_jobSeenId);
+        const keys = Object.keys(seen);
+        if (keys.length > 30) delete seen[keys[0]];
+        localStorage.setItem(EJS_SEEN_KEY, JSON.stringify(seen));
+      }
+    } catch (_) {}
+
+    // Demo only: on every search, mark the 3 newest matching results as NEW
+    // unless they have already been viewed (clicked) by the user.
+    (function() {
+      const viewedIds = _getViewed();
+      const viewedSids = _getViewedSeenIds();
+      const sorted = [...(state.allResults || [])].sort((a, b) => new Date(b.date_posted) - new Date(a.date_posted));
+      sorted.slice(0, 3).forEach(j => {
+        if (!viewedIds.has(j.id) && !viewedSids.has(_jobSeenId(j))) {
+          newJobIds.add(_jobSeenId(j));
+        }
+      });
+    })();
     state.activeSourceFilter = 'ALL';
     state.activeCountries = new Set();
     state.activeWorkModelFilter = new Set();
@@ -1974,6 +2423,26 @@ function _markViewed(id, card) {
   viewed.add(id);
   try { localStorage.setItem(VIEWED_KEY, JSON.stringify([...viewed])); } catch {}
   card.classList.add('viewed');
+  card.querySelector('.new-badge')?.remove();
+  if (card._jobData) {
+    const sid = _jobSeenId(card._jobData);
+    newJobIds.delete(sid);
+    // Persist seenId so next search knows this job was viewed
+    try {
+      const vsids = _getViewedSeenIds();
+      vsids.add(sid);
+      localStorage.setItem(EJS_VIEWED_SEENIDS_KEY, JSON.stringify([...vsids]));
+    } catch {}
+    // Move card below all remaining NEW cards
+    const list = card.parentElement;
+    if (list) {
+      const newCards = [...list.children].filter(c => c !== card && c.querySelector('.new-badge'));
+      if (newCards.length > 0) {
+        const lastNew = newCards[newCards.length - 1];
+        list.insertBefore(card, lastNew.nextSibling);
+      }
+    }
+  }
   const existing = card.querySelector('.viewed-badge');
   if (!existing) {
     const badge = document.createElement('span');
@@ -2233,9 +2702,21 @@ function _countryPredicate(job) {
   return state.activeCountries.size === 0
     || _jobCountryKeys(job).some(k => state.activeCountries.has(k));
 }
+function _resultsFilterText() {
+  const el = document.getElementById('results-filter');
+  return el ? el.value.trim().toLowerCase() : '';
+}
 
 function applyFilters(jobs) {
-  let list = jobs.filter(j => _srcPredicate(j) && _wmPredicate(j) && _countryPredicate(j));
+  const filterText = _resultsFilterText();
+  const hidden = _getHidden();
+  let list = jobs.filter(j => {
+    if (hidden.has(_jobSeenId(j))) return false;
+    if (!_srcPredicate(j) || !_wmPredicate(j) || !_countryPredicate(j)) return false;
+    if (!filterText) return true;
+    const hay = [j.title, j.company, j.location].join(' ').toLowerCase();
+    return hay.includes(filterText);
+  });
 
   list.sort((a, b) => {
     if (!a.date_posted && !b.date_posted) return 0;
@@ -2260,10 +2741,30 @@ function _updateSourceButtonCounts() {
 }
 
 function _renderPagination(total, currentPage, totalPages) {
+  const _scroll = () => document.getElementById('results-state').scrollIntoView({ behavior: 'smooth', block: 'start' });
+
   ['pagination-top', 'pagination'].forEach(id => {
     const container = document.getElementById(id);
-    container.innerHTML = '';
+
+    if (id === 'pagination-top') {
+      // Preserve the filter wrap – remove only the page buttons wrapper if it exists
+      const existingBtns = container.querySelector('.pagination-btns');
+      if (existingBtns) existingBtns.remove();
+    } else {
+      container.innerHTML = '';
+    }
+
     if (totalPages <= 1) return;
+
+    const firstBtn = document.createElement('button');
+    firstBtn.className = 'source-filter-btn';
+    firstBtn.textContent = '« First';
+    if (currentPage === 1) {
+      firstBtn.style.opacity = '0.4';
+      firstBtn.style.cursor = 'default';
+    } else {
+      firstBtn.addEventListener('click', () => { state.currentPage = 1; renderJobList(); _scroll(); });
+    }
 
     const prevBtn = document.createElement('button');
     prevBtn.className = 'source-filter-btn';
@@ -2272,11 +2773,7 @@ function _renderPagination(total, currentPage, totalPages) {
       prevBtn.style.opacity = '0.4';
       prevBtn.style.cursor = 'default';
     } else {
-      prevBtn.addEventListener('click', () => {
-        state.currentPage--;
-        renderJobList();
-        document.getElementById('results-state').scrollIntoView({ behavior: 'smooth', block: 'start' });
-      });
+      prevBtn.addEventListener('click', () => { state.currentPage--; renderJobList(); _scroll(); });
     }
 
     const pageInfo = document.createElement('span');
@@ -2290,16 +2787,28 @@ function _renderPagination(total, currentPage, totalPages) {
       nextBtn.style.opacity = '0.4';
       nextBtn.style.cursor = 'default';
     } else {
-      nextBtn.addEventListener('click', () => {
-        state.currentPage++;
-        renderJobList();
-        document.getElementById('results-state').scrollIntoView({ behavior: 'smooth', block: 'start' });
-      });
+      nextBtn.addEventListener('click', () => { state.currentPage++; renderJobList(); _scroll(); });
     }
 
-    container.appendChild(prevBtn);
-    container.appendChild(pageInfo);
-    container.appendChild(nextBtn);
+    const lastBtn = document.createElement('button');
+    lastBtn.className = 'source-filter-btn';
+    lastBtn.textContent = 'Last »';
+    if (currentPage === totalPages) {
+      lastBtn.style.opacity = '0.4';
+      lastBtn.style.cursor = 'default';
+    } else {
+      lastBtn.addEventListener('click', () => { state.currentPage = totalPages; renderJobList(); _scroll(); });
+    }
+
+    const btnsWrap = document.createElement('div');
+    btnsWrap.className = 'pagination-btns';
+    btnsWrap.style.cssText = 'display:flex;align-items:center;gap:6px;margin-left:auto;';
+    btnsWrap.appendChild(firstBtn);
+    btnsWrap.appendChild(prevBtn);
+    btnsWrap.appendChild(pageInfo);
+    btnsWrap.appendChild(nextBtn);
+    btnsWrap.appendChild(lastBtn);
+    container.appendChild(btnsWrap);
   });
 }
 
@@ -2319,12 +2828,22 @@ function renderJobList() {
   buildWorkModelFilters();
   buildCountryFilters();
   const filtered = applyFilters(state.allResults);
+
+  // NEW jobs float to the top. Everything else stays in server order.
+  const _newJobs = filtered.filter(j =>  newJobIds.has(_jobSeenId(j)));
+  const _oldJobs = filtered.filter(j => !newJobIds.has(_jobSeenId(j)));
+  filtered.length = 0;
+  _newJobs.forEach(j => filtered.push(j));
+  _oldJobs.forEach(j => filtered.push(j));
+
   const list = document.getElementById('job-list');
   const noResults = document.getElementById('no-results');
 
   list.innerHTML = '';
   document.getElementById('pagination').innerHTML = '';
-  document.getElementById('pagination-top').innerHTML = '';
+  const _ptop = document.getElementById('pagination-top');
+  const _existingBtns = _ptop.querySelector('.pagination-btns');
+  if (_existingBtns) _existingBtns.remove();
 
   if (filtered.length === 0) {
     _updateResultsMeta(0, 0, 0);
@@ -2426,14 +2945,16 @@ function buildJobCard(job) {
     ? `<span class="also-on">Also on: ${job.also_on.join(', ')}</span>`
     : '';
   const remoteBadge = job.is_remote ? '<span class="remote-badge">Remote</span>' : '';
+  const isViewed = _getViewed().has(job.id);
+  const isNew    = !isViewed && newJobIds.has(_jobSeenId(job));
+  const newBadge = isNew ? `<span class="new-badge">NEW</span>` : '';
 
   card.innerHTML = `
-    <span class="card-tooltip">Click to view job</span>
     <div class="job-card-top">
       <div class="job-title-group">
         <span class="job-title">${esc(job.title)}</span>
       </div>
-      <span class="job-source-badge src-${job.source}">${esc(job.source_label)}</span>
+      <div style="display:flex;align-items:center;gap:4px;flex-shrink:0">${newBadge}<span class="job-source-badge src-${job.source}">${esc(job.source_label)}</span></div>
     </div>
     <div class="job-card-mid">
       <span class="job-company">${esc(job.company || '–')}</span>
@@ -2444,7 +2965,65 @@ function buildJobCard(job) {
       ${dateStr ? `<span class="job-date">${dateStr}</span>` : ''}
       ${alsoOnStr}
     </div>
+    <button class="card-track-btn" data-track="true" data-job-url="${job.url || ''}">Add to Tracker</button>
+    <button class="card-remove-btn" data-remove="true">Remove from results</button>
   `;
+
+  card._jobData = job;
+
+  const removeBtn = card.querySelector('[data-remove]');
+  if (removeBtn) {
+    removeBtn.addEventListener('click', e => {
+      e.stopPropagation();
+      // Show inline confirmation
+      removeBtn.style.display = 'none';
+      const trackBtnEl = card.querySelector('[data-track]');
+      if (trackBtnEl) trackBtnEl.style.display = 'none';
+      const confirmWrap = document.createElement('div');
+      confirmWrap.className = 'card-confirm-wrap';
+      confirmWrap.innerHTML = `
+        <span>Remove from results forever?</span>
+        <button class="card-confirm-yes">Remove</button>
+        <button class="card-confirm-no">Cancel</button>
+      `;
+      card.appendChild(confirmWrap);
+      confirmWrap.querySelector('.card-confirm-yes').addEventListener('click', ev => {
+        ev.stopPropagation();
+        const sid = _jobSeenId(job);
+        _addHidden(sid);
+        newJobIds.delete(sid);
+        state.allResults = state.allResults.filter(j => _jobSeenId(j) !== sid);
+        card.style.transition = 'opacity 0.4s, transform 0.4s';
+        card.style.opacity = '0';
+        card.style.transform = 'translateX(40px)';
+        setTimeout(() => {
+          card.remove();
+          renderJobList();
+        }, 420);
+      });
+      confirmWrap.querySelector('.card-confirm-no').addEventListener('click', ev => {
+        ev.stopPropagation();
+        confirmWrap.remove();
+        removeBtn.style.display = '';
+        const trackBtnEl = card.querySelector('[data-track]');
+        if (trackBtnEl) trackBtnEl.style.display = '';
+      });
+    });
+  }
+
+  const trackBtn = card.querySelector('[data-track]');
+  if (trackBtn) {
+    const alreadyTracked = job.url && trJobs.some(tj => tj.url && tj.url === job.url);
+    if (alreadyTracked) {
+      trackBtn.textContent = '✓ Tracked';
+      trackBtn.classList.add('tracked');
+    } else {
+      trackBtn.addEventListener('click', e => {
+        e.stopPropagation();
+        trAddFromCard(job, trackBtn);
+      });
+    }
+  }
 
   return card;
 }
@@ -2699,9 +3278,488 @@ function showLinkedInRateLimitModal() {
 // ============================================================
 const _didRestore = restoreSettings();
 loadSources();
-buildGetSetup();
+// Defer until DOM is fully parsed so panel-sites div exists
+document.addEventListener('DOMContentLoaded', buildGetSetup);
 if (_didRestore) showRestoreNotice();
+
+// ── Tracker ──────────────────────────────────────────────────────────────
+const TR_KEY = 'ejs_tracker_v1';
+const TR_STATUSES = ['Saved', 'Applied', 'Interviewing', 'Rejected'];
+let trJobs = [];
+let trFilter = 'all';
+let trEditId = null;
+let trToastTimer;
+
+function trLoad() {
+  try { const raw = localStorage.getItem(TR_KEY); trJobs = raw ? JSON.parse(raw) : []; }
+  catch { trJobs = []; }
+}
+
+function trPersist() { localStorage.setItem(TR_KEY, JSON.stringify(trJobs)); }
+
+function trRender() {
+  const q = (document.getElementById('tr-search').value || '').toLowerCase();
+  const srt = document.getElementById('tr-sort').value;
+  const ORDER = { Applied: 0, Interviewing: 1, Saved: 2, Rejected: 3 };
+
+  let list = trJobs.filter(j => {
+    if (trFilter === 'allApplied') return ['Applied', 'Interviewing', 'Rejected'].includes(j.status);
+    if (trFilter !== 'all' && j.status !== trFilter) return false;
+    if (q) {
+      const hay = [j.company, j.title, j.platform, j.location, j.notes].join(' ').toLowerCase();
+      if (!hay.includes(q)) return false;
+    }
+    return true;
+  });
+
+  list.sort((a, b) => {
+    if (srt === 'company') return (a.company || '').localeCompare(b.company || '');
+    if (srt === 'status') return (ORDER[a.status] ?? 9) - (ORDER[b.status] ?? 9);
+    if (srt === 'lastModified') {
+      const ma = a.lastModified ? new Date(a.lastModified) : null;
+      const mb = b.lastModified ? new Date(b.lastModified) : null;
+      if (!ma && !mb) return 0; if (!ma) return 1; if (!mb) return -1; return mb - ma;
+    }
+    const da = a.dateAdded ? new Date(a.dateAdded) : null;
+    const db = b.dateAdded ? new Date(b.dateAdded) : null;
+    if (!da && !db) return 0; if (!da) return 1; if (!db) return -1;
+    return srt === 'dateAsc' ? da - db : db - da;
+  });
+
+  const counts = { Saved: 0, Applied: 0, Interviewing: 0, Rejected: 0 };
+  trJobs.forEach(j => { if (counts[j.status] !== undefined) counts[j.status]++; });
+  const allAppliedCount = counts.Applied + counts.Interviewing + counts.Rejected;
+  const statDefs = [
+    { key: 'all',          label: 'All',              count: trJobs.length },
+    { key: 'Saved',        label: 'Saved',            count: counts.Saved },
+    { key: 'Applied',      label: 'Applied',          count: counts.Applied },
+    { key: 'Interviewing', label: 'Interviewing',     count: counts.Interviewing },
+    { key: 'Rejected',     label: 'Rejected',         count: counts.Rejected },
+    { key: 'allApplied',   label: 'All Applications', count: allAppliedCount },
+  ];
+
+  document.getElementById('tr-stats').innerHTML = statDefs.map(f =>
+    `<button class="tr-stat-btn${trFilter === f.key ? ' active-' + f.key : ''}" onclick="trSetFilter('${f.key}')">${f.label} <strong>${f.count}</strong></button>`
+  ).join('');
+
+  const tbody = document.getElementById('tr-tbody');
+  const empty = document.getElementById('tr-empty');
+  if (!list.length) { tbody.innerHTML = ''; empty.style.display = 'block'; return; }
+  empty.style.display = 'none';
+
+  tbody.innerHTML = list.map(j => {
+    const co = trX(j.company || '—');
+    const platCell = j.url
+      ? `<a href="${trX(j.url)}" target="_blank" rel="noopener" class="tr-plat-link">${trX(j.platform || 'Link')} ↗</a>`
+      : `<span style="color:var(--text-s,#9098b1);font-size:12px">${trX(j.platform || '')}</span>`;
+    const loc = [j.location, j.workModel].filter(Boolean).join(' · ');
+    const dateStr = j.dateAdded
+      ? new Date(j.dateAdded + 'T00:00:00').toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })
+      : '—';
+    return `<tr>
+      <td style="font-weight:600">${co}</td>
+      <td class="tr-td-role" title="${trX(j.title)}">${trX(j.title)}</td>
+      <td style="color:var(--text-s);font-size:12px">${trX(loc)}</td>
+      <td>${platCell}</td>
+      <td><span class="tr-badge tr-badge-${trX(j.status)}">${trX(j.status)}</span></td>
+      <td style="color:var(--text-s);font-size:12px;white-space:nowrap">${dateStr}</td>
+      <td class="tr-td-notes" onclick="this.classList.toggle('open')" title="${trX(j.notes || '')}">${j.notes ? trX(j.notes) : '<span style="opacity:.4">—</span>'}</td>
+      <td style="white-space:nowrap">
+        <button class="tr-btn-icon" title="Edit" onclick="trOpenModal('${j.id}')">✎</button>
+        <button class="tr-btn-icon del" title="Delete" onclick="trDelJob('${j.id}')">✕</button>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+function trSetFilter(f) { trFilter = f; trRender(); }
+
+function trX(s) {
+  return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function trOpenModal(id) {
+  trEditId = id || null;
+  document.getElementById('tr-modal-title').textContent = id ? 'Edit Job' : 'Add Job';
+  if (id) {
+    const j = trJobs.find(j => j.id === id);
+    if (!j) return;
+    trSetF('tr-fCompany', j.company); trSetF('tr-fTitle', j.title);
+    trSetF('tr-fLocation', j.location || ''); trSetF('tr-fWorkModel', j.workModel || '');
+    trSetF('tr-fPlatform', j.platform || ''); trSetF('tr-fStatus', j.status);
+    trSetF('tr-fUrl', j.url || ''); trSetF('tr-fNotes', j.notes || '');
+    trSetF('tr-fDate', j.dateAdded || '');
+  } else {
+    ['tr-fCompany','tr-fTitle','tr-fLocation','tr-fPlatform','tr-fUrl','tr-fNotes'].forEach(id => trSetF(id, ''));
+    trSetF('tr-fWorkModel', 'Remote'); trSetF('tr-fStatus', 'Saved');
+    trSetF('tr-fDate', new Date().toISOString().slice(0, 10));
+  }
+  document.getElementById('tr-overlay').classList.add('open');
+  document.getElementById('tr-fCompany').focus();
+  setTimeout(trInitAllAutocomplete, 0);
+}
+
+function trSetF(id, val) { const el = document.getElementById(id); if (el) el.value = val; }
+function trModalHasContent() {
+  return ['tr-fCompany','tr-fTitle','tr-fLocation','tr-fPlatform','tr-fUrl','tr-fNotes']
+    .some(id => (document.getElementById(id)?.value || '').trim() !== '');
+}
+function trCloseModal(force) {
+  if (!force && trModalHasContent()) return;
+  document.getElementById('tr-overlay').classList.remove('open');
+  trEditId = null;
+}
+
+function trSaveJob() {
+  const company = document.getElementById('tr-fCompany').value.trim();
+  const title   = document.getElementById('tr-fTitle').value.trim();
+  if (!title) { trToast('Job title is required.'); return; }
+  const data = {
+    company, title,
+    location:  document.getElementById('tr-fLocation').value.trim(),
+    workModel: document.getElementById('tr-fWorkModel').value,
+    platform:  document.getElementById('tr-fPlatform').value.trim(),
+    status:    document.getElementById('tr-fStatus').value,
+    url:       document.getElementById('tr-fUrl').value.trim(),
+    notes:     document.getElementById('tr-fNotes').value.trim(),
+    dateAdded: document.getElementById('tr-fDate').value || new Date().toISOString().slice(0, 10),
+    lastModified: new Date().toISOString(),
+  };
+  if (trEditId) {
+    const i = trJobs.findIndex(j => j.id === trEditId);
+    if (i !== -1) trJobs[i] = { ...trJobs[i], ...data };
+    trToast('Updated.');
+  } else {
+    trJobs.unshift({ id: 'tr' + Date.now(), ...data });
+    trToast('Added.');
+  }
+  trPersist(); trCloseModal(); trRender();
+}
+
+function trDelJob(id) {
+  if (!confirm('Delete this entry?')) return;
+  trJobs = trJobs.filter(j => j.id !== id);
+  trPersist(); trRender(); trToast('Deleted.');
+  trRefreshCardStates();
+}
+
+function trRefreshCardStates() {
+  document.querySelectorAll('.card-track-btn').forEach(btn => {
+    const url = btn.dataset.jobUrl;
+    const stillTracked = url && trJobs.some(tj => tj.url && tj.url === url);
+    if (!stillTracked && btn.classList.contains('tracked')) {
+      btn.textContent = 'Add to Tracker';
+      btn.classList.remove('tracked');
+      btn.addEventListener('click', e => {
+        e.stopPropagation();
+        const card = btn.closest('.job-card');
+        if (card) trAddFromCard(card._jobData, btn);
+      });
+    }
+  });
+}
+
+const TR_PLATFORM_BASE = [
+  'Indeed EU', 'LinkedIn', 'Greenhouse', 'Karriere.at', 'Arbeitnow',
+  'Remotive', 'Jobicy', 'We Work Remotely', 'Glassdoor', 'Malt',
+  'Stepstone', 'Xing', 'Monster', 'EuroJobs'
+];
+
+function trGetSuggestions(field) {
+  if (field === 'platform') {
+    const fromTracker = trJobs.map(j => j.platform).filter(Boolean);
+    return [...new Set([...TR_PLATFORM_BASE, ...fromTracker])];
+  }
+  if (field === 'location') {
+    return [...new Set(trJobs.map(j => j.location).filter(Boolean))];
+  }
+  if (field === 'company') {
+    return [...new Set(trJobs.map(j => j.company).filter(v => v && v !== 'Unknown'))];
+  }
+  if (field === 'title') {
+    return [...new Set(trJobs.map(j => j.title).filter(Boolean))];
+  }
+  return [];
+}
+
+function trTypeahead(inputId, field) {
+  const input = document.getElementById(inputId);
+  if (!input) return;
+
+  input.addEventListener('input', e => {
+    const val = input.value;
+    if (!val) return;
+    if (e.inputType === 'deleteContentBackward' || e.inputType === 'deleteContentForward') return;
+
+    const match = trGetSuggestions(field).find(s =>
+      s.toLowerCase().startsWith(val.toLowerCase()) &&
+      s.toLowerCase() !== val.toLowerCase()
+    );
+
+    if (match) {
+      input.value = match;
+      input.setSelectionRange(val.length, match.length);
+    }
+  });
+
+  input.addEventListener('keydown', e => {
+    if ((e.key === 'Enter' || e.key === 'Tab') && input.selectionStart < input.value.length) {
+      e.preventDefault();
+      const accepted = input.value;
+      input.value = accepted;
+      input.setSelectionRange(accepted.length, accepted.length);
+    } else if (e.key === 'Escape') {
+      const pos = input.selectionStart;
+      input.value = input.value.substring(0, pos);
+      input.setSelectionRange(pos, pos);
+    }
+  });
+}
+
+function trInitAllAutocomplete() {
+  trTypeahead('tr-fPlatform', 'platform');
+  trTypeahead('tr-fLocation', 'location');
+  trTypeahead('tr-fCompany',  'company');
+  trTypeahead('tr-fTitle',    'title');
+}
+
+function trToast(msg) {
+  const el = document.getElementById('tr-toast');
+  el.textContent = msg; el.classList.add('show');
+  clearTimeout(trToastTimer);
+  trToastTimer = setTimeout(() => el.classList.remove('show'), 2400);
+}
+
+function trExportCSV() {
+  if (!trJobs.length) { trToast('Nothing to export.'); return; }
+  const headers = ['Company','Role','Location','Work Model','Platform','Status','URL','Date Added','Last Modified','Notes'];
+  const rows = trJobs.map(j => [
+    j.company, j.title, j.location||'', j.workModel||'', j.platform||'',
+    j.status||'', j.url||'', j.dateAdded||'',
+    j.lastModified ? j.lastModified.slice(0,10) : '',
+    (j.notes||'').replace(/\n/g,' ')
+  ].map(v => `"${String(v).replace(/"/g,'""')}"`).join(','));
+  const csv = [headers.join(','), ...rows].join('\r\n');
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([csv], {type:'text/csv'}));
+  a.download = `job-applications-${new Date().toISOString().slice(0,10)}.csv`;
+  a.click();
+}
+
+function trExportPDF() {
+  window.print();
+}
+
+function trImportCSV(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    const lines = e.target.result.split(/\r?\n/).filter(Boolean);
+    if (lines.length < 2) { trToast('CSV appears empty.'); return; }
+    const headers = lines[0].split(',').map(h => h.replace(/"/g,'').trim().toLowerCase());
+    const idx = {
+      company:   headers.indexOf('company'),
+      title:     headers.indexOf('role'),
+      location:  headers.indexOf('location'),
+      workModel: headers.indexOf('work model'),
+      platform:  headers.indexOf('platform'),
+      status:    headers.indexOf('status'),
+      url:       headers.indexOf('url'),
+      dateAdded: headers.indexOf('date added'),
+      notes:     headers.indexOf('notes'),
+    };
+    const parseRow = line => {
+      const cols = []; let cur = ''; let inQ = false;
+      for (const ch of line) {
+        if (ch === '"') { inQ = !inQ; }
+        else if (ch === ',' && !inQ) { cols.push(cur); cur = ''; }
+        else { cur += ch; }
+      }
+      cols.push(cur);
+      return cols.map(c => c.trim());
+    };
+    let added = 0;
+    for (let i = 1; i < lines.length; i++) {
+      const cols = parseRow(lines[i]);
+      const company = idx.company >= 0 ? cols[idx.company] : '';
+      const title   = idx.title   >= 0 ? cols[idx.title]   : '';
+      if (!company && !title) continue;
+      const statusRaw = idx.status >= 0 ? cols[idx.status] : '';
+      const status = TR_STATUSES.includes(statusRaw) ? statusRaw : 'Saved';
+      trJobs.push({
+        id: 'imp' + Date.now() + i,
+        company, title,
+        location:  idx.location  >= 0 ? cols[idx.location]  : '',
+        workModel: idx.workModel >= 0 ? cols[idx.workModel] : '',
+        platform:  idx.platform  >= 0 ? cols[idx.platform]  : '',
+        status,
+        url:       idx.url       >= 0 ? cols[idx.url]       : '',
+        dateAdded: idx.dateAdded >= 0 ? cols[idx.dateAdded] : '',
+        notes:     idx.notes     >= 0 ? cols[idx.notes]     : '',
+        lastModified: new Date().toISOString(),
+      });
+      added++;
+    }
+    trPersist(); trRender();
+    trToast(`Imported ${added} job${added !== 1 ? 's' : ''}.`);
+    event.target.value = '';
+  };
+  reader.readAsText(file);
+}
+
+function trAddFromCard(job, btnEl) {
+  if (btnEl.classList.contains('tracked')) return;
+
+  const titleNorm   = (job.title   || '').trim().toLowerCase();
+  const companyNorm = (job.company || '').trim().toLowerCase();
+
+  const duplicate = trJobs.find(tj =>
+    tj.title.trim().toLowerCase()   === titleNorm &&
+    tj.company.trim().toLowerCase() === companyNorm
+  );
+
+  if (duplicate) {
+    const via = duplicate.platform || duplicate.url || 'another source';
+    const proceed = confirm(`"${job.title}" at ${job.company || 'this company'} is already in your tracker (added via ${via}). Add again anyway?`);
+    if (!proceed) return;
+  }
+
+  const workModel = job.is_remote ? 'Remote' : job.is_hybrid ? 'Hybrid' : 'On-site';
+  trJobs.unshift({
+    id: 'tr' + Date.now(),
+    company:  job.company || 'Unknown',
+    title:    job.title || '',
+    location: job.location || '',
+    workModel,
+    platform: job.source_label || job.source || '',
+    status:   'Saved',
+    url:      job.url || '',
+    notes:    '',
+    dateAdded: new Date().toISOString().slice(0, 10),
+    lastModified: new Date().toISOString(),
+  });
+  trPersist();
+  btnEl.textContent = '✓ Tracked';
+  btnEl.classList.add('tracked');
+  trToast(`${job.company || 'Job'} added to Tracker.`);
+}
+
+function switchTab(tab) {
+  document.getElementById('panel-search').style.display = tab === 'search' ? '' : 'none';
+  document.getElementById('panel-sites').style.display = tab === 'sites' ? '' : 'none';
+  document.getElementById('panel-tracker').style.display = tab === 'tracker' ? '' : 'none';
+  document.getElementById('tab-btn-search').classList.toggle('active', tab === 'search');
+  document.getElementById('tab-btn-sites').classList.toggle('active', tab === 'sites');
+  document.getElementById('tab-btn-tracker').classList.toggle('active', tab === 'tracker');
+  if (tab === 'tracker') trRender();
+  localStorage.setItem('ejs_active_tab', tab);
+}
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') trCloseModal(false);
+});
+
+trLoad();
+document.addEventListener('DOMContentLoaded', function() {
+  const _savedTab = localStorage.getItem('ejs_active_tab');
+  if (_savedTab === 'tracker') switchTab('tracker');
+});
 </script>
+
+</div><!-- end panel-search -->
+
+<div id="panel-sites" style="display:none">
+  <section class="getsetup" id="recommended-sites" style="margin-top:1.5rem;">
+    <div class="getsetup-header">
+      <h2>Other Sources</h2>
+      <p style="color:var(--text-muted);font-size:0.8rem;">These sources don't have a public API and can't be searched automatically. Open them directly to search manually.</p>
+    </div>
+    <div id="site-categories"></div>
+  </section>
+</div><!-- end panel-sites -->
+
+<div id="panel-tracker" style="display:none">
+
+  <div id="tr-stats" class="tr-stats"></div>
+
+  <div class="tr-toolbar">
+    <input class="tr-search" id="tr-search" type="text" placeholder="Search company, role, notes…" oninput="trRender()">
+    <select class="tr-sort" id="tr-sort" onchange="trRender()">
+      <option value="dateDesc">Date (newest first)</option>
+      <option value="dateAsc">Date (oldest first)</option>
+      <option value="company">Company A–Z</option>
+      <option value="status">Status</option>
+      <option value="lastModified">Recently updated</option>
+    </select>
+    <button class="tr-btn tr-btn-primary" onclick="trOpenModal(null)">+ Add Job</button>
+    <button class="tr-btn" onclick="trExportCSV()">⬇ Export CSV</button>
+    <button class="tr-btn" onclick="trExportPDF()">🖨 Print / PDF</button>
+    <button class="tr-btn" onclick="document.getElementById('tr-import-input').click()">⬆ Import CSV</button>
+    <input type="file" id="tr-import-input" accept=".csv" style="display:none" onchange="trImportCSV(event)">
+  </div>
+
+  <div class="tr-table-wrap">
+    <table class="tr-table">
+      <thead>
+        <tr>
+          <th>Company</th><th>Role</th><th>Location</th>
+          <th>Platform</th><th>Status</th><th>Date</th>
+          <th>Notes</th><th></th>
+        </tr>
+      </thead>
+      <tbody id="tr-tbody"></tbody>
+    </table>
+    <div id="tr-empty" class="tr-empty" style="display:none">
+      No entries yet. Add a job manually or click "+ Track" on any search result.
+    </div>
+  </div>
+
+  <div id="tr-overlay" class="tr-overlay" onclick="if(event.target===this)trCloseModal(false)">
+    <div class="tr-modal">
+      <div class="tr-modal-head">
+        <span id="tr-modal-title">Add Job</span>
+        <button class="tr-modal-x" onclick="trCloseModal()">✕</button>
+      </div>
+      <div class="tr-modal-body">
+        <div class="tr-row2">
+          <div class="tr-field"><label>Company</label>
+            <input id="tr-fCompany" type="text" placeholder="Anthropic" autocomplete="off">
+          </div>
+          <div class="tr-field"><label>Status</label>
+            <select id="tr-fStatus"><option>Saved</option><option>Applied</option><option>Interviewing</option><option>Rejected</option></select>
+          </div>
+        </div>
+        <div class="tr-field"><label>Job Title</label><input id="tr-fTitle" type="text" placeholder="Senior Technical Writer" autocomplete="off"></div>
+        <div class="tr-row2">
+          <div class="tr-field"><label>Location</label>
+            <input id="tr-fLocation" type="text" placeholder="Vienna, Austria" autocomplete="off">
+          </div>
+          <div class="tr-field"><label>Work Model</label>
+            <select id="tr-fWorkModel"><option>Remote</option><option>Hybrid</option><option>On-site</option><option value="">Unknown</option></select>
+          </div>
+        </div>
+        <div class="tr-row2">
+          <div class="tr-field"><label>Platform / Source</label>
+            <input id="tr-fPlatform" type="text" placeholder="LinkedIn" autocomplete="off">
+          </div>
+          <div class="tr-field"><label>Date Added</label><input id="tr-fDate" type="date"></div>
+        </div>
+        <div class="tr-field"><label>URL</label><input id="tr-fUrl" type="url" placeholder="https://…" autocomplete="off"></div>
+        <div class="tr-field"><label>Notes</label><textarea id="tr-fNotes" placeholder="Context, contacts, follow-ups…"></textarea></div>
+      </div>
+      <div class="tr-modal-foot">
+        <button class="tr-btn" onclick="trCloseModal(true)">Cancel</button>
+        <button class="tr-btn tr-btn-primary" onclick="trSaveJob()">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="tr-toast" class="tr-toast"></div>
+</div><!-- end panel-tracker -->
+<footer style="text-align:center;padding:1.5rem 1rem;font-size:0.8rem;color:var(--text-s);">
+  Built by <a href="https://teokitten.github.io" target="_blank" rel="noopener noreferrer" class="footer-link">Teo Moldovanu</a>
+</footer>
 
 </body>
 </html>

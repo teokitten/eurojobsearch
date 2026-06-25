@@ -152,10 +152,10 @@ _ATS_INCLUDE = {
     "poland":         ["poland", "warsaw", "warszawa", "krakow", "kraków", "wroclaw"],
     "romania":        ["romania", "bucharest", "bucurești", "cluj"],
     "slovakia":       ["slovakia", "bratislava", "košice"],
-    "remote":         ["remote", "worldwide", "anywhere", "global"],
+    "remote":         ["remote", "worldwide", "anywhere", "global", "emea", "europe", "european union"],
 }
 
-_REMOTE_TERMS = {"remote", "worldwide", "anywhere"}
+_REMOTE_TERMS = {"remote", "worldwide", "anywhere", "emea", "europe", "european union", "eu remote"}
 
 
 
@@ -372,8 +372,32 @@ def _is_recent(val, hours_old: int) -> bool:
 
 
 def _keyword_in(keyword: str, *fields) -> bool:
-    kw = keyword.lower()
-    return any(kw in (f or "").lower() for f in fields)
+    combined = " ".join((f or "").lower() for f in fields)
+    return all(token in combined for token in keyword.lower().split())
+
+
+def _primary_keyword(keywords: str) -> str:
+    """First comma-separated part – used as search_term for source APIs."""
+    return keywords.split(',')[0].strip()
+
+_KEYWORD_SYNONYMS: dict[str, list[str]] = {
+    "freelance": ["freelance", "contractor", "contract", "b2b", "mission", "cdd", "werkvertrag", "freiberuflich", "freiberufler"],
+    "contract":  ["contract", "contractor", "freelance", "b2b", "cdd", "werkvertrag"],
+    "remote":    ["remote", "homeoffice", "home office", "distributed"],
+    "hybrid":    ["hybrid", "homeoffice", "home office", "mobiles arbeiten"],
+    "part-time": ["part-time", "part time", "teilzeit", "parttime"],
+    "part time": ["part-time", "part time", "teilzeit", "parttime"],
+}
+
+def _keywords_match(keywords: str, *fields) -> bool:
+    """All comma-separated parts must match; each part expands to synonyms if available."""
+    parts = [p.strip() for p in keywords.split(',') if p.strip()]
+    for part in parts:
+        synonyms = _KEYWORD_SYNONYMS.get(part.lower(), [part.lower()])
+        combined = " ".join((f or "").lower() for f in fields)
+        if not any(syn in combined for syn in synonyms):
+            return False
+    return True
 
 
 def _strip_html(text: str) -> str:
@@ -478,6 +502,18 @@ def _detect_location_countries(loc_str: str) -> list[str]:
     return sorted(found)
 
 
+_NON_EU_SIGNALS = {
+    'mexico', 'canada', 'united states', 'usa', 'brazil', 'argentina',
+    'apac', 'asia', 'americas', 'latin america', 'latam', 'india',
+    'australia', 'new zealand', 'japan', 'china', 'singapore', 'africa',
+    'middle east', 'mena', 'south africa', 'nigeria', 'kenya',
+    'thailand', 'vietnam', 'indonesia', 'philippines', 'malaysia',
+    'pakistan', 'bangladesh', 'sri lanka', 'myanmar', 'cambodia',
+    'colombia', 'chile', 'peru', 'ecuador', 'uruguay', 'venezuela',
+    'egypt', 'morocco', 'tunisia', 'israel', 'turkey', 'uae',
+    'saudi arabia', 'qatar', 'kuwait', 'bahrain', 'oman',
+}
+
 def _detect_job_countries(job: dict) -> list[str]:
     """Return list of EU country keys for a job.
 
@@ -489,8 +525,14 @@ def _detect_job_countries(job: dict) -> list[str]:
     if not loc:
         return ['remote'] if job.get('is_remote') else []
     countries = _detect_location_countries(loc)
-    if not countries and job.get('is_remote'):
-        return ['remote']
+    if not countries:
+        loc_lower = loc.lower()
+        if any(s in loc_lower for s in _NON_EU_SIGNALS):
+            return []
+        if any(t in loc_lower for t in ('remote', 'emea', 'europe', 'worldwide', 'anywhere', 'global', 'eu remote', 'european union')):
+            return ['remote']
+        if job.get('is_remote'):
+            return ['remote']
     return countries
 
 
@@ -543,7 +585,7 @@ def _fetch_indeed(keywords: str, countries: list[str], hours_old: int,
     def _scrape(country_name: str, is_remote: bool | None, country_key: str | None):
         scrape_params: dict = {
             "site_name": ["indeed"],
-            "search_term": keywords,
+            "search_term": _primary_keyword(keywords),
             "country_indeed": country_name,
             "hours_old": int(hours_old),
             "results_wanted": int(results_per_source),
@@ -580,7 +622,7 @@ def _fetch_indeed(keywords: str, countries: list[str], hours_old: int,
             for _, row in df.iterrows():
                 title = str(row.get("title", "") or "")
                 company = str(row.get("company", "") or "")
-                if title_only and not _keyword_in(keywords, title):
+                if title_only and not _keywords_match(keywords, title):
                     continue
                 location  = str(row.get("location", "") or "")
                 full_desc = str(row.get("description", "") or "")
@@ -596,8 +638,11 @@ def _fetch_indeed(keywords: str, countries: list[str], hours_old: int,
                     "also_on": [],
                     "is_remote": bool(row.get("is_remote", False)),
                     "job_type": str(row.get("job_type", "") or ""),
-                    "is_hybrid": _detect_hybrid_text(title, location, full_desc),
-                    "description": full_desc[:500],
+                    "is_hybrid": (
+                        str(row.get("work_from_home_type", "") or "").lower() == "hybrid"
+                        or _detect_hybrid_text(title, location, full_desc)
+                    ),
+                    "description": full_desc[:2000],
                 })
             if country_key:
                 kept, dropped_locs = [], []
@@ -670,7 +715,7 @@ def _fetch_linkedin(keywords: str, countries: list[str], hours_old: int,
     def _scrape_li(location: str, is_remote: bool, country_key: str | None):
         scrape_params: dict = {
             "site_name": ["linkedin"],
-            "search_term": keywords,
+            "search_term": _primary_keyword(keywords),
             "location": location,
             "hours_old": hours_old,
             "results_wanted": results_per_source,
@@ -690,7 +735,7 @@ def _fetch_linkedin(keywords: str, countries: list[str], hours_old: int,
             for _, row in df.iterrows():
                 title = str(row.get("title", "") or "")
                 company = str(row.get("company", "") or "")
-                if title_only and not _keyword_in(keywords, title):
+                if title_only and not _keywords_match(keywords, title):
                     continue
                 location  = str(row.get("location", "") or "")
                 full_desc = str(row.get("description", "") or "")
@@ -706,8 +751,11 @@ def _fetch_linkedin(keywords: str, countries: list[str], hours_old: int,
                     "also_on": [],
                     "is_remote": bool(row.get("is_remote", False)),
                     "job_type": str(row.get("job_type", "") or ""),
-                    "is_hybrid": _detect_hybrid_text(title, location, full_desc),
-                    "description": full_desc[:500],
+                    "is_hybrid": (
+                        str(row.get("work_from_home_type", "") or "").lower() == "hybrid"
+                        or _detect_hybrid_text(title, location, full_desc)
+                    ),
+                    "description": full_desc[:2000],
                 })
             if country_key:
                 kept, dropped_locs = [], []
@@ -787,7 +835,7 @@ def _fetch_greenhouse(keywords: str, countries: list[str], title_only: bool, slu
                 location = job.get("location", {}).get("name", "") or ""
                 content  = job.get("content", "") or ""
                 content_text = _strip_html(content)
-                if not _keyword_in(keywords, title) and (title_only or not _keyword_in(keywords, content_text)):
+                if not _keywords_match(keywords, title) and (title_only or not _keywords_match(keywords, content_text)):
                     continue
                 updated = job.get("updated_at") or job.get("created_at")
                 if not _is_recent(updated, hours_old):
@@ -875,7 +923,7 @@ def _fetch_glassdoor(keywords: str, countries: list[str], hours_old: int,
     def _scrape(location: str, is_remote: bool):
         scrape_params: dict = {
             "site_name": ["glassdoor"],
-            "search_term": keywords,
+            "search_term": _primary_keyword(keywords),
             "location": location,
             "hours_old": int(hours_old),
             "results_wanted": int(results_per_source),
@@ -893,7 +941,7 @@ def _fetch_glassdoor(keywords: str, countries: list[str], hours_old: int,
             for _, row in df.iterrows():
                 title = str(row.get("title", "") or "")
                 company = str(row.get("company", "") or "")
-                if title_only and not _keyword_in(keywords, title):
+                if title_only and not _keywords_match(keywords, title):
                     continue
                 results.append({
                     "id": _job_id(title, company),
@@ -959,7 +1007,7 @@ def _fetch_google_jobs(keywords: str, countries: list[str], hours_old: int,
     def _scrape(location: str, is_remote: bool):
         scrape_params: dict = {
             "site_name": ["google"],
-            "search_term": keywords,
+            "search_term": _primary_keyword(keywords),
             "location": location,
             "hours_old": int(hours_old),
             "results_wanted": int(results_per_source),
@@ -977,7 +1025,7 @@ def _fetch_google_jobs(keywords: str, countries: list[str], hours_old: int,
             for _, row in df.iterrows():
                 title = str(row.get("title", "") or "")
                 company = str(row.get("company", "") or "")
-                if title_only and not _keyword_in(keywords, title):
+                if title_only and not _keywords_match(keywords, title):
                     continue
                 results.append({
                     "id": _job_id(title, company),
@@ -1235,7 +1283,7 @@ def _fetch_working_in_content(keywords: str) -> tuple[list, list[str]]:
             jobs = []
             for item in items:
                 title = item.findtext("title", "").strip()
-                if not _keyword_in(keywords, title):
+                if not _keywords_match(keywords, title):
                     continue
                 jobs.append(_make_job(
                     title,
@@ -1258,7 +1306,7 @@ def _fetch_working_in_content(keywords: str) -> tuple[list, list[str]]:
                 jobs = []
                 for a in soup.find_all("a", href=True):
                     title = a.get_text(strip=True)
-                    if not title or not _keyword_in(keywords, title):
+                    if not title or not _keywords_match(keywords, title):
                         continue
                     href = a["href"]
                     if href.startswith("/"):
@@ -1428,10 +1476,10 @@ def _fetch_nofluffjobs(keywords: str, hours_old: int = 168) -> tuple[list, list[
         print(f"[NOFLUFFJOBS] exception – {e}")
         return [], [f"No Fluff Jobs – could not parse the site: {e}"]
 
-_REMOTIVE_KEEP = {"europe", "worldwide", "anywhere", "remote"}
+_REMOTIVE_KEEP = {"europe", "worldwide", "anywhere", "remote", "emea", "eu", "global"}
 
 
-def _fetch_remotive(keywords: str) -> tuple[list, list[str]]:
+def _fetch_remotive(keywords: str, hours_old: int = 0) -> tuple[list, list[str]]:
     url = f"https://remotive.com/api/remote-jobs?search={requests.utils.quote(keywords)}&limit=50"
     print(f"[REMOTIVE] fetching: {url}")
     try:
@@ -1448,6 +1496,8 @@ def _fetch_remotive(keywords: str) -> tuple[list, list[str]]:
             company   = item.get("company_name", "") or ""
             location  = item.get("candidate_required_location", "") or "Remote"
             full_desc = item.get("description", "") or ""
+            if hours_old and not _is_recent(item.get("publication_date", "") or "", hours_old):
+                continue
             results.append({
                 "id":          _job_id(title, company),
                 "title":       title,
@@ -1457,11 +1507,12 @@ def _fetch_remotive(keywords: str) -> tuple[list, list[str]]:
                 "source_label":"Remotive",
                 "url":         item.get("url", "") or "",
                 "date_posted": _parse_date(item.get("publication_date", "") or ""),
+                "_pub_raw":    item.get("publication_date", "") or "",
                 "also_on":     [],
                 "is_remote":   True,
                 "job_type":    item.get("job_type", "") or "",
                 "is_hybrid":   _detect_hybrid_text(title, location, full_desc),
-                "description": full_desc[:500],
+                "description": full_desc[:2000],
             })
         print(f"[REMOTIVE] {len(results)} results after filter")
         return results, []
@@ -1491,14 +1542,13 @@ def _fetch_arbeitnow(keywords: str, hours_old: int) -> tuple[list, list[str]]:
         resp.raise_for_status()
         raw = resp.json().get("data", [])
         print(f"[DEBUG][ARBEITNOW] raw: {len(raw)}")
-        kw_lower = keywords.lower()
         results = []
         for item in raw:
             created_at = item.get("created_at")
             if not _is_recent(created_at, hours_old):
                 continue
             title = item.get("title", "") or ""
-            if not _keyword_in(kw_lower, title):
+            if not _keywords_match(keywords, title):
                 continue
             company   = item.get("company_name", "") or ""
             location  = item.get("location", "") or ""
@@ -1515,7 +1565,7 @@ def _fetch_arbeitnow(keywords: str, hours_old: int) -> tuple[list, list[str]]:
                 "also_on":     [],
                 "is_remote":   bool(item.get("remote", False)),
                 "is_hybrid":   _detect_hybrid_text(title, location, full_desc),
-                "description": full_desc[:500],
+                "description": full_desc[:2000],
             })
         print(f"[DEBUG][ARBEITNOW] after keyword filter: {len(results)}")
         return results, []
@@ -1538,7 +1588,7 @@ _JOBICY_GEO_EXCLUDE = {
 }
 
 
-def _fetch_jobicy(keywords: str) -> tuple[list, list[str]]:
+def _fetch_jobicy(keywords: str, hours_old: int = 0) -> tuple[list, list[str]]:
     print("[DEBUG][JOBICY] function called")
     print(f"[DEBUG][JOBICY] keyword: {keywords}")
     try:
@@ -1575,6 +1625,8 @@ def _fetch_jobicy(keywords: str) -> tuple[list, list[str]]:
             company   = item.get("companyName", "") or ""
             location  = item.get("jobGeo", "") or "Remote"
             full_desc = item.get("jobExcerpt", "") or ""
+            if hours_old and not _is_recent(item.get("pubDate", "") or "", hours_old):
+                continue
             candidates.append({
                 "id":          _job_id(title, company),
                 "title":       title,
@@ -1587,9 +1639,13 @@ def _fetch_jobicy(keywords: str) -> tuple[list, list[str]]:
                 "also_on":     [],
                 "is_remote":   True,
                 "is_hybrid":   _detect_hybrid_text(title, location, full_desc),
-                "description": full_desc[:500],
+                "description": full_desc[:2000],
             })
-        results = candidates
+        if keywords:
+            results = [j for j in candidates if
+                       _keywords_match(keywords, j["title"], j.get("description") or "")]
+        else:
+            results = candidates
         print(f"[DEBUG][JOBICY] after keyword filter: {len(results)}")
         print(f"[JOBICY] {len(results)} results after filter")
         return results, []
@@ -1605,6 +1661,7 @@ _WWR_UA = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 Chrome/120.0.0.0 S
 _WWR_FEEDS = [
     "https://weworkremotely.com/remote-jobs.rss",
     "https://weworkremotely.com/categories/remote-sales-and-marketing-jobs.rss",
+    "https://weworkremotely.com/categories/remote-writing-editing-jobs.rss",
 ]
 
 
@@ -1665,9 +1722,8 @@ def _fetch_weworkremotely(keywords: str, hours_old: int) -> tuple[list, list[str
             errors += 1
 
     print(f"[DEBUG][WWR] total after dedup: {len(all_parsed)}")
-    kw_lower = keywords.lower()
-    if kw_lower:
-        results = [j for j in all_parsed if kw_lower in j["title"].lower()]
+    if keywords:
+        results = [j for j in all_parsed if _keywords_match(keywords, j["title"])]
     else:
         results = all_parsed
     print(f"[DEBUG][WWR] after keyword filter: {len(results)}")
@@ -1685,6 +1741,13 @@ def _fetch_weworkremotely(keywords: str, hours_old: int) -> tuple[list, list[str
 _HYBRID_TERMS = [
     'hybrid', 'hybride', 'hybridní', 'teilweise remote', 'partial remote',
     'partially remote', 'days in office', 'days onsite', 'hibrid',
+    'homeoffice', 'home office', 'home-office', 'mobiles arbeiten',
+    'mobil arbeiten', 'bürotage', 'officetage', 'im büro',
+    'tage im büro', 'tage vor ort', 'vor ort und remote',
+    'remote und vor ort', 'flexibles arbeiten',
+    'home office possible', 'work from home', 'wfh',
+    'büro und remote', 'remote möglich', 'office and remote',
+    'flexible working', 'hybrides arbeiten',
 ]
 _FULLY_REMOTE_TERMS = [
     'fully remote', '100% remote', 'remote only', 'remote-first',
@@ -1729,11 +1792,20 @@ SOURCE_PRIORITY = {
 }
 
 
+_LEGAL_SUFFIXES = re.compile(
+    r'\b(gmbh|ag|ltd|limited|inc|llc|s\.r\.o\.|s\.a\.|srl|bv|nv|oy|ab|as|plc|ug|kg|kft|spa|sarl|gmbh\s*&\s*co\.?\s*kg?)\b\.?',
+    re.IGNORECASE
+)
+
+def _normalize_company(name: str) -> str:
+    cleaned = _LEGAL_SUFFIXES.sub('', name.lower())
+    return re.sub(r'\s+', ' ', cleaned).strip()
+
 def _deduplicate(jobs: list) -> list:
     seen: dict[str, dict] = {}
 
     for job in jobs:
-        key = f"{job['title'].lower().strip()}|{job['company'].lower().strip()}"
+        key = f"{job['title'].lower().strip()}|{_normalize_company(job['company'])}"
         if key not in seen:
             seen[key] = job
         else:
@@ -1913,12 +1985,11 @@ def api_search():
     # title_only=False: title OR description match required (new behaviour).
     # Empty keywords: no filter (caught earlier by the required-field check).
     if keywords:
-        kw_lower = keywords.lower()
         before = len(deduped)
         deduped = [
             j for j in deduped
-            if kw_lower in (j.get('title') or '').lower()
-            or (not title_only and kw_lower in _strip_html(j.get('description') or '').lower())
+            if _keywords_match(keywords, (j.get('title') or ''))
+            or (not title_only and _keywords_match(keywords, _strip_html(j.get('description') or '')))
         ]
         print(f"[EuroJobSearch] keyword filter ({'title' if title_only else 'title|desc'}): {before} → {len(deduped)}")
 
