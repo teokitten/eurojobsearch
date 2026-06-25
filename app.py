@@ -478,6 +478,18 @@ def _detect_location_countries(loc_str: str) -> list[str]:
     return sorted(found)
 
 
+_NON_EU_SIGNALS = {
+    'mexico', 'canada', 'united states', 'usa', 'brazil', 'argentina',
+    'apac', 'asia', 'americas', 'latin america', 'latam', 'india',
+    'australia', 'new zealand', 'japan', 'china', 'singapore', 'africa',
+    'middle east', 'mena', 'south africa', 'nigeria', 'kenya',
+    'thailand', 'vietnam', 'indonesia', 'philippines', 'malaysia',
+    'pakistan', 'bangladesh', 'sri lanka', 'myanmar', 'cambodia',
+    'colombia', 'chile', 'peru', 'ecuador', 'uruguay', 'venezuela',
+    'egypt', 'morocco', 'tunisia', 'israel', 'turkey', 'uae',
+    'saudi arabia', 'qatar', 'kuwait', 'bahrain', 'oman',
+}
+
 def _detect_job_countries(job: dict) -> list[str]:
     """Return list of EU country keys for a job.
 
@@ -491,6 +503,8 @@ def _detect_job_countries(job: dict) -> list[str]:
     countries = _detect_location_countries(loc)
     if not countries:
         loc_lower = loc.lower()
+        if any(s in loc_lower for s in _NON_EU_SIGNALS):
+            return []
         if any(t in loc_lower for t in ('remote', 'emea', 'europe', 'worldwide', 'anywhere', 'global', 'eu remote', 'european union')):
             return ['remote']
         if job.get('is_remote'):
