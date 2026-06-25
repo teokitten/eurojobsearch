@@ -1226,6 +1226,52 @@
   cursor: default;
   background: transparent;
 }
+.card-remove-btn {
+  margin-top: 8px;
+  margin-left: 6px;
+  padding: 5px 14px;
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  color: var(--text-s);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all .15s;
+  display: inline-block;
+}
+.card-remove-btn:hover {
+  border-color: #f85149;
+  color: #f85149;
+}
+.card-confirm-wrap {
+  margin-top: 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--text-s);
+}
+.card-confirm-yes {
+  padding: 4px 12px;
+  background: transparent;
+  border: 1px solid #f85149;
+  border-radius: 5px;
+  color: #f85149;
+  font-size: 12px;
+  cursor: pointer;
+}
+.card-confirm-yes:hover { background: #f85149; color: #fff; }
+.card-confirm-no {
+  padding: 4px 12px;
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  color: var(--text-s);
+  font-size: 12px;
+  cursor: pointer;
+}
+.card-confirm-no:hover { border-color: var(--text-s); color: var(--text); }
 @media print {
   #main-tabs,
   #panel-search,
@@ -1685,7 +1731,23 @@ function mockSearchApi({ keywords, countries, sources, hours_old, title_only, wo
   });
 }
 
-const EJS_SEEN_KEY = 'ejs_seen_v4';
+const EJS_SEEN_KEY = 'ejs_seen_v5';
+
+const EJS_HIDDEN_KEY = 'ejs_hidden_jobs';
+
+function _getHidden() {
+  try { return new Set(JSON.parse(localStorage.getItem(EJS_HIDDEN_KEY) || '[]')); }
+  catch { return new Set(); }
+}
+
+function _addHidden(sid) {
+  try {
+    const h = _getHidden();
+    h.add(sid);
+    localStorage.setItem(EJS_HIDDEN_KEY, JSON.stringify([...h]));
+  } catch {}
+}
+
 const EJS_VIEWED_SEENIDS_KEY = 'ejs_viewed_seenids';
 
 function _getViewedSeenIds() {
@@ -1703,11 +1765,8 @@ function _jobSeenId(job) {
   return t + '|' + c;
 }
 
-function _buildFingerprint(keywords, countries, workModels) {
-  const kw = (keywords || '').toLowerCase().trim();
-  const co = [...(countries || [])].map(s => s.toLowerCase()).sort().join(',');
-  const wm = [...(workModels || [])].map(s => s.toLowerCase()).sort().join(',');
-  return kw + '||' + co + '||' + wm;
+function _buildFingerprint(keywords) {
+  return (keywords || '').toLowerCase().trim();
 }
 
 const state = {
@@ -2235,7 +2294,7 @@ async function runSearch() {
     // newJobIds is reset first so no stale IDs from previous searches remain.
     try {
       newJobIds = new Set();
-      const fp = _buildFingerprint(keywords, countries, workModels);
+      const fp = _buildFingerprint(keywords);
       const seen = JSON.parse(localStorage.getItem(EJS_SEEN_KEY) || '{}');
       if (Object.prototype.hasOwnProperty.call(seen, fp)) {
         // Baseline exists – compare against it, never overwrite it.
@@ -2578,7 +2637,9 @@ function _resultsFilterText() {
 
 function applyFilters(jobs) {
   const filterText = _resultsFilterText();
+  const hidden = _getHidden();
   let list = jobs.filter(j => {
+    if (hidden.has(_jobSeenId(j))) return false;
     if (!_srcPredicate(j) || !_wmPredicate(j) || !_countryPredicate(j)) return false;
     if (!filterText) return true;
     const hay = [j.title, j.company, j.location].join(' ').toLowerCase();
@@ -2696,17 +2757,12 @@ function renderJobList() {
   buildCountryFilters();
   const filtered = applyFilters(state.allResults);
 
-  // Sort order: NEW first, then unseen, then viewed – server order preserved within each group.
-  const _viewed = _getViewed();
-  const _viewedSids = _getViewedSeenIds();
-  const _isViewed = j => _viewed.has(j.id) || _viewedSids.has(_jobSeenId(j));
-  const _newJobs  = filtered.filter(j =>  newJobIds.has(_jobSeenId(j)));
-  const _oldJobs  = filtered.filter(j => !newJobIds.has(_jobSeenId(j)) && !_isViewed(j));
-  const _viewJobs = filtered.filter(j => !newJobIds.has(_jobSeenId(j)) &&  _isViewed(j));
+  // NEW jobs float to the top. Everything else stays in server order.
+  const _newJobs = filtered.filter(j =>  newJobIds.has(_jobSeenId(j)));
+  const _oldJobs = filtered.filter(j => !newJobIds.has(_jobSeenId(j)));
   filtered.length = 0;
   _newJobs.forEach(j => filtered.push(j));
   _oldJobs.forEach(j => filtered.push(j));
-  _viewJobs.forEach(j => filtered.push(j));
 
   const list = document.getElementById('job-list');
   const noResults = document.getElementById('no-results');
@@ -2838,9 +2894,50 @@ function buildJobCard(job) {
       ${alsoOnStr}
     </div>
     <button class="card-track-btn" data-track="true" data-job-url="${job.url || ''}">Add to Tracker</button>
+    <button class="card-remove-btn" data-remove="true">Remove from results</button>
   `;
 
   card._jobData = job;
+
+  const removeBtn = card.querySelector('[data-remove]');
+  if (removeBtn) {
+    removeBtn.addEventListener('click', e => {
+      e.stopPropagation();
+      // Show inline confirmation
+      removeBtn.style.display = 'none';
+      const trackBtnEl = card.querySelector('[data-track]');
+      if (trackBtnEl) trackBtnEl.style.display = 'none';
+      const confirmWrap = document.createElement('div');
+      confirmWrap.className = 'card-confirm-wrap';
+      confirmWrap.innerHTML = `
+        <span>Remove from results forever?</span>
+        <button class="card-confirm-yes">Remove</button>
+        <button class="card-confirm-no">Cancel</button>
+      `;
+      card.appendChild(confirmWrap);
+      confirmWrap.querySelector('.card-confirm-yes').addEventListener('click', ev => {
+        ev.stopPropagation();
+        const sid = _jobSeenId(job);
+        _addHidden(sid);
+        newJobIds.delete(sid);
+        state.allResults = state.allResults.filter(j => _jobSeenId(j) !== sid);
+        card.style.transition = 'opacity 0.4s, transform 0.4s';
+        card.style.opacity = '0';
+        card.style.transform = 'translateX(40px)';
+        setTimeout(() => {
+          card.remove();
+          renderJobList();
+        }, 420);
+      });
+      confirmWrap.querySelector('.card-confirm-no').addEventListener('click', ev => {
+        ev.stopPropagation();
+        confirmWrap.remove();
+        removeBtn.style.display = '';
+        const trackBtnEl = card.querySelector('[data-track]');
+        if (trackBtnEl) trackBtnEl.style.display = '';
+      });
+    });
+  }
 
   const trackBtn = card.querySelector('[data-track]');
   if (trackBtn) {
