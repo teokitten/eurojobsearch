@@ -2,7 +2,7 @@
 
 European jobs only. Search across job boards and company career pages – all in one place.
 
-A Flask-based job search aggregator for the European job market. It searches eight sources in parallel – Indeed EU, LinkedIn, Greenhouse, Karriere.at, Arbeitnow, Remotive, Jobicy, and We Work Remotely – deduplicates results, and presents them in one filterable view: country, work model, source, and keyword, all combinable.
+A Flask-based job search aggregator for the European job market. It searches ten sources in parallel – Indeed EU, LinkedIn, Greenhouse, Karriere.at, Profession.hu, No Fluff Jobs, Arbeitnow, Remotive, Jobicy, and We Work Remotely – deduplicates results, and presents them in one filterable view: country, work model, source, and keyword, all combinable.
 
 Try the [interactive demo](https://teokitten.github.io/eurojobsearch/) with sample data – no install required.
 
@@ -10,7 +10,7 @@ Try the [interactive demo](https://teokitten.github.io/eurojobsearch/) with samp
 
 ## Setup
 
-Requires Python 3.10 or later.
+Requires Python 3.12 or later.
 
 ### Windows
 
@@ -20,49 +20,49 @@ Requires Python 3.10 or later.
    ```
    cd Downloads\eurojobsearch
    ```
-4. Install dependencies:
+4. Install Poetry if needed, then install dependencies:
    ```
-   pip install -r requirements.txt
+   poetry install
    ```
 5. Run the app:
    ```
-   python app.py
+   poetry run python app.py
    ```
 6. Open `http://localhost:5000` in your browser.
 
 ### macOS
 
-1. Check if Python 3.10+ is installed by running `python3 --version` in Terminal. If not installed, install it from [python.org](https://www.python.org/downloads/) or with `brew install python3`.
+1. Check if Python 3.12+ is installed by running `python3 --version` in Terminal. If not installed, install it from [python.org](https://www.python.org/downloads/) or with `brew install python3`.
 2. Download this repository: click the green "Code" button above, then "Download ZIP," and extract it. (Or, if you have git installed, run `git clone` with the repository URL.)
 3. Open Terminal and navigate to the extracted folder, for example:
    ```
    cd Downloads/eurojobsearch
    ```
-4. Install dependencies:
+4. Install Poetry if needed, then install dependencies:
    ```
-   pip3 install -r requirements.txt
+   poetry install
    ```
 5. Run the app:
    ```
-   python3 app.py
+   poetry run python3 app.py
    ```
 6. Open `http://localhost:5000` in your browser.
 
 ### Linux
 
-1. Python 3.10+ is usually preinstalled. Check with `python3 --version`. If it's missing, install it with your package manager, for example `sudo apt install python3 python3-pip` on Ubuntu/Debian.
+1. Python 3.12+ is usually preinstalled. Check with `python3 --version`. If it's missing, install it with your package manager, for example `sudo apt install python3 python3-pip` on Ubuntu/Debian.
 2. Download this repository: click the green "Code" button above, then "Download ZIP," and extract it. (Or, if you have git installed, run `git clone` with the repository URL.)
 3. Open a terminal and navigate to the extracted folder, for example:
    ```
    cd Downloads/eurojobsearch
    ```
-4. Install dependencies:
+4. Install Poetry if needed, then install dependencies:
    ```
-   pip3 install -r requirements.txt
+   poetry install
    ```
 5. Run the app:
    ```
-   python3 app.py
+   poetry run python3 app.py
    ```
 6. Open `http://localhost:5000` in your browser.
 
@@ -76,6 +76,8 @@ To stop the app, press Ctrl+C in the terminal.
 | LinkedIn | May rate-limit after repeated use. Requires a free account to view full listings and apply. |
 | Greenhouse | Queries a curated list of company job boards via the public Greenhouse API. |
 | Karriere.at | Austria only. |
+| Profession.hu | Hungary only. |
+| No Fluff Jobs | Requires at least one selected country. |
 | Arbeitnow | Germany, Austria, and Switzerland only. |
 | Remotive | Remote roles only. |
 | Jobicy | Remote roles only. |
@@ -86,6 +88,7 @@ To stop the app, press Ctrl+C in the terminal.
 - **Indeed EU**: if no countries are selected, results are limited to Germany-based remote jobs.
 - **Greenhouse**: locations formatted like "Germany (Remote); Ireland (Remote)" are detected as remote only, not as all listed countries.
 - **Arbeitnow**: its API does not support a search-term parameter; results are filtered by keyword after fetching.
+- **Profession.hu / No Fluff Jobs**: both integrations rely on HTML parsing and may need selector updates if the sites change layout.
 - **LinkedIn**: automated requests may be rate-limited after repeated use.
 
 ## Company career pages (Greenhouse)

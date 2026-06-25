@@ -36,6 +36,8 @@
     --source-remotive:  #0f9d83;
     --source-jobicy:    #6f3ff5;
     --source-wwr:       #2b2f4a;
+    --source-profession:#00a676;
+    --source-nofluff:   #e63f6a;
   }
 
   html { font-size: 15px; scroll-behavior: smooth; }
@@ -678,6 +680,8 @@
   .src-LINKEDIN_EU  { background: var(--source-linkedin); }
   .src-GREENHOUSE   { background: var(--source-gh); }
   .src-KARRIERE_AT  { background: var(--source-karriere); }
+  .src-PROFESSION_HU { background: var(--source-profession); }
+  .src-NOFLUFFJOBS  { background: var(--source-nofluff); }
   .src-EUROJOBS     { background: var(--source-euro); }
   .src-WORKING_IN_CONTENT { background: var(--source-wic); color: #0a1a2a; }
 
@@ -1353,6 +1357,49 @@ function syncArbeitnow() {
   saveSettings();
 }
 
+function syncProfessionHu() {
+  const hungaryActive = document.querySelector('#countries-pills .pill[data-country="hungary"]')?.classList.contains('active');
+  const cb = document.querySelector('#sources-list input[value="PROFESSION_HU"]');
+  const lbl = cb?.closest('label');
+  if (!cb) return;
+  if (hungaryActive) {
+    cb.disabled = false;
+    cb.checked = true;
+    if (lbl) lbl.style.opacity = '';
+    _hideSrcTooltip();
+  } else {
+    cb.disabled = true;
+    cb.checked = false;
+    if (lbl) lbl.style.opacity = '0.45';
+  }
+  saveSettings();
+}
+
+function syncNoFluffJobs() {
+  const anyCountryActive = getSelectedCountries().length > 0;
+  const cb = document.querySelector('#sources-list input[value="NOFLUFFJOBS"]');
+  const lbl = cb?.closest('label');
+  if (!cb) return;
+  if (anyCountryActive) {
+    cb.disabled = false;
+    cb.checked = true;
+    if (lbl) lbl.style.opacity = '';
+    _hideSrcTooltip();
+  } else {
+    cb.disabled = true;
+    cb.checked = false;
+    if (lbl) lbl.style.opacity = '0.45';
+  }
+  saveSettings();
+}
+
+function syncCountryGatedSources() {
+  syncKarriereAt();
+  syncArbeitnow();
+  syncProfessionHu();
+  syncNoFluffJobs();
+}
+
 // ============================================================
 // Countries "All" pill
 // ============================================================
@@ -1378,8 +1425,7 @@ _allCountryPill.addEventListener('click', () => {
     _allCountryPill.classList.add('active');
     updateDropdownItems();
   }
-  syncKarriereAt();
-  syncArbeitnow();
+  syncCountryGatedSources();
 });
 
 function getSelectedCountries() {
@@ -1404,15 +1450,11 @@ function _addCountryPill(key, label, activate = true) {
     btn.remove();
     updateDropdownItems();
     syncCountriesAllPill();
-    if (key === 'austria') { syncKarriereAt(); syncArbeitnow(); }
-    else if (key === 'germany' || key === 'switzerland') syncArbeitnow();
-    else saveSettings();
+    syncCountryGatedSources();
   });
   document.getElementById('countries-pills').appendChild(btn);
   syncCountriesAllPill();
-  // Sync country-gated sources whenever a relevant country pill is added
-  if (key === 'austria') { syncKarriereAt(); syncArbeitnow(); }
-  else if (key === 'germany' || key === 'switzerland') syncArbeitnow();
+  syncCountryGatedSources();
 }
 
 // More countries dropdown – alphabetical
@@ -1428,6 +1470,7 @@ const MORE_COUNTRIES_FLAT = [
   { key: 'france',         label: '🇫🇷 France' },
   { key: 'germany',        label: '🇩🇪 Germany' },
   { key: 'greece',         label: '🇬🇷 Greece' },
+  { key: 'hungary',        label: '🇭🇺 Hungary' },
   { key: 'iceland',        label: '🇮🇸 Iceland' },
   { key: 'ireland',        label: '🇮🇪 Ireland' },
   { key: 'italy',          label: '🇮🇹 Italy' },
@@ -1575,7 +1618,7 @@ function _hideSrcTooltip() {
 }
 
 // New sources that may not be in older saved settings – always default to checked
-const _NEW_SOURCES = new Set(['REMOTIVE', 'ARBEITNOW', 'JOBICY', 'WEWORKREMOTELY']);
+const _NEW_SOURCES = new Set(['REMOTIVE', 'ARBEITNOW', 'JOBICY', 'WEWORKREMOTELY', 'PROFESSION_HU', 'NOFLUFFJOBS']);
 
 function syncSourcesAllPill() {
   const cbs = document.querySelectorAll('#sources-list input[type="checkbox"]:not(:disabled)');
@@ -1597,12 +1640,14 @@ async function loadSources() {
       const isLinkedIn = src.id === 'LINKEDIN_EU';
       const isKarriere = src.id === 'KARRIERE_AT';
       const isIndeedEU = src.id === 'INDEED_EU';
+      const isProfession = src.id === 'PROFESSION_HU';
+      const isNoFluff = src.id === 'NOFLUFFJOBS';
       const item = document.createElement('label');
       item.className = 'source-item';
 
       const icon = `<span class="src-info-trigger">ⓘ</span>`;
 
-      const labelExtra = (isKarriere || isLinkedIn || isIndeedEU) ? icon : '';
+      const labelExtra = (isKarriere || isLinkedIn || isIndeedEU || isProfession || isNoFluff) ? icon : '';
 
       item.innerHTML = `
         <input type="checkbox" value="${src.id}" checked>
@@ -1625,6 +1670,8 @@ async function loadSources() {
       'INDEED_EU':      'When no countries are selected, Indeed EU returns Germany-based remote jobs only. Select specific countries for full coverage.',
       'LINKEDIN_EU':    'LinkedIn blocks automated requests after repeated use. If results drop to 0, your IP is temporarily rate-limited – wait a few hours before retrying.',
       'KARRIERE_AT':    'Austria only.',
+      'PROFESSION_HU':  'Hungary only.',
+      'NOFLUFFJOBS':    'Requires at least one selected country. Strongest coverage is Hungary, Poland, and nearby CEE markets.',
       'ARBEITNOW':      'Germany, Austria, and Switzerland only.',
       'REMOTIVE':       'Remote roles only – results are not filtered by country.',
       'JOBICY':         'Remote roles only – results are not filtered by country.',
@@ -1635,7 +1682,7 @@ async function loadSources() {
     list.querySelectorAll('label').forEach(lbl => {
       const cb = lbl.querySelector('input');
       if (!cb) return;
-      if (cb.value === 'ARBEITNOW') {
+      if (cb.value === 'ARBEITNOW' || cb.value === 'PROFESSION_HU' || cb.value === 'NOFLUFFJOBS') {
         const nameSpan = lbl.querySelector('.source-item-label');
         if (nameSpan && !lbl.querySelector('.src-info-trigger')) {
           nameSpan.insertAdjacentHTML('afterend', '<span class="src-info-trigger">ⓘ</span>');
@@ -1661,6 +1708,26 @@ async function loadSources() {
       karriereLabel.addEventListener('mouseleave', _hideSrcTooltip);
     }
 
+    const professionCb = list.querySelector('input[value="PROFESSION_HU"]');
+    const professionLabel = professionCb?.closest('label');
+    if (professionLabel) {
+      professionLabel.addEventListener('mouseenter', () => {
+        if (!professionCb.disabled) return;
+        _showSrcTooltip(professionLabel, 'Select Hungary in Countries to enable Profession.hu.');
+      });
+      professionLabel.addEventListener('mouseleave', _hideSrcTooltip);
+    }
+
+    const noFluffCb = list.querySelector('input[value="NOFLUFFJOBS"]');
+    const noFluffLabel = noFluffCb?.closest('label');
+    if (noFluffLabel) {
+      noFluffLabel.addEventListener('mouseenter', () => {
+        if (!noFluffCb.disabled) return;
+        _showSrcTooltip(noFluffLabel, 'Select at least one country to enable No Fluff Jobs.');
+      });
+      noFluffLabel.addEventListener('mouseleave', _hideSrcTooltip);
+    }
+
     // Apply restored source selection after checkboxes exist in the DOM
     // New sources (_NEW_SOURCES) default to checked even if absent from saved state
     if (_restoredSettings && Array.isArray(_restoredSettings.sources)) {
@@ -1674,8 +1741,7 @@ async function loadSources() {
     }
 
     // Sync country-gated sources with initial country state, then sync All pill
-    syncKarriereAt();
-    syncArbeitnow();
+    syncCountryGatedSources();
     syncSourcesAllPill();
   } catch (e) {
     console.error('Failed to load sources config:', e);
@@ -2357,6 +2423,7 @@ const SITE_DATA = [
       { name: 'epunkt', desc: 'DACH recruitment agency with roles across Austria, Germany, and Switzerland.', url: 'https://job.epunkt.com/jobs', color: '#0ea5e9', country: '🇦🇹🇩🇪🇨🇭 DACH' },
       { name: 'Jobs.cz', desc: "Czech Republic's main job board.", url: 'https://www.jobs.cz', color: '#0052cc', country: '🇨🇿 Czech Republic' },
       { name: 'eJobs.ro', desc: "Romania's top job platform.", url: 'https://www.ejobs.ro', color: '#d62828', country: '🇷🇴 Romania' },
+      { name: 'Profession.hu', desc: "Hungary's leading job board.", url: 'https://www.profession.hu', color: '#00a676', country: '🇭🇺 Hungary' },
       { name: 'No Fluff Jobs', desc: 'Tech jobs in Poland and CEE.', url: 'https://nofluffjobs.com', color: '#e63f6a', country: '🇵🇱 Poland' },
       { name: 'Pracuj.pl', desc: "Poland's leading job board.", url: 'https://pracuj.pl', color: '#cc0000', country: '🇵🇱 Poland' },
     ],
