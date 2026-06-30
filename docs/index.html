@@ -1057,6 +1057,9 @@
   padding: 16px 20px 0;
   background: var(--bg);
   border-bottom: 1px solid var(--border, #2e3248);
+  position: sticky;
+  top: 0;
+  z-index: 200;
 }
 .main-tab {
   padding: 10px 24px;
@@ -1091,8 +1094,18 @@
 
 /* ── Tracker panel ── */
 #panel-tracker {
+  padding-top: 0;
   padding-bottom: 48px;
 }
+.tr-sticky-top {
+  position: sticky;
+  top: var(--tabs-h, 58px);
+  z-index: 190;
+  background: var(--bg);
+  border-bottom: 1px solid var(--border, #2e3248);
+  padding-bottom: 1px;
+}
+.tr-sticky-top .tr-toolbar { margin-bottom: 0; }
 .tr-stats { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 14px; align-items: center; }
 .tr-stat-btn {
   padding: 4px 14px; border-radius: 20px;
@@ -3602,6 +3615,13 @@ function trAddFromCard(job, btnEl) {
   trToast(`${job.company || 'Job'} added to Tracker.`);
 }
 
+function _updateStickyOffsets() {
+  const tabsH = document.getElementById('main-tabs').offsetHeight;
+  document.documentElement.style.setProperty('--tabs-h', tabsH + 'px');
+}
+window.addEventListener('load', _updateStickyOffsets);
+window.addEventListener('resize', _updateStickyOffsets);
+
 function switchTab(tab) {
   document.getElementById('panel-search').style.display = tab === 'search' ? '' : 'none';
   document.getElementById('panel-sites').style.display = tab === 'sites' ? '' : 'none';
@@ -3609,7 +3629,7 @@ function switchTab(tab) {
   document.getElementById('tab-btn-search').classList.toggle('active', tab === 'search');
   document.getElementById('tab-btn-sites').classList.toggle('active', tab === 'sites');
   document.getElementById('tab-btn-tracker').classList.toggle('active', tab === 'tracker');
-  if (tab === 'tracker') trRender();
+  if (tab === 'tracker') { trRender(); _updateStickyOffsets(); }
   localStorage.setItem('ejs_active_tab', tab);
 }
 
@@ -3638,23 +3658,25 @@ document.addEventListener('DOMContentLoaded', function() {
 
 <div id="panel-tracker" style="display:none">
 
-  <div id="tr-stats" class="tr-stats"></div>
+  <div class="tr-sticky-top">
+    <div id="tr-stats" class="tr-stats"></div>
 
-  <div class="tr-toolbar">
-    <input class="tr-search" id="tr-search" type="text" placeholder="Search company, role, notes…" oninput="trRender()">
-    <select class="tr-sort" id="tr-sort" onchange="trRender()">
-      <option value="dateDesc">Date (newest first)</option>
-      <option value="dateAsc">Date (oldest first)</option>
-      <option value="company">Company A–Z</option>
-      <option value="status">Status</option>
-      <option value="lastModified">Recently updated</option>
-    </select>
-    <button class="tr-btn tr-btn-primary" onclick="trOpenModal(null)">+ Add Job</button>
-    <button class="tr-btn" onclick="trExportCSV()">⬇ Export CSV</button>
-    <button class="tr-btn" onclick="trExportPDF()">🖨 Print / PDF</button>
-    <button class="tr-btn" onclick="document.getElementById('tr-import-input').click()">⬆ Import CSV</button>
-    <input type="file" id="tr-import-input" accept=".csv" style="display:none" onchange="trImportCSV(event)">
-  </div>
+    <div class="tr-toolbar">
+      <input class="tr-search" id="tr-search" type="text" placeholder="Search company, role, notes…" oninput="trRender()">
+      <select class="tr-sort" id="tr-sort" onchange="trRender()">
+        <option value="dateDesc">Date (newest first)</option>
+        <option value="dateAsc">Date (oldest first)</option>
+        <option value="company">Company A–Z</option>
+        <option value="status">Status</option>
+        <option value="lastModified">Recently updated</option>
+      </select>
+      <button class="tr-btn tr-btn-primary" onclick="trOpenModal(null)">+ Add Job</button>
+      <button class="tr-btn" onclick="trExportCSV()">⬇ Export CSV</button>
+      <button class="tr-btn" onclick="trExportPDF()">🖨 Print / PDF</button>
+      <button class="tr-btn" onclick="document.getElementById('tr-import-input').click()">⬆ Import CSV</button>
+      <input type="file" id="tr-import-input" accept=".csv" style="display:none" onchange="trImportCSV(event)">
+    </div>
+  </div><!-- end tr-sticky-top -->
 
   <div class="tr-table-wrap">
     <table class="tr-table">
