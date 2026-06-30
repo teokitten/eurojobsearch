@@ -9,6 +9,7 @@ import threading
 import traceback
 import concurrent.futures
 from datetime import datetime, timedelta, timezone
+from urllib.parse import quote_plus, urljoin
 from flask import Flask, jsonify, render_template, request
 
 import requests
@@ -30,6 +31,8 @@ SOURCES_CONFIG = [
     {"id": "GOOGLE_JOBS",        "label": "Google Jobs",       "method": "link_only", "pull_status": "link_only", "stable": False, "note": "Requires different implementation – visit site directly"},
     {"id": "GREENHOUSE",         "label": "Greenhouse",        "method": "api",       "stable": True,  "note": None},
     {"id": "KARRIERE_AT",        "label": "Karriere.at",       "method": "rss",       "stable": True,  "note": "Austria only"},
+    {"id": "PROFESSION_HU",      "label": "Profession.hu",     "method": "html",      "stable": False, "note": "Hungary only"},
+    {"id": "NOFLUFFJOBS",        "label": "No Fluff Jobs",     "method": "html",      "stable": False, "note": "Requires at least one selected country"},
     {"id": "EUROJOBS",           "label": "EuroJobs",          "method": "link_only", "pull_status": "link_only", "stable": False, "note": "RSS unavailable – visit site directly"},
     {"id": "WORKING_IN_CONTENT", "label": "Working in Content","method": "link_only", "pull_status": "link_only", "stable": False, "note": "Browse manually"},
     {"id": "REMOTIVE",        "label": "Remotive",         "method": "api", "stable": True,  "note": "Remote roles only"},
@@ -86,6 +89,7 @@ COUNTRY_MAP_INDEED = {
     "croatia":        "Croatia",
     "cyprus":         "Cyprus",
     "greece":         "Greece",
+    "hungary":        "Hungary",
     "italy":          "Italy",
     "malta":          "Malta",
     "portugal":       "Portugal",
@@ -138,6 +142,7 @@ _ATS_INCLUDE = {
     "croatia":        ["croatia", "zagreb", "split"],
     "cyprus":         ["cyprus", "nicosia"],
     "greece":         ["greece", "athens", "athina", "thessaloniki"],
+    "hungary":        ["hungary", "magyarorszag", "magyarország", "budapest", "debrecen", "szeged", "gyor", "győr"],
     "italy":          ["italy", "rome", "milan", "milano", "turin", "torino", "florence"],
     "malta":          ["malta", "valletta"],
     "portugal":       ["portugal", "lisbon", "lisboa", "porto"],
@@ -168,6 +173,7 @@ _EU_ISO_CODES: dict[str, str] = {
     "is": "iceland",      "lv": "latvia",        "lt": "lithuania",
     "no": "norway",       "se": "sweden",
     "hr": "croatia",      "cy": "cyprus",        "gr": "greece",
+    "hu": "hungary",
     "it": "italy",        "mt": "malta",         "pt": "portugal",
     "es": "spain",
     "cz": "czech_republic", "pl": "poland",
@@ -190,6 +196,8 @@ _EU_COUNTRY_NAMES: dict[str, str] = {
     "sverige": "sweden",          "croatia": "croatia",
     "cyprus": "cyprus",           "greece": "greece",
     "hellas": "greece",           "italy": "italy",
+    "hungary": "hungary",         "magyarorszag": "hungary",
+    "magyarország": "hungary",
     "italia": "italy",            "malta": "malta",
     "portugal": "portugal",       "spain": "spain",
     "españa": "spain",            "czech republic": "czech_republic",
@@ -272,6 +280,10 @@ _EU_CITIES: dict[str, str] = {
     # Greece
     "athens": "greece", "αθήνα": "greece", "thessaloniki": "greece",
     "piraeus": "greece",
+    # Hungary
+    "budapest": "hungary", "debrecen": "hungary", "szeged": "hungary",
+    "gyor": "hungary", "győr": "hungary", "pecs": "hungary",
+    "pécs": "hungary", "miskolc": "hungary",
     # Italy
     "milan": "italy", "milano": "italy", "rome": "italy", "roma": "italy",
     "turin": "italy", "torino": "italy", "naples": "italy", "napoli": "italy",
@@ -394,6 +406,10 @@ def _strip_html(text: str) -> str:
     return re.sub(r"<[^>]+>", " ", unescaped)
 
 
+def _normalize_whitespace(text: str) -> str:
+    return re.sub(r"\s+", " ", text or "").strip()
+
+
 _UNICODE_SPACES = re.compile(r"[\xa0  -​  　]+")
 
 def _normalize_title(title: str) -> str:
@@ -402,6 +418,14 @@ def _normalize_title(title: str) -> str:
     t = _UNICODE_SPACES.sub(" ", title)
     t = re.sub(r" {2,}", " ", t)
     return t.strip()
+
+
+def _source_request(url: str, timeout: int = 15) -> requests.Response:
+    return requests.get(
+        url,
+        timeout=timeout,
+        headers={"User-Agent": "Mozilla/5.0 (compatible; EuroJobSearch/1.0)"},
+    )
 
 
 def _location_matches(location_str: str, countries: list[str]) -> bool:
@@ -1302,6 +1326,156 @@ def _fetch_working_in_content(keywords: str) -> tuple[list, list[str]]:
 # New source fetchers
 # ---------------------------------------------------------------------------
 
+_NOFLUFF_LOCATION_ALIASES = {
+    "távmunka": "Remote",
+    "hybrydowo": "Hybrid",
+    "hybrid": "Hybrid",
+    "remote": "Remote",
+}
+
+
+def _location_label(text: str) -> str:
+    raw = _normalize_whitespace(text)
+    raw = re.sub(r"\s+\+\d+$", "", raw)
+    raw = raw.replace(" , ", ", ")
+    lowered = raw.lower()
+    for key, value in _NOFLUFF_LOCATION_ALIASES.items():
+        if lowered == key:
+            return value
+    return raw
+
+
+def _fetch_profession_hu(keywords: str, hours_old: int = 168) -> tuple[list, list[str]]:
+    try:
+        from bs4 import BeautifulSoup  # type: ignore
+    except ImportError:
+        return [], ["Profession.hu – beautifulsoup4 is required for HTML parsing."]
+
+    kw = quote_plus(keywords)
+    url = f"https://www.profession.hu/allasok/1,0,0,{kw}%401%401?keywordsearch"
+    print(f"[PROFESSION_HU] fetching: {url}")
+    try:
+        resp = _source_request(url, timeout=20)
+        resp.raise_for_status()
+        soup = BeautifulSoup(resp.text, "html.parser")
+        jobs = []
+        seen_urls: set[str] = set()
+
+        for card in soup.select("div.dsx-card__content"):
+            title_link = card.select_one("h2 a[href*='/allas/']")
+            if not title_link:
+                continue
+            href = title_link.get("href", "")
+            url_abs = urljoin("https://www.profession.hu", href)
+            if not href or url_abs in seen_urls:
+                continue
+            seen_urls.add(url_abs)
+
+            title = _normalize_whitespace(title_link.get_text(" ", strip=True))
+            if not title or title.lower() == "megnézem az állást":
+                continue
+
+            company_el = (
+                card.select_one("[id*='details-company-name'] .details-text")
+                or card.select_one("a[title*='karrier'] .details-text")
+            )
+            company = _normalize_whitespace(company_el.get_text(" ", strip=True) if company_el else "")
+            location_el = card.select_one("[id*='details-location'] .details-text")
+            location = _normalize_whitespace(location_el.get_text(" ", strip=True) if location_el else "Hungary")
+            if location and "hungary" not in location.lower() and "magyar" not in location.lower():
+                location = f"{location}, Hungary"
+            card_text = _normalize_whitespace(card.get_text(" ", strip=True))
+
+            jobs.append({
+                "id": _job_id(title, company or url_abs),
+                "title": title,
+                "company": company,
+                "location": location,
+                "source": "PROFESSION_HU",
+                "source_label": "Profession.hu",
+                "url": url_abs,
+                "date_posted": None,
+                "also_on": [],
+                "is_remote": any(term in location.lower() for term in ("remote", "távmunka")),
+                "is_hybrid": _detect_hybrid_text(title, location, card_text),
+                "description": card_text[:500],
+            })
+
+        if not jobs:
+            return [], ["Profession.hu – HTML loaded but no job cards matched the current parser."]
+
+        filtered = [job for job in jobs if _keyword_in(keywords, job["title"], job["description"])]
+        print(f"[PROFESSION_HU] parsed {len(jobs)} cards, kept {len(filtered)} after keyword filter")
+        return filtered, []
+    except Exception as e:
+        print(f"[PROFESSION_HU] exception – {e}")
+        return [], [f"Profession.hu – could not parse the site: {e}"]
+
+
+def _fetch_nofluffjobs(keywords: str, hours_old: int = 168) -> tuple[list, list[str]]:
+    try:
+        from bs4 import BeautifulSoup  # type: ignore
+    except ImportError:
+        return [], ["No Fluff Jobs – beautifulsoup4 is required for HTML parsing."]
+
+    kw = quote_plus(keywords)
+    url = f"https://nofluffjobs.com/hu/{kw}"
+    print(f"[NOFLUFFJOBS] fetching: {url}")
+    try:
+        resp = _source_request(url, timeout=20)
+        resp.raise_for_status()
+        soup = BeautifulSoup(resp.text, "html.parser")
+        jobs = []
+
+        for anchor in soup.select("a.posting-list-item[href*='/hu/job/']"):
+            title_el = anchor.select_one("[data-cy='title position on the job offer listing']")
+            if not title_el:
+                continue
+            title = _normalize_whitespace(title_el.get_text(" ", strip=True))
+            if not title:
+                continue
+
+            href = anchor.get("href", "")
+            url_abs = urljoin("https://nofluffjobs.com", href)
+            salary_el = anchor.select_one("[data-cy='salary ranges on the job offer listing']")
+            salary = _normalize_whitespace(salary_el.get_text(" ", strip=True) if salary_el else "")
+            company_el = anchor.select_one("h4.company-name")
+            company = _normalize_whitespace(company_el.get_text(" ", strip=True) if company_el else "")
+            location_el = anchor.select_one("[data-cy='location on the job offer listing']")
+            location = _location_label(location_el.get_text(" ", strip=True) if location_el else "")
+            tech_tags = [
+                _normalize_whitespace(tag.get_text(" ", strip=True))
+                for tag in anchor.select("[data-cy='category name on the job offer listing']")
+            ]
+            card_text = _normalize_whitespace(anchor.get_text(" ", strip=True))
+            description = _normalize_whitespace(" ".join([salary] + tech_tags + [card_text]))
+
+            jobs.append({
+                "id": _job_id(title, company or url_abs),
+                "title": title,
+                "company": company,
+                "location": location,
+                "source": "NOFLUFFJOBS",
+                "source_label": "No Fluff Jobs",
+                "url": url_abs,
+                "date_posted": None,
+                "also_on": [],
+                "is_remote": any(term in location.lower() for term in ("remote", "távmunka")),
+                "is_hybrid": _detect_hybrid_text(title, location, description),
+                "job_type": salary,
+                "description": description[:500],
+            })
+
+        if not jobs:
+            return [], ["No Fluff Jobs – HTML loaded but no job cards matched the current parser."]
+
+        filtered = [job for job in jobs if _keyword_in(keywords, job["title"], job["description"])]
+        print(f"[NOFLUFFJOBS] parsed {len(jobs)} cards, kept {len(filtered)} after keyword filter")
+        return filtered, []
+    except Exception as e:
+        print(f"[NOFLUFFJOBS] exception – {e}")
+        return [], [f"No Fluff Jobs – could not parse the site: {e}"]
+
 _REMOTIVE_KEEP = {"europe", "worldwide", "anywhere", "remote", "emea", "eu", "global"}
 
 
@@ -1348,6 +1522,13 @@ def _fetch_remotive(keywords: str, hours_old: int = 0) -> tuple[list, list[str]]
 
 
 _DACH = {"germany", "austria", "switzerland"}
+_NOFLUFF_SUPPORTED = {
+    "austria", "belgium", "croatia", "cyprus", "czech_republic", "denmark",
+    "estonia", "finland", "france", "germany", "greece", "hungary",
+    "iceland", "ireland", "italy", "latvia", "lithuania", "luxembourg",
+    "malta", "netherlands", "norway", "poland", "portugal", "romania",
+    "slovakia", "spain", "sweden", "switzerland", "united_kingdom",
+}
 
 
 def _fetch_arbeitnow(keywords: str, hours_old: int) -> tuple[list, list[str]]:
@@ -1559,7 +1740,7 @@ def _fetch_weworkremotely(keywords: str, hours_old: int) -> tuple[list, list[str
 
 _HYBRID_TERMS = [
     'hybrid', 'hybride', 'hybridní', 'teilweise remote', 'partial remote',
-    'partially remote', 'days in office', 'days onsite',
+    'partially remote', 'days in office', 'days onsite', 'hibrid',
     'homeoffice', 'home office', 'home-office', 'mobiles arbeiten',
     'mobil arbeiten', 'bürotage', 'officetage', 'im büro',
     'tage im büro', 'tage vor ort', 'vor ort und remote',
@@ -1570,7 +1751,7 @@ _HYBRID_TERMS = [
 ]
 _FULLY_REMOTE_TERMS = [
     'fully remote', '100% remote', 'remote only', 'remote-first',
-    'vollständig remote', 'completamente remoto',
+    'vollständig remote', 'completamente remoto', 'távmunka',
 ]
 
 
@@ -1600,12 +1781,14 @@ SOURCE_PRIORITY = {
     "GOOGLE_JOBS":        4,
     "LINKEDIN_EU":        5,
     "KARRIERE_AT":        6,
-    "EUROJOBS":           7,
-    "WORKING_IN_CONTENT": 8,
-    "ARBEITNOW":          9,
-    "REMOTIVE":           11,
-    "JOBICY":             12,
-    "WEWORKREMOTELY":     13,
+    "PROFESSION_HU":      7,
+    "NOFLUFFJOBS":        8,
+    "EUROJOBS":           9,
+    "WORKING_IN_CONTENT": 10,
+    "ARBEITNOW":          11,
+    "REMOTIVE":           12,
+    "JOBICY":             13,
+    "WEWORKREMOTELY":     14,
 }
 
 
@@ -1699,6 +1882,12 @@ def api_search():
 
         if "KARRIERE_AT" in sources and "austria" in countries:
             futures_map["KARRIERE_AT"] = pool.submit(_fetch_karriere_at, keywords, hours_old)
+
+        if "PROFESSION_HU" in sources and "hungary" in countries:
+            futures_map["PROFESSION_HU"] = pool.submit(_fetch_profession_hu, keywords, hours_old)
+
+        if "NOFLUFFJOBS" in sources and _NOFLUFF_SUPPORTED.intersection(countries):
+            futures_map["NOFLUFFJOBS"] = pool.submit(_fetch_nofluffjobs, keywords, hours_old)
 
         if "REMOTIVE" in sources:
             futures_map["REMOTIVE"] = pool.submit(_fetch_remotive, keywords)

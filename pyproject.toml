@@ -1,0 +1,21 @@
+[project]
+name = "eurojobsearch"
+version = "0.1.0"
+description = "A Flask-based job search aggregator for the European job market."
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+  "flask>=3.1.1,<4.0.0",
+  "requests>=2.32.4,<3.0.0",
+  "feedparser>=6.0.11,<7.0.0",
+  "python-jobspy>=1.1.79,<2.0.0; python_version >= '3.12' and python_version < '4.0'",
+  "beautifulsoup4>=4.13.4,<5.0.0",
+  "python-dotenv>=1.1.1,<2.0.0",
+]
+
+[tool.poetry]
+package-mode = false
+
+[build-system]
+requires = ["poetry-core>=1.9.0"]
+build-backend = "poetry.core.masonry.api"

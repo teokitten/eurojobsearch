@@ -56,6 +56,8 @@ const MOCK_DATA = {
     { "id": "LINKEDIN_EU", "label": "LinkedIn", "pull_status": "ok" },
     { "id": "GREENHOUSE", "label": "Greenhouse", "pull_status": "ok" },
     { "id": "KARRIERE_AT", "label": "Karriere.at", "pull_status": "ok" },
+    { "id": "PROFESSION_HU", "label": "Profession.hu", "pull_status": "ok" },
+    { "id": "NOFLUFFJOBS", "label": "No Fluff Jobs", "pull_status": "ok" },
     { "id": "ARBEITNOW", "label": "Arbeitnow", "pull_status": "ok" },
     { "id": "REMOTIVE", "label": "Remotive", "pull_status": "ok" },
     { "id": "JOBICY", "label": "Jobicy", "pull_status": "ok" },
@@ -108,7 +110,9 @@ const MOCK_DATA = {
     { "id": "job-44", "title": "Project Manager", "company": "Alpenrose Systems", "source": "KARRIERE_AT", "source_label": "Karriere.at", "location": "Vienna, Austria", "url": null, "date_posted": "2026-06-13T11:00:00Z", "is_remote": false, "is_hybrid": true, "job_type": "Full-time", "detected_countries": ["austria"], "description": "Manage timelines and stakeholder communication for a renewable-energy software platform. Hybrid role, two office days per week in Vienna." },
     { "id": "job-45", "title": "Associate Product Manager", "company": "Castlewood Tech", "source": "LINKEDIN_EU", "source_label": "LinkedIn", "location": "Copenhagen, Denmark", "url": null, "date_posted": "2026-06-06T09:00:00Z", "is_remote": false, "is_hybrid": true, "job_type": "Full-time", "detected_countries": ["denmark"], "description": "Support roadmap planning and user research for a consumer subscription app. Hybrid schedule based in our Copenhagen office." },
     { "id": "job-46", "title": "Technical Writer", "company": "Birchgate Software", "source": "INDEED_EU", "source_label": "Indeed EU", "location": "Vienna, Austria", "url": null, "date_posted": "2026-06-15T05:00:00Z", "is_remote": false, "is_hybrid": true, "job_type": "Full-time", "detected_countries": ["austria"], "description": "Own user-facing documentation for a DevOps tooling platform. Hybrid role, two office days per week in Vienna. Docs-as-code workflow with Markdown and Git." },
-    { "id": "job-47", "title": "Frontend Developer", "company": "Pinecrest Digital", "source": "ARBEITNOW", "source_label": "Arbeitnow", "location": "Graz, Austria", "url": null, "date_posted": "2026-06-15T07:30:00Z", "is_remote": false, "is_hybrid": false, "job_type": "Full-time", "detected_countries": ["austria"], "description": "Build customer-facing features in React and TypeScript for a logistics scheduling tool. On-site role in our Graz office." }
+    { "id": "job-47", "title": "Frontend Developer", "company": "Pinecrest Digital", "source": "ARBEITNOW", "source_label": "Arbeitnow", "location": "Graz, Austria", "url": null, "date_posted": "2026-06-15T07:30:00Z", "is_remote": false, "is_hybrid": false, "job_type": "Full-time", "detected_countries": ["austria"], "description": "Build customer-facing features in React and TypeScript for a logistics scheduling tool. On-site role in our Graz office." },
+    { "id": "job-48", "title": "Python Technical Lead", "company": "HumanField Kft.", "source": "PROFESSION_HU", "source_label": "Profession.hu", "location": "Hybrid - Budapest, Hungary", "url": null, "date_posted": "2026-06-14T09:30:00Z", "is_remote": false, "is_hybrid": true, "job_type": "Full-time", "detected_countries": ["hungary"], "description": "Lead Python platform work for an AI and data team in Budapest. Hybrid setup with strong mentoring and architecture ownership." },
+    { "id": "job-49", "title": "Senior AI Engineer", "company": "delaware Consulting Hungary Kft.", "source": "NOFLUFFJOBS", "source_label": "No Fluff Jobs", "location": "Budapest, Hungary", "url": null, "date_posted": "2026-06-15T06:45:00Z", "is_remote": false, "is_hybrid": false, "job_type": "1.6M - 1.9M HUF", "detected_countries": ["hungary"], "description": "Build AI systems in Python with Azure and RAG workflows for enterprise delivery in Budapest." }
   ]
 };
 
@@ -119,6 +123,8 @@ const SOURCE_HOMEPAGES = {
   LINKEDIN_EU: 'https://www.linkedin.com/jobs',
   GREENHOUSE: 'https://www.greenhouse.io',
   KARRIERE_AT: 'https://www.karriere.at',
+  PROFESSION_HU: 'https://www.profession.hu',
+  NOFLUFFJOBS: 'https://nofluffjobs.com',
   ARBEITNOW: 'https://www.arbeitnow.com',
   REMOTIVE: 'https://remotive.com',
   JOBICY: 'https://jobicy.com',
