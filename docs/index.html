@@ -1106,6 +1106,7 @@
   margin-right: -32px;
   padding-left: 32px;
   padding-right: 32px;
+  will-change: transform;
   border-bottom: 1px solid var(--border, #2e3248);
   padding-bottom: 1px;
 }
@@ -1150,7 +1151,7 @@
 .tr-btn-primary { background: var(--accent, #5b6ef5); border-color: var(--accent, #5b6ef5); color: #fff; }
 .tr-btn-primary:hover { background: var(--accent-h, #4a5ce0); }
 
-.tr-table-wrap { overflow-x: auto; }
+.tr-table-wrap { overflow-x: auto; position: relative; z-index: 1; }
 .tr-table { width: 100%; border-collapse: collapse; min-width: 800px; }
 .tr-table thead th {
   text-align: left; padding: 8px 10px; font-size: 11px; font-weight: 600;
