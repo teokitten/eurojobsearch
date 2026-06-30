@@ -1147,6 +1147,19 @@
 .tr-td-notes { max-width: 200px; color: var(--text-s, #9098b1); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: pointer; }
 .tr-td-notes.open { white-space: normal; overflow: visible; }
 .tr-badge { display: inline-block; padding: 2px 10px; border-radius: 20px; font-size: 12px; font-weight: 500; }
+.tr-status-select {
+  border: none;
+  outline: none;
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+  padding-right: 18px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%239098b1'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 5px center;
+  background-size: 8px 5px;
+  font-family: inherit;
+}
 .tr-badge-Applied { background: #1c2d4a; color: #388bfd; }
 .tr-stat-btn.active-allApplied { border-color: #388bfd; color: #388bfd; }
 .tr-stat-btn.active-Applied { border-color: #388bfd; color: #388bfd; }
@@ -1204,7 +1217,6 @@
 .tr-toast.show { opacity: 1; transform: translateY(0); }
 
 .card-track-btn {
-  margin-top: 8px;
   padding: 5px 14px;
   background: transparent;
   border: 1px solid var(--accent, #5b6ef5);
@@ -1214,7 +1226,7 @@
   font-weight: 500;
   cursor: pointer;
   transition: all .15s;
-  display: inline-block;
+  white-space: nowrap;
 }
 .card-track-btn:hover {
   background: var(--accent, #5b6ef5);
@@ -1227,8 +1239,6 @@
   background: transparent;
 }
 .card-remove-btn {
-  margin-top: 8px;
-  margin-left: 6px;
   padding: 5px 14px;
   background: transparent;
   border: 1px solid var(--border);
@@ -1238,11 +1248,19 @@
   font-weight: 500;
   cursor: pointer;
   transition: all .15s;
-  display: inline-block;
+  white-space: nowrap;
 }
 .card-remove-btn:hover {
   border-color: #f85149;
   color: #f85149;
+}
+
+
+.card-btn-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 8px;
 }
 .card-confirm-wrap {
   margin-top: 8px;
@@ -1758,6 +1776,7 @@ function _getViewedSeenIds() {
 // Module-level Set of job seen-IDs for the current search result only.
 // Reset on every search so stale IDs never bleed across searches.
 let newJobIds = new Set();
+let sessionNewJobSids = new Set();
 
 function _jobSeenId(job) {
   const t = (job.title   || '').toLowerCase().replace(/\s+/g, ' ').trim();
@@ -2316,6 +2335,7 @@ async function runSearch() {
         localStorage.setItem(EJS_SEEN_KEY, JSON.stringify(seen));
       }
     } catch (_) {}
+    sessionNewJobSids = new Set(newJobIds);
 
     // Demo only: on every search, mark the 3 newest matching results as NEW
     // unless they have already been viewed (clicked) by the user.
@@ -2361,15 +2381,6 @@ function _markViewed(id, card) {
       vsids.add(sid);
       localStorage.setItem(EJS_VIEWED_SEENIDS_KEY, JSON.stringify([...vsids]));
     } catch {}
-    // Move card below all remaining NEW cards
-    const list = card.parentElement;
-    if (list) {
-      const newCards = [...list.children].filter(c => c !== card && c.querySelector('.new-badge'));
-      if (newCards.length > 0) {
-        const lastNew = newCards[newCards.length - 1];
-        list.insertBefore(card, lastNew.nextSibling);
-      }
-    }
   }
   const existing = card.querySelector('.viewed-badge');
   if (!existing) {
@@ -2492,7 +2503,8 @@ function detectJobCountry(job) {
 
 function buildWorkModelFilters() {
   // Base: source + country filtered (excludes work-model filter)
-  const base = state.allResults.filter(j => _srcPredicate(j) && _countryPredicate(j));
+  const hidden = _getHidden();
+  const base = state.allResults.filter(j => !hidden.has(_jobSeenId(j)) && _srcPredicate(j) && _countryPredicate(j));
   const row = document.getElementById('workmodel-filters');
   row.innerHTML = '';
 
@@ -2531,7 +2543,8 @@ function buildWorkModelFilters() {
 
 function buildCountryFilters() {
   // Base: source + WM filtered (excludes country filter)
-  const base = state.allResults.filter(j => _srcPredicate(j) && _wmPredicate(j));
+  const hidden = _getHidden();
+  const base = state.allResults.filter(j => !hidden.has(_jobSeenId(j)) && _srcPredicate(j) && _wmPredicate(j));
   const row = document.getElementById('country-filters');
   row.innerHTML = '';
 
@@ -2658,7 +2671,8 @@ function applyFilters(jobs) {
 
 function _updateSourceButtonCounts() {
   // Base: WM + country filtered (excludes source filter)
-  const base = state.allResults.filter(j => _wmPredicate(j) && _countryPredicate(j));
+  const hidden = _getHidden();
+  const base = state.allResults.filter(j => !hidden.has(_jobSeenId(j)) && _wmPredicate(j) && _countryPredicate(j));
   document.querySelectorAll('#source-filters [data-source]').forEach(btn => {
     const src = btn.dataset.source;
     if (src === 'ALL') return;
@@ -2758,8 +2772,8 @@ function renderJobList() {
   const filtered = applyFilters(state.allResults);
 
   // NEW jobs float to the top. Everything else stays in server order.
-  const _newJobs = filtered.filter(j =>  newJobIds.has(_jobSeenId(j)));
-  const _oldJobs = filtered.filter(j => !newJobIds.has(_jobSeenId(j)));
+  const _newJobs = filtered.filter(j =>  sessionNewJobSids.has(_jobSeenId(j)));
+  const _oldJobs = filtered.filter(j => !sessionNewJobSids.has(_jobSeenId(j)));
   filtered.length = 0;
   _newJobs.forEach(j => filtered.push(j));
   _oldJobs.forEach(j => filtered.push(j));
@@ -2816,7 +2830,8 @@ function renderJobList() {
 // ============================================================
 function buildSourceFilters(results, queriedSources) {
   const countMap = {};
-  results.forEach(j => { countMap[j.source] = (countMap[j.source] || 0) + 1; });
+  const _hidden = _getHidden();
+  results.filter(j => !_hidden.has(_jobSeenId(j))).forEach(j => { countMap[j.source] = (countMap[j.source] || 0) + 1; });
 
   const container = document.getElementById('source-filters');
   container.innerHTML = '';
@@ -2893,8 +2908,10 @@ function buildJobCard(job) {
       ${dateStr ? `<span class="job-date">${dateStr}</span>` : ''}
       ${alsoOnStr}
     </div>
-    <button class="card-track-btn" data-track="true" data-job-url="${job.url || ''}">Add to Tracker</button>
-    <button class="card-remove-btn" data-remove="true">Remove from results</button>
+    <div class="card-btn-row">
+      <button class="card-track-btn" data-track="true" data-job-url="${job.url || ''}">Add to Tracker</button>
+      <button class="card-remove-btn" data-remove="true">Remove from results</button>
+    </div>
   `;
 
   card._jobData = job;
@@ -2920,6 +2937,7 @@ function buildJobCard(job) {
         const sid = _jobSeenId(job);
         _addHidden(sid);
         newJobIds.delete(sid);
+        sessionNewJobSids.delete(sid);
         state.allResults = state.allResults.filter(j => _jobSeenId(j) !== sid);
         card.style.transition = 'opacity 0.4s, transform 0.4s';
         card.style.opacity = '0';
@@ -3288,7 +3306,9 @@ function trRender() {
       <td class="tr-td-role" title="${trX(j.title)}">${trX(j.title)}</td>
       <td style="color:var(--text-s);font-size:12px">${trX(loc)}</td>
       <td>${platCell}</td>
-      <td><span class="tr-badge tr-badge-${trX(j.status)}">${trX(j.status)}</span></td>
+      <td><select class="tr-status-select tr-badge tr-badge-${trX(j.status)}" onchange="trUpdateStatus('${j.id}', this.value)">
+        ${TR_STATUSES.map(s => `<option value="${s}"${s === j.status ? ' selected' : ''}>${s}</option>`).join('')}
+      </select></td>
       <td style="color:var(--text-s);font-size:12px;white-space:nowrap">${dateStr}</td>
       <td class="tr-td-notes" onclick="this.classList.toggle('open')" title="${trX(j.notes || '')}">${j.notes ? trX(j.notes) : '<span style="opacity:.4">—</span>'}</td>
       <td style="white-space:nowrap">
@@ -3360,7 +3380,17 @@ function trSaveJob() {
     trJobs.unshift({ id: 'tr' + Date.now(), ...data });
     trToast('Added.');
   }
-  trPersist(); trCloseModal(); trRender();
+  trPersist(); trCloseModal(true); trRender();
+}
+
+function trUpdateStatus(id, newStatus) {
+  const job = trJobs.find(j => j.id === id);
+  if (!job) return;
+  job.status = newStatus;
+  job.lastModified = new Date().toISOString();
+  trPersist();
+  trRender();
+  trToast('Status updated.');
 }
 
 function trDelJob(id) {
@@ -3646,7 +3676,7 @@ document.addEventListener('DOMContentLoaded', function() {
     <div class="tr-modal">
       <div class="tr-modal-head">
         <span id="tr-modal-title">Add Job</span>
-        <button class="tr-modal-x" onclick="trCloseModal()">✕</button>
+        <button class="tr-modal-x" onclick="trCloseModal(true)">✕</button>
       </div>
       <div class="tr-modal-body">
         <div class="tr-row2">

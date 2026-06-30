@@ -1147,6 +1147,19 @@
 .tr-td-notes { max-width: 200px; color: var(--text-s, #9098b1); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: pointer; }
 .tr-td-notes.open { white-space: normal; overflow: visible; }
 .tr-badge { display: inline-block; padding: 2px 10px; border-radius: 20px; font-size: 12px; font-weight: 500; }
+.tr-status-select {
+  border: none;
+  outline: none;
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+  padding-right: 18px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%239098b1'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 5px center;
+  background-size: 8px 5px;
+  font-family: inherit;
+}
 .tr-badge-Applied { background: #1c2d4a; color: #388bfd; }
 .tr-stat-btn.active-allApplied { border-color: #388bfd; color: #388bfd; }
 .tr-stat-btn.active-Applied { border-color: #388bfd; color: #388bfd; }
@@ -3100,7 +3113,9 @@ function trRender() {
       <td class="tr-td-role" title="${trX(j.title)}">${trX(j.title)}</td>
       <td style="color:var(--text-s);font-size:12px">${trX(loc)}</td>
       <td>${platCell}</td>
-      <td><span class="tr-badge tr-badge-${trX(j.status)}">${trX(j.status)}</span></td>
+      <td><select class="tr-status-select tr-badge tr-badge-${trX(j.status)}" onchange="trUpdateStatus('${j.id}', this.value)">
+        ${TR_STATUSES.map(s => `<option value="${s}"${s === j.status ? ' selected' : ''}>${s}</option>`).join('')}
+      </select></td>
       <td style="color:var(--text-s);font-size:12px;white-space:nowrap">${dateStr}</td>
       <td class="tr-td-notes" onclick="this.classList.toggle('open')" title="${trX(j.notes || '')}">${j.notes ? trX(j.notes) : '<span style="opacity:.4">—</span>'}</td>
       <td style="white-space:nowrap">
@@ -3173,6 +3188,16 @@ function trSaveJob() {
     trToast('Added.');
   }
   trPersist(); trCloseModal(true); trRender();
+}
+
+function trUpdateStatus(id, newStatus) {
+  const job = trJobs.find(j => j.id === id);
+  if (!job) return;
+  job.status = newStatus;
+  job.lastModified = new Date().toISOString();
+  trPersist();
+  trRender();
+  trToast('Status updated.');
 }
 
 function trDelJob(id) {
