@@ -105,6 +105,8 @@ The **Other Sources** tab lists job boards and company career pages that don't h
 
 ## Job Application Tracker
 
+![Job Application Tracker screenshot](docs/screenshot2.png)
+
 A built-in tracker tab lets you manage job applications without leaving the app. Data is stored locally in your browser (localStorage) and persists across sessions.
 
 ### Adding jobs
