@@ -1184,6 +1184,8 @@
 .tr-badge-Interviewing { background: #1a3a1f; color: #3fb950; }
 .tr-badge-Rejected { background: #311c1c; color: #e5534b; }
 .tr-badge-Saved { background: #3a2e0e; color: #d29922; }
+.tr-badge-Offer { background: #3a1d5c; color: #a371f7; }
+.tr-stat-btn.active-Offer { border-color: #a371f7; color: #a371f7; }
 .tr-plat-link {
   color: var(--accent, #5b6ef5);
   text-decoration: none;
@@ -1195,6 +1197,26 @@
 .tr-btn-icon:hover { background: var(--surface2, #21262d); color: var(--text, #e6edf3); }
 .tr-btn-icon.del:hover { border-color: #e5534b; color: #e5534b; }
 .tr-empty { text-align: center; padding: 48px 24px; color: var(--text-s, #9098b1); }
+
+.tr-iw-toggle{background:none;border:none;color:var(--text-s,#9098b1);font-size:11px;cursor:pointer;display:inline-flex;align-items:center;gap:3px;padding:2px 4px;border-radius:4px}
+.tr-iw-toggle:hover{background:var(--surface2,#21262d);color:var(--text,#e6edf3)}
+.tr-iw-chevron{display:inline-block;transition:transform .15s}
+.tr-iw-chevron.open{transform:rotate(180deg)}
+.tr-iw-expand-row td{background:var(--surface,#161b22);padding:8px 10px;border-bottom:1px solid var(--border,#2e3248)}
+.tr-iw-rounds-wrap{display:flex;gap:6px;flex-wrap:nowrap;align-items:center;overflow-x:auto;padding-bottom:2px}
+.tr-iw-chip{display:inline-flex;align-items:center;gap:5px;padding:3px 8px;border-radius:6px;font-size:11px;background:var(--surface2,#21262d);border:1px solid var(--border,#2e3248);color:var(--text-s,#9098b1)}
+.tr-iw-chip.upcoming{background:#3a2e0e;color:#d29922;border-color:transparent}
+.tr-iw-chip.failed{background:#311c1c;color:#e5534b;border-color:transparent}
+.tr-iw-chip-check{cursor:pointer;color:#3fb950;min-width:10px;display:inline-block}
+.tr-iw-chip-icon-fail{color:#e5534b;display:inline-block;min-width:10px}
+.tr-iw-chip-link{color:inherit;text-decoration:none;opacity:.7}
+.tr-iw-chip-link:hover{opacity:1}
+.tr-iw-chip-edit{cursor:pointer;opacity:.6}
+.tr-iw-chip-edit:hover{opacity:1}
+.tr-iw-add-btn{padding:3px 10px;background:var(--surface2,#21262d);border:1px solid var(--border,#2e3248);border-radius:4px;color:var(--text,#e6edf3);font-size:11px;cursor:pointer}
+.tr-iw-add-btn:hover{background:var(--border,#2e3248)}
+input[type="date"]::-webkit-calendar-picker-indicator,
+input[type="datetime-local"]::-webkit-calendar-picker-indicator{filter:invert(1);cursor:pointer}
 
 .tr-overlay {
   position: fixed; inset: 0; background: rgba(0,0,0,.7);
@@ -1316,8 +1338,13 @@
   #tr-overlay,
   #tr-toast,
   .tr-btn-icon,
+  .tr-iw-toggle,
+  .tr-iw-expand-row,
+  #tr-roundOverlay,
   #panel-tracker .tr-table thead th:last-child,
-  #panel-tracker .tr-table tbody td:last-child {
+  #panel-tracker .tr-table tbody td:last-child,
+  #panel-tracker .tr-table thead th:nth-child(7),
+  #panel-tracker .tr-table tbody td:nth-child(7) {
     display: none !important;
   }
 
@@ -3054,11 +3081,14 @@ if (_didRestore) showRestoreNotice();
 
 // ── Tracker ──────────────────────────────────────────────────────────────
 const TR_KEY = 'ejs_tracker_v1';
-const TR_STATUSES = ['Saved', 'Applied', 'Interviewing', 'Rejected'];
+const TR_STATUSES = ['Saved', 'Applied', 'Interviewing', 'Offer', 'Rejected'];
 let trJobs = [];
 let trFilter = 'all';
 let trEditId = null;
 let trToastTimer;
+let trExpandedInterviews = new Set();
+let trRoundEditJobId = null;
+let trRoundEditId = null;
 
 function trLoad() {
   try { const raw = localStorage.getItem(TR_KEY); trJobs = raw ? JSON.parse(raw) : []; }
@@ -3070,10 +3100,10 @@ function trPersist() { localStorage.setItem(TR_KEY, JSON.stringify(trJobs)); }
 function trRender() {
   const q = (document.getElementById('tr-search').value || '').toLowerCase();
   const srt = document.getElementById('tr-sort').value;
-  const ORDER = { Applied: 0, Interviewing: 1, Saved: 2, Rejected: 3 };
+  const ORDER = { Applied: 0, Interviewing: 1, Saved: 2, Rejected: 3, Offer: 4 };
 
   let list = trJobs.filter(j => {
-    if (trFilter === 'allApplied') return ['Applied', 'Interviewing', 'Rejected'].includes(j.status);
+    if (trFilter === 'allApplied') return ['Applied', 'Interviewing', 'Offer', 'Rejected'].includes(j.status);
     if (trFilter !== 'all' && j.status !== trFilter) return false;
     if (q) {
       const hay = [j.company, j.title, j.platform, j.location, j.notes].join(' ').toLowerCase();
@@ -3096,14 +3126,15 @@ function trRender() {
     return srt === 'dateAsc' ? da - db : db - da;
   });
 
-  const counts = { Saved: 0, Applied: 0, Interviewing: 0, Rejected: 0 };
+  const counts = { Saved: 0, Applied: 0, Interviewing: 0, Offer: 0, Rejected: 0 };
   trJobs.forEach(j => { if (counts[j.status] !== undefined) counts[j.status]++; });
-  const allAppliedCount = counts.Applied + counts.Interviewing + counts.Rejected;
+  const allAppliedCount = counts.Applied + counts.Interviewing + counts.Offer + counts.Rejected;
   const statDefs = [
     { key: 'all',          label: 'All',              count: trJobs.length },
     { key: 'Saved',        label: 'Saved',            count: counts.Saved },
     { key: 'Applied',      label: 'Applied',          count: counts.Applied },
     { key: 'Interviewing', label: 'Interviewing',     count: counts.Interviewing },
+    { key: 'Offer',        label: 'Offer',            count: counts.Offer },
     { key: 'Rejected',     label: 'Rejected',         count: counts.Rejected },
     { key: 'allApplied',   label: 'All Applications', count: allAppliedCount },
   ];
@@ -3131,20 +3162,201 @@ function trRender() {
       <td class="tr-td-role" title="${trX(j.title)}">${trX(j.title)}</td>
       <td style="color:var(--text-s);font-size:12px">${trX(loc)}</td>
       <td>${platCell}</td>
-      <td><select class="tr-status-select tr-badge tr-badge-${trX(j.status)}" onchange="trUpdateStatus('${j.id}', this.value)">
-        ${TR_STATUSES.map(s => `<option value="${s}"${s === j.status ? ' selected' : ''}>${s}</option>`).join('')}
-      </select></td>
+      <td>
+        <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+          <select class="tr-status-select tr-badge tr-badge-${trX(j.status)}" onchange="trUpdateStatus('${j.id}', this.value)">
+            ${TR_STATUSES.map(s => `<option value="${s}"${s === j.status ? ' selected' : ''}>${s}</option>`).join('')}
+          </select>
+          ${trInterviewSummaryHtml(j)}
+        </div>
+      </td>
       <td style="color:var(--text-s);font-size:12px;white-space:nowrap">${dateStr}</td>
       <td class="tr-td-notes" onclick="this.classList.toggle('open')" title="${trX(j.notes || '')}">${j.notes ? trX(j.notes) : '<span style="opacity:.4">—</span>'}</td>
       <td style="white-space:nowrap">
         <button class="tr-btn-icon" title="Edit" onclick="trOpenModal('${j.id}')">✎</button>
         <button class="tr-btn-icon del" title="Delete" onclick="trDelJob('${j.id}')">✕</button>
       </td>
-    </tr>`;
+    </tr>` + ((j.interviewRounds && j.interviewRounds.length && trExpandedInterviews.has(j.id)) ? trRenderInterviewExpandRow(j) : '');
   }).join('');
 }
 
 function trSetFilter(f) { trFilter = f; trRender(); }
+
+function trIsRoundDone(r) {
+  if (r.outcome === 'passed' || r.outcome === 'failed') return true;
+  if (typeof r.done === 'boolean') return r.done;
+  return false;
+}
+
+function trSetRoundOutcome(jobId, roundId, outcome) {
+  const job = trJobs.find(j => j.id === jobId);
+  if (!job) return;
+  const round = (job.interviewRounds || []).find(r => r.id === roundId);
+  if (!round) return;
+  const turningOn = round.outcome !== outcome;
+  round.outcome = turningOn ? outcome : null;
+  round.done = turningOn ? true : null;
+  job.lastModified = new Date().toISOString();
+  trPersist();
+  trRender();
+}
+
+function trInterviewSummaryHtml(j) {
+  const rounds = j.interviewRounds || [];
+  if (!rounds.length) {
+    if (j.status !== 'Interviewing') return '';
+    return `<button class="tr-iw-toggle" onclick="trOpenRoundModal('${j.id}', null)">+ interview date</button>`;
+  }
+  const now = new Date();
+  const nextUpcoming = rounds.filter(r => !trIsRoundDone(r) && new Date(r.datetime) >= now)
+    .sort((a, b) => new Date(a.datetime) - new Date(b.datetime))[0];
+  const label = (j.status === 'Interviewing' && nextUpcoming)
+    ? trFmtRoundDate(nextUpcoming.datetime)
+    : `${rounds.length} round${rounds.length > 1 ? 's' : ''}`;
+  const open = trExpandedInterviews.has(j.id);
+  return `<button class="tr-iw-toggle" onclick="trToggleInterview('${j.id}')" title="Interview rounds">
+    <span class="tr-iw-chevron${open ? ' open' : ''}">&#9662;</span> ${label}
+  </button>`;
+}
+
+function trRenderInterviewExpandRow(j) {
+  const rounds = (j.interviewRounds || []).slice().sort((a, b) => new Date(a.datetime) - new Date(b.datetime));
+  const hasFailed = rounds.some(r => r.outcome === 'failed');
+  const lockAdd = j.status === 'Offer' || (hasFailed && j.status === 'Rejected');
+  const chips = rounds.map((r, i) => {
+    const failed = r.outcome === 'failed';
+    const done = trIsRoundDone(r);
+    const outcomeClass = failed ? 'failed' : (done ? 'done' : 'upcoming');
+    const leadIcon = failed
+      ? `<span class="tr-iw-chip-icon-fail" title="Failed">&#10007;</span>`
+      : `<span class="tr-iw-chip-check" onclick="trSetRoundOutcome('${j.id}','${r.id}','passed')" title="${done ? 'Clear passed status' : 'Mark as Passed'}">${done ? '&#10003;' : ''}</span>`;
+    const parts = [`Round ${i + 1} &middot; ${trFmtRoundDate(r.datetime)}`];
+    if (r.type) parts.push(trX(r.type));
+    return `<span class="tr-iw-chip ${outcomeClass}">
+      ${leadIcon}
+      <span${done ? ' style="text-decoration:line-through"' : ''}>${parts.join(' &middot; ')}</span>
+      ${r.link ? `<a href="${trX(r.link)}" target="_blank" rel="noopener" class="tr-iw-chip-link" title="Meeting link">&#128279;</a>` : ''}
+      <span class="tr-iw-chip-edit" onclick="trOpenRoundModal('${j.id}','${r.id}')" title="Edit">&#9998;</span>
+    </span>`;
+  }).join('');
+  return `<tr class="tr-iw-expand-row">
+    <td colspan="4"></td>
+    <td colspan="4">
+      <div class="tr-iw-rounds-wrap">
+        ${chips}
+        ${lockAdd ? '' : `<button class="tr-iw-add-btn" onclick="trOpenRoundModal('${j.id}', null)">+ Add round</button>`}
+      </div>
+    </td>
+  </tr>`;
+}
+
+function trToggleInterview(id) {
+  if (trExpandedInterviews.has(id)) trExpandedInterviews.delete(id);
+  else trExpandedInterviews.add(id);
+  trRender();
+}
+
+function trRemoveRound(jobId, roundId) {
+  const job = trJobs.find(j => j.id === jobId);
+  if (!job || !job.interviewRounds) return false;
+  if (!confirm('Remove this round?')) return false;
+  job.interviewRounds = job.interviewRounds.filter(r => r.id !== roundId);
+  job.lastModified = new Date().toISOString();
+  trPersist();
+  trRender();
+  return true;
+}
+
+function trFmtRoundDate(dtStr) {
+  const d = new Date(dtStr);
+  return d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short' }) + ' &middot; ' +
+    d.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', hour12: false });
+}
+
+function trUpdateRoundLinkVisibility() {
+  const typeVal = (document.getElementById('tr-fRoundType').value || '').trim().toLowerCase();
+  const wrap = document.getElementById('tr-fRoundLinkField');
+  if (wrap) wrap.style.display = (typeVal === 'online') ? '' : 'none';
+}
+
+function trOpenRoundModal(jobId, roundId) {
+  trRoundEditJobId = jobId;
+  trRoundEditId = roundId || null;
+  document.getElementById('tr-roundModalTitle').textContent = roundId ? 'Edit Round' : 'Add Round';
+  const job = trJobs.find(j => j.id === jobId);
+  const r = (roundId && job) ? (job.interviewRounds || []).find(rr => rr.id === roundId) : null;
+  if (r) {
+    const dt = new Date(r.datetime);
+    document.getElementById('tr-fRoundDate').value = dt.toISOString().slice(0, 10);
+    document.getElementById('tr-fRoundHour').value = String(dt.getHours()).padStart(2, '0');
+    document.getElementById('tr-fRoundMin').value = String(Math.floor(dt.getMinutes() / 15) * 15).padStart(2, '0');
+    document.getElementById('tr-fRoundType').value = r.type || '';
+    document.getElementById('tr-fRoundLink').value = r.link || '';
+    trUpdateRoundLinkVisibility();
+    document.getElementById('tr-fRoundAttendees').value = r.attendees || '';
+    document.getElementById('tr-fRoundNotes').value = r.notes || '';
+    document.getElementById('tr-fRoundOutcome').value = r.outcome || '';
+  } else {
+    const now = new Date();
+    document.getElementById('tr-fRoundDate').value = now.toISOString().slice(0, 10);
+    document.getElementById('tr-fRoundHour').value = '09';
+    document.getElementById('tr-fRoundMin').value = '00';
+    document.getElementById('tr-fRoundType').value = '';
+    document.getElementById('tr-fRoundLink').value = '';
+    trUpdateRoundLinkVisibility();
+    document.getElementById('tr-fRoundAttendees').value = '';
+    document.getElementById('tr-fRoundNotes').value = '';
+    document.getElementById('tr-fRoundOutcome').value = '';
+  }
+  document.getElementById('tr-roundDeleteBtn').style.display = roundId ? '' : 'none';
+  document.getElementById('tr-roundOverlay').classList.add('open');
+}
+
+function trCloseRoundModal() {
+  document.getElementById('tr-roundOverlay').classList.remove('open');
+  trRoundEditJobId = null;
+  trRoundEditId = null;
+}
+
+function trDeleteRoundFromModal() {
+  if (!trRoundEditJobId || !trRoundEditId) return;
+  if (trRemoveRound(trRoundEditJobId, trRoundEditId)) trCloseRoundModal();
+}
+
+function trSaveRound() {
+  const job = trJobs.find(j => j.id === trRoundEditJobId);
+  if (!job) return;
+  const date = document.getElementById('tr-fRoundDate').value;
+  if (!date) { trToast('Pick a date.'); return; }
+  const hour = document.getElementById('tr-fRoundHour').value;
+  const min = document.getElementById('tr-fRoundMin').value;
+  const outcome = document.getElementById('tr-fRoundOutcome').value || null;
+  const typeVal = document.getElementById('tr-fRoundType').value.trim();
+  const isOnline = typeVal.toLowerCase() === 'online';
+  const data = {
+    datetime: `${date}T${hour}:${min}`,
+    type: typeVal,
+    link: isOnline ? document.getElementById('tr-fRoundLink').value.trim() : '',
+    attendees: document.getElementById('tr-fRoundAttendees').value.trim(),
+    notes: document.getElementById('tr-fRoundNotes').value.trim(),
+    outcome,
+    done: outcome ? true : null,
+  };
+  if (!job.interviewRounds) job.interviewRounds = [];
+  if (trRoundEditId) {
+    const i = job.interviewRounds.findIndex(r => r.id === trRoundEditId);
+    if (i !== -1) job.interviewRounds[i] = { ...job.interviewRounds[i], ...data };
+  } else {
+    job.interviewRounds.push({ id: 'r' + Date.now(), ...data });
+  }
+  if (outcome === 'failed') job.status = 'Rejected';
+  job.lastModified = new Date().toISOString();
+  trPersist();
+  trExpandedInterviews.add(trRoundEditJobId);
+  trCloseRoundModal();
+  trRender();
+  trToast(outcome === 'failed' ? 'Round marked failed. Job status set to Rejected.' : 'Round saved.');
+}
 
 function trX(s) {
   return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
@@ -3446,11 +3658,12 @@ function switchTab(tab) {
 }
 
 document.addEventListener('keydown', e => {
-  if (e.key === 'Escape') trCloseModal(false);
+  if (e.key === 'Escape') { trCloseModal(false); trCloseRoundModal(); }
 });
 
 trLoad();
 document.addEventListener('DOMContentLoaded', function() {
+  document.getElementById('tr-fRoundType').addEventListener('input', trUpdateRoundLinkVisibility);
   const _savedTab = localStorage.getItem('ejs_active_tab');
   if (_savedTab === 'tracker') switchTab('tracker');
 });
@@ -3518,7 +3731,7 @@ document.addEventListener('DOMContentLoaded', function() {
             <input id="tr-fCompany" type="text" placeholder="Anthropic" autocomplete="off">
           </div>
           <div class="tr-field"><label>Status</label>
-            <select id="tr-fStatus"><option>Saved</option><option>Applied</option><option>Interviewing</option><option>Rejected</option></select>
+            <select id="tr-fStatus"><option>Saved</option><option>Applied</option><option>Interviewing</option><option>Offer</option><option>Rejected</option></select>
           </div>
         </div>
         <div class="tr-field"><label>Job Title</label><input id="tr-fTitle" type="text" placeholder="Senior Technical Writer" autocomplete="off"></div>
@@ -3542,6 +3755,68 @@ document.addEventListener('DOMContentLoaded', function() {
       <div class="tr-modal-foot">
         <button class="tr-btn" onclick="trCloseModal(true)">Cancel</button>
         <button class="tr-btn tr-btn-primary" onclick="trSaveJob()">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="tr-roundOverlay" class="tr-overlay" onclick="if(event.target===this) trCloseRoundModal()">
+    <div class="tr-modal">
+      <div class="tr-modal-head">
+        <span id="tr-roundModalTitle">Add Round</span>
+        <button class="tr-modal-x" onclick="trCloseRoundModal()">✕</button>
+      </div>
+      <div class="tr-modal-body">
+        <div class="tr-row2">
+          <div class="tr-field"><label>Date</label><input id="tr-fRoundDate" type="date"></div>
+          <div class="tr-field"><label>Time</label>
+            <div style="display:flex;gap:6px">
+              <select id="tr-fRoundHour" style="flex:1">
+                <option value="00">00</option><option value="01">01</option><option value="02">02</option>
+                <option value="03">03</option><option value="04">04</option><option value="05">05</option>
+                <option value="06">06</option><option value="07">07</option><option value="08">08</option>
+                <option value="09">09</option><option value="10">10</option><option value="11">11</option>
+                <option value="12">12</option><option value="13">13</option><option value="14">14</option>
+                <option value="15">15</option><option value="16">16</option><option value="17">17</option>
+                <option value="18">18</option><option value="19">19</option><option value="20">20</option>
+                <option value="21">21</option><option value="22">22</option><option value="23">23</option>
+              </select>
+              <select id="tr-fRoundMin" style="flex:1">
+                <option value="00">00</option>
+                <option value="15">15</option>
+                <option value="30">30</option>
+                <option value="45">45</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        <div class="tr-row2">
+          <div class="tr-field"><label>Interview Type</label>
+            <input id="tr-fRoundType" type="text" placeholder="Technical, Phone screen, Onsite…" list="tr-roundTypeList">
+            <datalist id="tr-roundTypeList">
+              <option value="Online">
+              <option value="Phone screen">
+              <option value="Technical">
+              <option value="Onsite">
+              <option value="Final round">
+              <option value="HR / Culture fit">
+            </datalist>
+          </div>
+          <div class="tr-field" id="tr-fRoundLinkField"><label>Meeting Link</label><input id="tr-fRoundLink" type="url" placeholder="https://…"></div>
+        </div>
+        <div class="tr-field"><label>Attendees</label><input id="tr-fRoundAttendees" type="text" placeholder="Names or roles"></div>
+        <div class="tr-field"><label>Notes</label><textarea id="tr-fRoundNotes" placeholder="Context, prep notes…"></textarea></div>
+        <div class="tr-field"><label>Outcome</label>
+          <select id="tr-fRoundOutcome">
+            <option value="">Not yet decided</option>
+            <option value="passed">Passed</option>
+            <option value="failed">Failed (sets job status to Rejected)</option>
+          </select>
+        </div>
+      </div>
+      <div class="tr-modal-foot">
+        <button class="tr-btn" id="tr-roundDeleteBtn" onclick="trDeleteRoundFromModal()" style="display:none;margin-right:auto;color:#e5534b;border-color:#e5534b">Delete round</button>
+        <button class="tr-btn" onclick="trCloseRoundModal()">Cancel</button>
+        <button class="tr-btn tr-btn-primary" onclick="trSaveRound()">Save</button>
       </div>
     </div>
   </div>

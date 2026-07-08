@@ -119,15 +119,30 @@ A built-in tracker tab lets you manage job applications without leaving the app.
 | Saved | Shortlisted, not yet applied |
 | Applied | Applied, waiting to hear back |
 | Interviewing | Active interview process |
+| Offer | Received an offer |
 | Rejected | Application closed |
 
-The **All Applications** chip shows a combined count of Applied, Interviewing, and Rejected – your total application volume at a glance.
+The **All Applications** chip shows a combined count of Applied, Interviewing, Offer, and Rejected – your total application volume at a glance.
+
+### Interview rounds
+
+For jobs marked Interviewing, you can track each interview round individually rather than relying on the Notes field. Click the summary next to the status dropdown (it reads "+ interview date" if none are added yet, otherwise the next upcoming round or a round count) to expand a row where rounds are listed as chips.
+
+Each round records:
+
+- Date and time (in 15-minute increments)
+- Type – phone screen, technical, onsite, final round, HR/culture fit, or Online, which reveals a clickable meeting link field
+- Attendees
+- Notes
+- Outcome – not yet decided, Passed, or Failed
+
+Marking a round Failed automatically sets the job's status to Rejected. Round history stays attached to the job afterward – expanding a Rejected or Offer job's summary still shows every round that happened, so you can look back at how far a process went. Adding further rounds is locked once a job reaches Offer, or Rejected via a failed round; moving the status back to Interviewing unlocks it again.
 
 ### Import and export
 
 - **Export CSV**: downloads your full tracker list as a CSV file compatible with Excel and Google Sheets.
 - **Import CSV**: loads jobs from a CSV file. Expects the same column headers as the export (Company, Role, Location, Work Model, Platform, Status, URL, Date Added, Notes). Use this to migrate from the standalone [Job Tracker](https://teokitten.github.io/job-tracker) or any other CSV-based tracker.
-- **Print / PDF**: opens the browser print dialog with a clean print stylesheet applied – tracker table only, no UI chrome.
+- **Print / PDF**: opens the browser print dialog with a clean print stylesheet applied – tracker table only, no UI chrome. The Notes column is left out of the printed/PDF version so a long note doesn't blow up the page count (e.g. when submitting job search activity to an unemployment office); Export CSV always includes Notes in full.
 
 ### Notes
 
