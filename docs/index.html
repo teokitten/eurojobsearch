@@ -3283,9 +3283,34 @@ let trExpandedInterviews = new Set();
 let trRoundEditJobId = null;
 let trRoundEditId = null;
 
+
+const TRACKER_DEMO_JOBS = [
+  { id: 'demo-tr1', company: 'Bramblewood Tech', title: 'Senior Content Strategist', location: 'Berlin, Germany', workModel: 'Remote', platform: 'Greenhouse', url: '', status: 'Saved', notes: 'Strong match on docs-as-code and API documentation experience.', dateAdded: '2026-06-14', lastModified: '2026-06-14T09:00:00.000Z', interviewRounds: [] },
+  { id: 'demo-tr2', company: 'Solvix Technologies', title: 'Senior Technical Writer', location: 'Vienna, Austria', workModel: 'On-site', platform: 'Karriere.at', url: '', status: 'Applied', notes: 'Applied via the company careers page. Recruiter confirmed receipt.', dateAdded: '2026-06-07', lastModified: '2026-06-07T09:00:00.000Z', interviewRounds: [] },
+  { id: 'demo-tr3', company: 'Pinegrove Cloud', title: 'Documentation Engineer', location: 'Amsterdam, Netherlands', workModel: 'Hybrid', platform: 'Indeed EU', url: '', status: 'Interviewing', notes: 'First round done, technical round scheduled next.', dateAdded: '2026-06-03', lastModified: '2026-07-15T09:00:00.000Z',
+    interviewRounds: [
+      { id: 'demo-r1', datetime: '2026-06-20T10:00', type: 'Online', link: 'https://meet.google.com/pinegrove-r1', attendees: 'Marc de Groot (Hiring Manager)', notes: 'Phone/video screen. Discussed content strategy background.', outcome: 'passed', done: true },
+      { id: 'demo-r2', datetime: '2026-07-15T11:00', type: 'Technical', link: '', attendees: 'Marc de Groot (Hiring Manager), Els Bakker (Content Lead)', notes: 'Prep: review portfolio pieces on docs-as-code migration.', done: false },
+    ]
+  },
+  { id: 'demo-tr4', company: 'Quill Software', title: 'UX Writer', location: 'Berlin, Germany', workModel: 'Remote', platform: 'LinkedIn', url: '', status: 'Offer', notes: 'Offer received - reviewing compensation details.', dateAdded: '2026-05-20', lastModified: '2026-06-25T09:00:00.000Z',
+    interviewRounds: [
+      { id: 'demo-r3', datetime: '2026-06-01T10:00', type: 'Online', link: 'https://meet.google.com/quill-r1', attendees: 'Priya Shah (Recruiter)', notes: 'Recruiter screen. Discussed role scope and salary band.', outcome: 'passed', done: true },
+      { id: 'demo-r4', datetime: '2026-06-10T14:00', type: 'Online', link: 'https://meet.google.com/quill-r2', attendees: 'Priya Shah (Recruiter), Daniel Weiss (Design Lead)', notes: 'Portfolio review and a writing exercise walkthrough.', outcome: 'passed', done: true },
+    ]
+  },
+  { id: 'demo-tr5', company: 'Maplewood Digital', title: 'Customer Support Specialist', location: 'Linz, Austria', workModel: 'On-site', platform: 'Karriere.at', url: '', status: 'Rejected', notes: 'Rejected after the phone screening - turned out to be a mismatch in expectations on both sides (compensation and scope).', dateAdded: '2026-05-29', lastModified: '2026-06-05T14:00:00.000Z',
+    interviewRounds: [
+      { id: 'demo-r5', datetime: '2026-06-05T14:00', type: 'Online', link: 'https://meet.google.com/maplewood-r1', attendees: 'Sandra Huber (HR)', notes: 'Phone screening with HR. Discussed role scope, salary expectations and availability.', outcome: 'failed', done: true },
+    ]
+  },
+];
+
 function trLoad() {
-  try { const raw = localStorage.getItem(TR_KEY); trJobs = raw ? JSON.parse(raw) : []; }
-  catch { trJobs = []; }
+  try {
+    const raw = localStorage.getItem(TR_KEY);
+    trJobs = raw ? JSON.parse(raw) : JSON.parse(JSON.stringify(TRACKER_DEMO_JOBS));
+  } catch { trJobs = []; }
 }
 
 function trPersist() { localStorage.setItem(TR_KEY, JSON.stringify(trJobs)); }
@@ -3336,6 +3361,9 @@ function trRender() {
     `<button class="tr-stat-btn${trFilter === f.key ? ' active-' + f.key : ''}" onclick="trSetFilter('${f.key}')">${f.label} <strong>${f.count}</strong></button>`
   ).join('');
 
+  const clearSampleBtn = document.getElementById('tr-clearSampleBtn');
+  if (clearSampleBtn) clearSampleBtn.style.display = trJobs.some(j => j.id.startsWith('demo-tr')) ? '' : 'none';
+
   const tbody = document.getElementById('tr-tbody');
   const empty = document.getElementById('tr-empty');
   if (!list.length) { tbody.innerHTML = ''; empty.style.display = 'block'; return; }
@@ -3374,6 +3402,16 @@ function trRender() {
 }
 
 function trSetFilter(f) { trFilter = f; trRender(); }
+
+function trClearSampleJobs() {
+  const sampleCount = trJobs.filter(j => j.id.startsWith('demo-tr')).length;
+  if (!sampleCount) return;
+  if (!confirm(`Remove ${sampleCount} sample job${sampleCount > 1 ? 's' : ''}? This can't be undone.`)) return;
+  trJobs = trJobs.filter(j => !j.id.startsWith('demo-tr'));
+  trPersist();
+  trRender();
+  trToast('Sample jobs removed.');
+}
 
 function trIsRoundDone(r) {
   if (r.outcome === 'passed' || r.outcome === 'failed') return true;
@@ -3893,6 +3931,7 @@ document.addEventListener('DOMContentLoaded', function() {
       <button class="tr-btn" onclick="trExportPDF()">🖨 Print / PDF</button>
       <button class="tr-btn" onclick="document.getElementById('tr-import-input').click()">⬆ Import CSV</button>
       <input type="file" id="tr-import-input" accept=".csv" style="display:none" onchange="trImportCSV(event)">
+      <button class="tr-btn" id="tr-clearSampleBtn" onclick="trClearSampleJobs()" style="display:none">Clear sample jobs</button>
     </div>
   </div><!-- end tr-sticky-top -->
 

@@ -291,7 +291,95 @@ if content.count(old5) != 1:
     sys.exit(f"ERROR: expected exactly 1 occurrence of mockSearchApi call, found {content.count(old5)}")
 content = content.replace(old5, new5, 1)
 
+# ------------------------------------------------------------------
+# 6. Tracker demo data: seed the Job Application Tracker tab with
+#    sample entries showcasing interview rounds and the Offer status.
+#    Only applies when localStorage is empty (first visit) - real
+#    users of the self-hosted app are unaffected since this patches
+#    docs/index.html only, never templates/index.html.
+# ------------------------------------------------------------------
+TRACKER_DEMO_BLOCK = '''
+const TRACKER_DEMO_JOBS = [
+  { id: 'demo-tr1', company: 'Bramblewood Tech', title: 'Senior Content Strategist', location: 'Berlin, Germany', workModel: 'Remote', platform: 'Greenhouse', url: '', status: 'Saved', notes: 'Strong match on docs-as-code and API documentation experience.', dateAdded: '2026-06-14', lastModified: '2026-06-14T09:00:00.000Z', interviewRounds: [] },
+  { id: 'demo-tr2', company: 'Solvix Technologies', title: 'Senior Technical Writer', location: 'Vienna, Austria', workModel: 'On-site', platform: 'Karriere.at', url: '', status: 'Applied', notes: 'Applied via the company careers page. Recruiter confirmed receipt.', dateAdded: '2026-06-07', lastModified: '2026-06-07T09:00:00.000Z', interviewRounds: [] },
+  { id: 'demo-tr3', company: 'Pinegrove Cloud', title: 'Documentation Engineer', location: 'Amsterdam, Netherlands', workModel: 'Hybrid', platform: 'Indeed EU', url: '', status: 'Interviewing', notes: 'First round done, technical round scheduled next.', dateAdded: '2026-06-03', lastModified: '2026-07-15T09:00:00.000Z',
+    interviewRounds: [
+      { id: 'demo-r1', datetime: '2026-06-20T10:00', type: 'Online', link: 'https://meet.google.com/pinegrove-r1', attendees: 'Marc de Groot (Hiring Manager)', notes: 'Phone/video screen. Discussed content strategy background.', outcome: 'passed', done: true },
+      { id: 'demo-r2', datetime: '2026-07-15T11:00', type: 'Technical', link: '', attendees: 'Marc de Groot (Hiring Manager), Els Bakker (Content Lead)', notes: 'Prep: review portfolio pieces on docs-as-code migration.', done: false },
+    ]
+  },
+  { id: 'demo-tr4', company: 'Quill Software', title: 'UX Writer', location: 'Berlin, Germany', workModel: 'Remote', platform: 'LinkedIn', url: '', status: 'Offer', notes: 'Offer received - reviewing compensation details.', dateAdded: '2026-05-20', lastModified: '2026-06-25T09:00:00.000Z',
+    interviewRounds: [
+      { id: 'demo-r3', datetime: '2026-06-01T10:00', type: 'Online', link: 'https://meet.google.com/quill-r1', attendees: 'Priya Shah (Recruiter)', notes: 'Recruiter screen. Discussed role scope and salary band.', outcome: 'passed', done: true },
+      { id: 'demo-r4', datetime: '2026-06-10T14:00', type: 'Online', link: 'https://meet.google.com/quill-r2', attendees: 'Priya Shah (Recruiter), Daniel Weiss (Design Lead)', notes: 'Portfolio review and a writing exercise walkthrough.', outcome: 'passed', done: true },
+    ]
+  },
+  { id: 'demo-tr5', company: 'Maplewood Digital', title: 'Customer Support Specialist', location: 'Linz, Austria', workModel: 'On-site', platform: 'Karriere.at', url: '', status: 'Rejected', notes: 'Rejected after the phone screening - turned out to be a mismatch in expectations on both sides (compensation and scope).', dateAdded: '2026-05-29', lastModified: '2026-06-05T14:00:00.000Z',
+    interviewRounds: [
+      { id: 'demo-r5', datetime: '2026-06-05T14:00', type: 'Online', link: 'https://meet.google.com/maplewood-r1', attendees: 'Sandra Huber (HR)', notes: 'Phone screening with HR. Discussed role scope, salary expectations and availability.', outcome: 'failed', done: true },
+    ]
+  },
+];
+'''
+
+old6 = "function trLoad() {\n  try { const raw = localStorage.getItem(TR_KEY); trJobs = raw ? JSON.parse(raw) : []; }\n  catch { trJobs = []; }\n}\n"
+if content.count(old6) != 1:
+    sys.exit(f"ERROR: expected exactly 1 occurrence of trLoad(), found {content.count(old6)}")
+new6 = TRACKER_DEMO_BLOCK + '''
+function trLoad() {
+  try {
+    const raw = localStorage.getItem(TR_KEY);
+    trJobs = raw ? JSON.parse(raw) : JSON.parse(JSON.stringify(TRACKER_DEMO_JOBS));
+  } catch { trJobs = []; }
+}
+'''
+content = content.replace(old6, new6, 1)
+
+# ------------------------------------------------------------------
+# 7. "Clear sample jobs" button for the demo tracker - removes only
+#    demo-tr-prefixed entries, leaves anything the visitor added
+#    themselves untouched, and hides itself once none remain.
+# ------------------------------------------------------------------
+old7a = '''      <button class="tr-btn" onclick="document.getElementById('tr-import-input').click()">⬆ Import CSV</button>
+      <input type="file" id="tr-import-input" accept=".csv" style="display:none" onchange="trImportCSV(event)">
+    </div>'''
+new7a = '''      <button class="tr-btn" onclick="document.getElementById('tr-import-input').click()">⬆ Import CSV</button>
+      <input type="file" id="tr-import-input" accept=".csv" style="display:none" onchange="trImportCSV(event)">
+      <button class="tr-btn" id="tr-clearSampleBtn" onclick="trClearSampleJobs()" style="display:none">Clear sample jobs</button>
+    </div>'''
+if content.count(old7a) != 1:
+    sys.exit(f"ERROR: expected exactly 1 occurrence of the tracker toolbar closing tag, found {content.count(old7a)}")
+content = content.replace(old7a, new7a, 1)
+
+old7b = """  document.getElementById('tr-stats').innerHTML = statDefs.map(f =>
+    `<button class="tr-stat-btn${trFilter === f.key ? ' active-' + f.key : ''}" onclick="trSetFilter('${f.key}')">${f.label} <strong>${f.count}</strong></button>`
+  ).join('');
+"""
+new7b = old7b + """
+  const clearSampleBtn = document.getElementById('tr-clearSampleBtn');
+  if (clearSampleBtn) clearSampleBtn.style.display = trJobs.some(j => j.id.startsWith('demo-tr')) ? '' : 'none';
+"""
+if content.count(old7b) != 1:
+    sys.exit(f"ERROR: expected exactly 1 occurrence of the tr-stats innerHTML block, found {content.count(old7b)}")
+content = content.replace(old7b, new7b, 1)
+
+old7c = "function trSetFilter(f) { trFilter = f; trRender(); }\n"
+new7c = old7c + """
+function trClearSampleJobs() {
+  const sampleCount = trJobs.filter(j => j.id.startsWith('demo-tr')).length;
+  if (!sampleCount) return;
+  if (!confirm(`Remove ${sampleCount} sample job${sampleCount > 1 ? 's' : ''}? This can't be undone.`)) return;
+  trJobs = trJobs.filter(j => !j.id.startsWith('demo-tr'));
+  trPersist();
+  trRender();
+  trToast('Sample jobs removed.');
+}
+"""
+if content.count(old7c) != 1:
+    sys.exit(f"ERROR: expected exactly 1 occurrence of trSetFilter(), found {content.count(old7c)}")
+content = content.replace(old7c, new7c, 1)
+
 with open(DST, "w", encoding="utf-8") as f:
     f.write(content)
 
-print(f"Done. {DST} regenerated from {SRC} with demo changes applied.")
+print(f"Done. {DST} regenerated from {SRC} with demo changes applied (search mock data + tracker sample jobs + clear-samples button).")
