@@ -603,7 +603,7 @@
     background: var(--surface);
     border: 1px solid var(--border);
     border-radius: 10px;
-    padding: 1rem 1.1rem;
+    padding: 1rem 2.75rem 1rem 1.1rem;
     cursor: pointer;
     transition: background 0.15s, border-color 0.2s, box-shadow 0.2s;
     position: relative;
@@ -1278,23 +1278,29 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator{filter:invert(1)
   cursor: default;
   background: transparent;
 }
-.card-remove-btn {
-  padding: 5px 14px;
-  background: transparent;
-  border: 1px solid var(--border);
-  border-radius: 5px;
-  color: var(--text-s);
-  font-size: 12px;
-  font-weight: 500;
+.card-dismiss-btn {
+  position: absolute;
+  top: 7px;
+  right: 8px;
+  width: 26px;
+  height: 26px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  border-radius: 50%;
+  color: #9ca3af;
+  font-size: 18px;
+  line-height: 1;
   cursor: pointer;
-  transition: all .15s;
-  white-space: nowrap;
+  transition: background .15s, color .15s;
+  padding: 0;
 }
-.card-remove-btn:hover {
-  border-color: #f85149;
-  color: #f85149;
+.card-dismiss-btn:hover {
+  color: #fff;
+  background: rgba(248, 81, 73, 0.2);
 }
-
 
 .card-btn-row {
   display: flex;
@@ -1302,34 +1308,6 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator{filter:invert(1)
   align-items: center;
   margin-top: 8px;
 }
-.card-confirm-wrap {
-  margin-top: 8px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 12px;
-  color: var(--text-s);
-}
-.card-confirm-yes {
-  padding: 4px 12px;
-  background: transparent;
-  border: 1px solid #f85149;
-  border-radius: 5px;
-  color: #f85149;
-  font-size: 12px;
-  cursor: pointer;
-}
-.card-confirm-yes:hover { background: #f85149; color: #fff; }
-.card-confirm-no {
-  padding: 4px 12px;
-  background: transparent;
-  border: 1px solid var(--border);
-  border-radius: 5px;
-  color: var(--text-s);
-  font-size: 12px;
-  cursor: pointer;
-}
-.card-confirm-no:hover { border-color: var(--text-s); color: var(--text); }
 @media print {
   #main-tabs,
   #panel-search,
@@ -2953,9 +2931,9 @@ function buildJobCard(job) {
       ${dateStr ? `<span class="job-date">${dateStr}</span>` : ''}
       ${alsoOnStr}
     </div>
+    <button class="card-dismiss-btn" data-remove="true" title="Remove from results">×</button>
     <div class="card-btn-row">
       <button class="card-track-btn" data-track="true" data-job-url="${job.url || ''}">Add to Tracker</button>
-      <button class="card-remove-btn" data-remove="true">Remove from results</button>
     </div>
   `;
 
@@ -2965,40 +2943,18 @@ function buildJobCard(job) {
   if (removeBtn) {
     removeBtn.addEventListener('click', e => {
       e.stopPropagation();
-      // Show inline confirmation
-      removeBtn.style.display = 'none';
-      const trackBtnEl = card.querySelector('[data-track]');
-      if (trackBtnEl) trackBtnEl.style.display = 'none';
-      const confirmWrap = document.createElement('div');
-      confirmWrap.className = 'card-confirm-wrap';
-      confirmWrap.innerHTML = `
-        <span>Remove from results forever?</span>
-        <button class="card-confirm-yes">Remove</button>
-        <button class="card-confirm-no">Cancel</button>
-      `;
-      card.appendChild(confirmWrap);
-      confirmWrap.querySelector('.card-confirm-yes').addEventListener('click', ev => {
-        ev.stopPropagation();
-        const sid = _jobSeenId(job);
-        _addHidden(sid);
-        newJobIds.delete(sid);
-        sessionNewJobSids.delete(sid);
-        state.allResults = state.allResults.filter(j => _jobSeenId(j) !== sid);
-        card.style.transition = 'opacity 0.4s, transform 0.4s';
-        card.style.opacity = '0';
-        card.style.transform = 'translateX(40px)';
-        setTimeout(() => {
-          card.remove();
-          renderJobList();
-        }, 420);
-      });
-      confirmWrap.querySelector('.card-confirm-no').addEventListener('click', ev => {
-        ev.stopPropagation();
-        confirmWrap.remove();
-        removeBtn.style.display = '';
-        const trackBtnEl = card.querySelector('[data-track]');
-        if (trackBtnEl) trackBtnEl.style.display = '';
-      });
+      const sid = _jobSeenId(job);
+      _addHidden(sid);
+      newJobIds.delete(sid);
+      sessionNewJobSids.delete(sid);
+      state.allResults = state.allResults.filter(j => _jobSeenId(j) !== sid);
+      card.style.transition = 'opacity 0.4s, transform 0.4s';
+      card.style.opacity = '0';
+      card.style.transform = 'translateX(40px)';
+      setTimeout(() => {
+        card.remove();
+        renderJobList();
+      }, 420);
     });
   }
 
