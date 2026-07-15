@@ -404,6 +404,18 @@ def _normalize_title(title: str) -> str:
     return t.strip()
 
 
+# Matches trailing gender-marker annotations: (m/w/d), (M/F/D)*, [w/m/x], (all genders), etc.
+_GENDER_MARKER_RE = re.compile(
+    r'\s*(?:[\(\[][mwfdx](?:\s*/\s*[mwfdx]){1,3}[\)\]]|[\(\[]all\s+genders[\)\]])\*?\s*$',
+    re.IGNORECASE,
+)
+
+def _normalize_title_for_dedup(title: str) -> str:
+    base = _normalize_title(title)
+    cleaned = _GENDER_MARKER_RE.sub('', base).strip()
+    return cleaned or base
+
+
 def _location_matches(location_str: str, countries: list[str]) -> bool:
     if not location_str:
         return True
@@ -1739,6 +1751,8 @@ def api_search():
                 all_warnings.append(f"{name}: unexpected error – {e}")
 
     sources_queried = list(futures_map.keys())
+    for job in all_jobs:
+        job['title'] = _normalize_title_for_dedup(job.get('title') or '')
     deduped = _deduplicate(all_jobs)
     for job in deduped:
         job['title'] = _normalize_title(job.get('title') or '')
