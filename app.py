@@ -36,27 +36,43 @@ SOURCES_CONFIG = [
     {"id": "ARBEITNOW",       "label": "Arbeitnow",        "method": "api", "stable": True,  "note": "Covers Germany, Austria, and Switzerland"},
     {"id": "JOBICY",          "label": "Jobicy",           "method": "api", "stable": True,  "note": "Remote roles only"},
     {"id": "WEWORKREMOTELY",  "label": "We Work Remotely", "method": "rss", "stable": True,  "note": "Remote roles only"},
+    {"id": "WORKABLE",        "label": "Workable",         "method": "api", "stable": True,  "note": None},
+    {"id": "RECRUITEE",       "label": "Recruitee",        "method": "api", "stable": True,  "note": None},
 ]
 
 # ---------------------------------------------------------------------------
 # Company slugs – loaded from companies.json at runtime
 # ---------------------------------------------------------------------------
 
-COMPANIES_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "companies.json")
+COMPANIES_FILE          = os.path.join(os.path.dirname(os.path.abspath(__file__)), "companies.json")
+WORKABLE_COMPANIES_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "workable_companies.json")
+RECRUITEE_COMPANIES_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "recruitee_companies.json")
+
+_SOURCE_HEALTH: dict = {}
+_SOURCE_HEALTH_LOCK = threading.Lock()
 
 
 def _load_companies() -> dict:
+    def _load_slugs(path, label):
+        try:
+            with open(path, "r") as f:
+                data = json.load(f)
+            if isinstance(data, list):
+                slugs = [s for s in data if isinstance(s, str) and s.strip()]
+            else:
+                slugs = [s for s in (data.get(label.lower()) or []) if isinstance(s, str) and s.strip()]
+            print(f"[DEBUG][{label}] loaded slugs: {slugs}")
+            return slugs
+        except Exception as e:
+            print(f"[DEBUG][{label}] load error: {e}")
+            traceback.print_exc()
+            return []
     print(f"[DEBUG][GREENHOUSE] companies.json path: {COMPANIES_FILE}")
-    try:
-        with open(COMPANIES_FILE, "r") as f:
-            data = json.load(f)
-        slugs = [s for s in (data.get("greenhouse") or []) if isinstance(s, str) and s.strip()]
-        print(f"[DEBUG][GREENHOUSE] loaded slugs from file: {slugs}")
-        return {"greenhouse": slugs}
-    except Exception as e:
-        print(f"[DEBUG][GREENHOUSE] companies.json load error: {e}")
-        traceback.print_exc()
-        return {"greenhouse": []}
+    return {
+        "greenhouse": _load_slugs(COMPANIES_FILE, "GREENHOUSE"),
+        "workable":   _load_slugs(WORKABLE_COMPANIES_FILE, "WORKABLE"),
+        "recruitee":  _load_slugs(RECRUITEE_COMPANIES_FILE, "RECRUITEE"),
+    }
 
 # ---------------------------------------------------------------------------
 # Country mapping for Indeed / JobSpy
@@ -196,6 +212,9 @@ _EU_COUNTRY_NAMES: dict[str, str] = {
     "czechia": "czech_republic",  "poland": "poland",
     "polska": "poland",           "romania": "romania",
     "românia": "romania",         "slovakia": "slovakia",
+    "bulgaria": "bulgaria",
+    "hungary": "hungary",        "magyarország": "hungary",
+    "slovenia": "slovenia",      "slovenija": "slovenia",
 }
 
 # Major European cities → country key (lowercase keys, exact segment match)
@@ -302,6 +321,12 @@ _EU_CITIES: dict[str, str] = {
     "brașov": "romania", "brasov": "romania",
     # Slovakia
     "bratislava": "slovakia", "košice": "slovakia",
+    # Bulgaria
+    "sofia": "bulgaria", "plovdiv": "bulgaria", "varna": "bulgaria",
+    # Hungary
+    "budapest": "hungary", "debrecen": "hungary", "szeged": "hungary",
+    # Slovenia
+    "ljubljana": "slovenia", "maribor": "slovenia",
 }
 
 
@@ -500,6 +525,7 @@ _NON_EU_SIGNALS = {
     'colombia', 'chile', 'peru', 'ecuador', 'uruguay', 'venezuela',
     'egypt', 'morocco', 'tunisia', 'israel', 'turkey', 'uae',
     'saudi arabia', 'qatar', 'kuwait', 'bahrain', 'oman',
+    'south korea', 'taiwan', 'hong kong',
 }
 
 def _detect_job_countries(job: dict) -> list[str]:
@@ -876,6 +902,189 @@ def _fetch_greenhouse(keywords: str, countries: list[str], title_only: bool, slu
     if successes == 0 and failures > 0:
         warnings.append(
             "Greenhouse – could not reach any company career pages. "
+            "You can update the company list via the Target companies section."
+        )
+    return jobs, warnings
+
+
+def _fetch_workable(keywords: str, countries: list[str], title_only: bool, slugs: list[str], hours_old: int = 168) -> tuple[list, list[str]]:
+    print(f"[DEBUG][WORKABLE] starting fetch, slug count: {len(slugs)}")
+    if not slugs:
+        return [], []
+    jobs = []
+    session = requests.Session()
+    session.headers["User-Agent"] = "EuroJobSearch/1.0"
+
+    def _fetch_slug(slug):
+        url = f"https://apply.workable.com/api/v1/widget/accounts/{slug}"
+        print(f"[DEBUG][WORKABLE] fetching: {url}")
+        try:
+            resp = session.get(url, timeout=10)
+            print(f"[DEBUG][WORKABLE] {slug}: HTTP {resp.status_code}")
+            if resp.status_code != 200:
+                return [], False, 0
+            data = resp.json()
+            company_name = data.get("name", slug)
+            all_jobs = data.get("jobs", [])
+            print(f"[DEBUG][WORKABLE] {slug}: {len(all_jobs)} jobs before filter")
+            raw_results = []
+            for job in all_jobs:
+                title   = job.get("title", "") or ""
+                city    = job.get("city", "") or ""
+                country = job.get("country", "") or ""
+                location = ", ".join(filter(None, [city, country]))
+                if not _keywords_match(keywords, title):
+                    continue
+                published = job.get("published_on") or job.get("created_at")
+                if not _is_recent(published, hours_old):
+                    continue
+                job_dict = {
+                    "id": _job_id(title, company_name),
+                    "title": title,
+                    "company": company_name,
+                    "location": location,
+                    "source": "WORKABLE",
+                    "source_label": "Workable",
+                    "url": job.get("url", ""),
+                    "date_posted": _parse_date(published),
+                    "also_on": [],
+                    "is_remote": bool(job.get("telecommuting", False)),
+                    "is_hybrid": False,
+                    "description": "",
+                }
+                detected = _detect_job_countries(job_dict)
+                if not detected:
+                    continue
+                if countries and 'remote' not in detected and not set(countries).intersection(detected):
+                    continue
+                raw_results.append(job_dict)
+            return raw_results, True, len(raw_results)
+        except requests.exceptions.HTTPError as e:
+            status = e.response.status_code if e.response is not None else "?"
+            print(f"[DEBUG][WORKABLE] {slug}: HTTP {status} (skipping)")
+            return [], False, 0
+        except Exception as e:
+            print(f"[DEBUG][WORKABLE] {slug}: EXCEPTION: {e}")
+            traceback.print_exc()
+            return [], False, 0
+
+    successes = 0
+    failures = 0
+    total_raw = 0
+    with concurrent.futures.ThreadPoolExecutor(max_workers=10) as pool:
+        futures = {pool.submit(_fetch_slug, s): s for s in slugs}
+        for f in concurrent.futures.as_completed(futures):
+            result, ok, raw_count = f.result()
+            jobs.extend(result)
+            total_raw += raw_count
+            if ok:
+                successes += 1
+            else:
+                failures += 1
+
+    print(f"[DEBUG][WORKABLE] total slugs: {len(slugs)}, successful: {successes}, jobs: {len(jobs)}")
+    warnings = []
+    if successes == 0 and failures > 0:
+        warnings.append(
+            "Workable – could not reach any company career pages. "
+            "You can update the company list via the Target companies section."
+        )
+    return jobs, warnings
+
+
+def _fetch_recruitee(keywords: str, countries: list[str], title_only: bool, slugs: list[str], hours_old: int = 168) -> tuple[list, list[str]]:
+    print(f"[DEBUG][RECRUITEE] starting fetch, slug count: {len(slugs)}")
+    if not slugs:
+        return [], []
+    jobs = []
+    session = requests.Session()
+    session.headers["User-Agent"] = "EuroJobSearch/1.0"
+
+    def _fetch_slug(slug):
+        url = f"https://{slug}.recruitee.com/api/offers/"
+        print(f"[DEBUG][RECRUITEE] fetching: {url}")
+        try:
+            resp = session.get(url, timeout=10)
+            print(f"[DEBUG][RECRUITEE] {slug}: HTTP {resp.status_code}")
+            if resp.status_code != 200:
+                return [], False, 0
+            data = resp.json()
+            all_offers = data.get("offers", [])
+            print(f"[DEBUG][RECRUITEE] {slug}: {len(all_offers)} offers before filter")
+            raw_results = []
+            for offer in all_offers:
+                title        = offer.get("title", "") or ""
+                locations_arr = offer.get("locations") or []
+                if locations_arr:
+                    loc_parts = []
+                    for loc_item in locations_arr:
+                        lc = loc_item.get("city", "") or ""
+                        ln = loc_item.get("country", "") or ""
+                        part = ", ".join(filter(None, [lc, ln]))
+                        if part:
+                            loc_parts.append(part)
+                    location = "; ".join(loc_parts)
+                else:
+                    city    = offer.get("city", "") or ""
+                    country = offer.get("country", "") or ""
+                    location = ", ".join(filter(None, [city, country]))
+                content      = offer.get("description", "") or ""
+                content_text = _strip_html(content)
+                if not _keywords_match(keywords, title) and (title_only or not _keywords_match(keywords, content_text)):
+                    continue
+                published = offer.get("published_at") or offer.get("created_at")
+                if not _is_recent(published, hours_old):
+                    continue
+                company_name = offer.get("company_name", slug)
+                job_dict = {
+                    "id": _job_id(title, company_name),
+                    "title": title,
+                    "company": company_name,
+                    "location": location,
+                    "source": "RECRUITEE",
+                    "source_label": "Recruitee",
+                    "url": offer.get("careers_apply_url", ""),
+                    "date_posted": _parse_date(published),
+                    "also_on": [],
+                    "is_remote": bool(offer.get("remote", False)),
+                    "is_hybrid": bool(offer.get("hybrid", False)),
+                    "description": content[:500],
+                }
+                detected = _detect_job_countries(job_dict)
+                if not detected:
+                    continue
+                if countries and 'remote' not in detected and not set(countries).intersection(detected):
+                    continue
+                raw_results.append(job_dict)
+            return raw_results, True, len(raw_results)
+        except requests.exceptions.HTTPError as e:
+            status = e.response.status_code if e.response is not None else "?"
+            print(f"[DEBUG][RECRUITEE] {slug}: HTTP {status} (skipping)")
+            return [], False, 0
+        except Exception as e:
+            print(f"[DEBUG][RECRUITEE] {slug}: EXCEPTION: {e}")
+            traceback.print_exc()
+            return [], False, 0
+
+    successes = 0
+    failures = 0
+    total_raw = 0
+    with concurrent.futures.ThreadPoolExecutor(max_workers=10) as pool:
+        futures = {pool.submit(_fetch_slug, s): s for s in slugs}
+        for f in concurrent.futures.as_completed(futures):
+            result, ok, raw_count = f.result()
+            jobs.extend(result)
+            total_raw += raw_count
+            if ok:
+                successes += 1
+            else:
+                failures += 1
+
+    print(f"[DEBUG][RECRUITEE] total slugs: {len(slugs)}, successful: {successes}, jobs: {len(jobs)}")
+    warnings = []
+    if successes == 0 and failures > 0:
+        warnings.append(
+            "Recruitee – could not reach any company career pages. "
             "You can update the company list via the Target companies section."
         )
     return jobs, warnings
@@ -1728,6 +1937,16 @@ def api_search():
                 _fetch_weworkremotely, keywords, hours_old
             )
 
+        if "WORKABLE" in sources:
+            futures_map["WORKABLE"] = pool.submit(
+                _fetch_workable, keywords, countries, title_only, companies["workable"], hours_old
+            )
+
+        if "RECRUITEE" in sources:
+            futures_map["RECRUITEE"] = pool.submit(
+                _fetch_recruitee, keywords, countries, title_only, companies["recruitee"], hours_old
+            )
+
         # EUROJOBS: RSS feed unavailable – not queried
         # WORKING_IN_CONTENT: feed unavailable – not queried
 
@@ -1743,12 +1962,48 @@ def api_search():
                 print(f"[{name}] returned {len(jobs)} results")
                 all_jobs.extend(jobs)
                 all_warnings.extend(warnings)
+                _now = datetime.utcnow().isoformat() + "Z"
+                _rl_error = "Rate limited – results may be incomplete" if (name == "LINKEDIN_EU" and rl) else None
+                with _SOURCE_HEALTH_LOCK:
+                    _existing = _SOURCE_HEALTH.get(name, {})
+                    if _rl_error:
+                        _error_since = _existing.get("error_since") or _now
+                    else:
+                        _error_since = None
+                    _SOURCE_HEALTH[name] = {
+                        **_existing,
+                        "last_success_at": _now,
+                        "last_attempt_at": _now,
+                        "last_count": len(jobs),
+                        "last_error": _rl_error,
+                        "error_since": _error_since,
+                    }
             except concurrent.futures.TimeoutError:
+                msg = f"{name}: timed out – source skipped"
                 print(f"[{name}] timed out after 45s")
-                all_warnings.append(f"{name}: timed out – source skipped")
+                all_warnings.append(msg)
+                with _SOURCE_HEALTH_LOCK:
+                    _existing = _SOURCE_HEALTH.get(name, {})
+                    _now_fail = datetime.utcnow().isoformat() + "Z"
+                    _SOURCE_HEALTH[name] = {
+                        **_existing,
+                        "last_attempt_at": _now_fail,
+                        "last_error": msg,
+                        "error_since": _existing.get("error_since") or _now_fail,
+                    }
             except Exception as e:
+                msg = f"{name}: unexpected error – {e}"
                 print(f"[{name}] unexpected error – {e}")
-                all_warnings.append(f"{name}: unexpected error – {e}")
+                all_warnings.append(msg)
+                with _SOURCE_HEALTH_LOCK:
+                    _existing = _SOURCE_HEALTH.get(name, {})
+                    _now_fail = datetime.utcnow().isoformat() + "Z"
+                    _SOURCE_HEALTH[name] = {
+                        **_existing,
+                        "last_attempt_at": _now_fail,
+                        "last_error": msg,
+                        "error_since": _existing.get("error_since") or _now_fail,
+                    }
 
     sources_queried = list(futures_map.keys())
     for job in all_jobs:
@@ -1762,17 +2017,19 @@ def api_search():
         # and returned to the frontend so chips read this field directly.
         job['detected_countries'] = _detect_job_countries(job)
 
-    # Greenhouse non-EU exclusion: onsite Greenhouse jobs with no detected EU
-    # country are non-European (US/AU/etc.) and should be dropped.
-    # Remote Greenhouse jobs always have detected_countries=['remote'] so they pass.
-    gh_before = sum(1 for j in deduped if j.get('source') == 'GREENHOUSE')
+    # Company-API non-EU exclusion: these sources fetch all global offices so
+    # any job with no detected EU country (and not remote) must be dropped.
+    # This fires regardless of the countries filter, including when countries=[]
+    # (all-EU mode), which is when the server-side country filter is bypassed.
+    _COMPANY_API_SOURCES = {'GREENHOUSE', 'WORKABLE', 'RECRUITEE'}
+    ca_before = sum(1 for j in deduped if j.get('source') in _COMPANY_API_SOURCES)
     deduped = [
         j for j in deduped
-        if j.get('source') != 'GREENHOUSE' or bool(j.get('detected_countries'))
+        if j.get('source') not in _COMPANY_API_SOURCES or bool(j.get('detected_countries'))
     ]
-    gh_after = sum(1 for j in deduped if j.get('source') == 'GREENHOUSE')
-    if gh_before != gh_after:
-        print(f"[EuroJobSearch] Greenhouse non-EU exclusion: {gh_before} → {gh_after}")
+    ca_after = sum(1 for j in deduped if j.get('source') in _COMPANY_API_SOURCES)
+    if ca_before != ca_after:
+        print(f"[EuroJobSearch] Company-API non-EU exclusion: {ca_before} → {ca_after}")
 
     # Server-side work model filter – each flag is checked independently so a job
     # with both is_remote=True and is_hybrid=True passes either remote or hybrid filters.
@@ -1829,6 +2086,12 @@ def api_search():
         "sources_queried": sources_queried,
         "linkedin_rate_limited": linkedin_rate_limited,
     })
+
+
+@app.route("/api/source-health")
+def api_source_health():
+    with _SOURCE_HEALTH_LOCK:
+        return jsonify(dict(_SOURCE_HEALTH))
 
 
 if __name__ == "__main__":

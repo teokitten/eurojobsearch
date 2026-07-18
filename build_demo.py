@@ -30,7 +30,9 @@ BANNER = '''<div id="demo-banner" style="background:#1e1f2e; border-bottom:1px s
   This is a static preview with sample data – no server required.
   <a href="https://github.com/teokitten/eurojobsearch" target="_blank" rel="noopener" style="color:#7b8cde; margin-left:auto; text-decoration:none;">View on GitHub ↗</a>
 </div>
-<div id="demo-keywords-bar" style="border-bottom:1px solid #2e3248; padding:10px 20px; font-size:0.82rem; color:#9098b1; display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+'''
+
+KEYWORDS_BAR = '''<div id="demo-keywords-bar" style="border-bottom:1px solid #2e3248; padding:10px 20px; font-size:0.82rem; color:#9098b1; display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
   <span>Try a search:</span>
   <button class="source-filter-btn demo-keyword-chip" data-keyword="technical writer">technical writer</button>
   <button class="source-filter-btn demo-keyword-chip" data-keyword="writer">writer</button>
@@ -46,6 +48,11 @@ if content.count(old) != 1:
     sys.exit(f"ERROR: expected exactly 1 occurrence of <body> tag, found {content.count(old)}")
 content = content.replace(old, old + BANNER, 1)
 
+old2 = '<div id="panel-search">\n'
+if content.count(old2) != 1:
+    sys.exit(f"ERROR: expected exactly 1 occurrence of panel-search div, found {content.count(old2)}")
+content = content.replace(old2, old2 + KEYWORDS_BAR, 1)
+
 # ------------------------------------------------------------------
 # 2. MOCK_DATA + helpers
 # ------------------------------------------------------------------
@@ -59,7 +66,9 @@ const MOCK_DATA = {
     { "id": "ARBEITNOW", "label": "Arbeitnow", "pull_status": "ok" },
     { "id": "REMOTIVE", "label": "Remotive", "pull_status": "ok" },
     { "id": "JOBICY", "label": "Jobicy", "pull_status": "ok" },
-    { "id": "WEWORKREMOTELY", "label": "We Work Remotely", "pull_status": "ok" }
+    { "id": "WEWORKREMOTELY", "label": "We Work Remotely", "pull_status": "ok" },
+    { "id": "WORKABLE",       "label": "Workable",         "pull_status": "ok" },
+    { "id": "RECRUITEE",      "label": "Recruitee",        "pull_status": "ok" }
   ],
   "jobs": [
     { "id": "job-01", "title": "Senior Technical Writer", "company": "Solvix Technologies", "source": "KARRIERE_AT", "source_label": "Karriere.at", "location": "Vienna, Austria", "url": null, "date_posted": "2026-06-13T15:00:00Z", "is_remote": false, "is_hybrid": false, "job_type": "Full-time", "detected_countries": ["austria"], "description": "Lead documentation for our cloud security platform. Work closely with engineering on API references, release notes, and onboarding guides." },
@@ -108,8 +117,22 @@ const MOCK_DATA = {
     { "id": "job-44", "title": "Project Manager", "company": "Alpenrose Systems", "source": "KARRIERE_AT", "source_label": "Karriere.at", "location": "Vienna, Austria", "url": null, "date_posted": "2026-06-13T11:00:00Z", "is_remote": false, "is_hybrid": true, "job_type": "Full-time", "detected_countries": ["austria"], "description": "Manage timelines and stakeholder communication for a renewable-energy software platform. Hybrid role, two office days per week in Vienna." },
     { "id": "job-45", "title": "Associate Product Manager", "company": "Castlewood Tech", "source": "LINKEDIN_EU", "source_label": "LinkedIn", "location": "Copenhagen, Denmark", "url": null, "date_posted": "2026-06-06T09:00:00Z", "is_remote": false, "is_hybrid": true, "job_type": "Full-time", "detected_countries": ["denmark"], "description": "Support roadmap planning and user research for a consumer subscription app. Hybrid schedule based in our Copenhagen office." },
     { "id": "job-46", "title": "Technical Writer", "company": "Birchgate Software", "source": "INDEED_EU", "source_label": "Indeed EU", "location": "Vienna, Austria", "url": null, "date_posted": "2026-06-15T05:00:00Z", "is_remote": false, "is_hybrid": true, "job_type": "Full-time", "detected_countries": ["austria"], "description": "Own user-facing documentation for a DevOps tooling platform. Hybrid role, two office days per week in Vienna. Docs-as-code workflow with Markdown and Git." },
-    { "id": "job-47", "title": "Frontend Developer", "company": "Pinecrest Digital", "source": "ARBEITNOW", "source_label": "Arbeitnow", "location": "Graz, Austria", "url": null, "date_posted": "2026-06-15T07:30:00Z", "is_remote": false, "is_hybrid": false, "job_type": "Full-time", "detected_countries": ["austria"], "description": "Build customer-facing features in React and TypeScript for a logistics scheduling tool. On-site role in our Graz office." }
-  ]
+    { "id": "job-47", "title": "Frontend Developer", "company": "Pinecrest Digital", "source": "ARBEITNOW", "source_label": "Arbeitnow", "location": "Graz, Austria", "url": null, "date_posted": "2026-06-15T07:30:00Z", "is_remote": false, "is_hybrid": false, "job_type": "Full-time", "detected_countries": ["austria"], "description": "Build customer-facing features in React and TypeScript for a logistics scheduling tool. On-site role in our Graz office." },
+    { "id": "job-48", "title": "Software Engineer", "company": "Keywords Studios", "source": "WORKABLE", "source_label": "Workable", "location": "Dublin, Ireland", "url": null, "date_posted": "2026-06-14T10:00:00Z", "is_remote": false, "is_hybrid": true, "job_type": "Full-time", "detected_countries": ["ireland"], "description": "Join the games industry's leading technical services company. Work on tools and pipelines for major game titles from our Dublin studio." },
+    { "id": "job-49", "title": "AI Research Engineer", "company": "DeepHealth", "source": "RECRUITEE", "source_label": "Recruitee", "location": "Amsterdam, Netherlands", "url": null, "date_posted": "2026-06-13T09:00:00Z", "is_remote": false, "is_hybrid": true, "job_type": "Full-time", "detected_countries": ["netherlands"], "description": "Work on medical imaging AI models for radiology. Collaborate with clinical partners across the Netherlands to improve diagnostic accuracy." }
+  ],
+  "sourceHealth": {
+    "INDEED_EU":      {"last_success_at": "2026-06-15T05:30:00Z", "last_attempt_at": "2026-06-15T05:30:00Z", "last_count": 13, "last_error": null},
+    "LINKEDIN_EU":    {"last_success_at": "2026-06-14T18:00:00Z", "last_attempt_at": "2026-06-15T05:30:00Z", "last_count": 0,  "last_error": "LINKEDIN_EU: rate limited"},
+    "GREENHOUSE":     {"last_success_at": "2026-06-15T05:30:00Z", "last_attempt_at": "2026-06-15T05:30:00Z", "last_count": 9,  "last_error": null},
+    "KARRIERE_AT":    {"last_success_at": "2026-06-15T05:30:00Z", "last_attempt_at": "2026-06-15T05:30:00Z", "last_count": 5,  "last_error": null},
+    "ARBEITNOW":      {"last_success_at": "2026-06-15T05:30:00Z", "last_attempt_at": "2026-06-15T05:30:00Z", "last_count": 4,  "last_error": null},
+    "REMOTIVE":       {"last_success_at": "2026-06-15T05:30:00Z", "last_attempt_at": "2026-06-15T05:30:00Z", "last_count": 5,  "last_error": null},
+    "JOBICY":         {"last_success_at": "2026-06-15T05:30:00Z", "last_attempt_at": "2026-06-15T05:30:00Z", "last_count": 4,  "last_error": null},
+    "WEWORKREMOTELY": {"last_success_at": "2026-06-15T05:30:00Z", "last_attempt_at": "2026-06-15T05:30:00Z", "last_count": 4,  "last_error": null},
+    "WORKABLE":       {"last_success_at": "2026-06-15T05:30:00Z", "last_attempt_at": "2026-06-15T05:30:00Z", "last_count": 8,  "last_error": null},
+    "RECRUITEE":      {"last_success_at": "2026-06-15T05:30:00Z", "last_attempt_at": "2026-06-15T05:30:00Z", "last_count": 1,  "last_error": null}
+  }
 };
 
 // Source homepages – used as job.url fallback so result cards
@@ -123,6 +146,8 @@ const SOURCE_HOMEPAGES = {
   REMOTIVE: 'https://remotive.com',
   JOBICY: 'https://jobicy.com',
   WEWORKREMOTELY: 'https://weworkremotely.com',
+  WORKABLE:       'https://apply.workable.com',
+  RECRUITEE:      'https://recruitee.com',
 };
 
 // Fixed reference point for "how old is this job" calculations, derived
@@ -268,6 +293,15 @@ if content.count(old) != 1:
 content = content.replace(old, new, 1)
 
 # ------------------------------------------------------------------
+# 5a. loadSourceHealth(): /api/source-health -> MOCK_DATA.sourceHealth
+# ------------------------------------------------------------------
+old5a = "    const resp = await fetch('/api/source-health');\n    _sourceHealth = await resp.json();\n"
+new5a = "    _sourceHealth = MOCK_DATA.sourceHealth;\n"
+if content.count(old5a) != 1:
+    sys.exit(f"ERROR: expected exactly 1 occurrence of /api/source-health fetch, found {content.count(old5a)}")
+content = content.replace(old5a, new5a, 1)
+
+# ------------------------------------------------------------------
 # 5. Demo NEW badge: mark 3 newest results as NEW after each search
 # ------------------------------------------------------------------
 old5 = "    state.activeSourceFilter = 'ALL';\n    state.activeCountries = new Set();\n    state.activeWorkModelFilter = new Set();\n"
@@ -319,6 +353,8 @@ const TRACKER_DEMO_JOBS = [
       { id: 'demo-r5', datetime: '2026-06-05T14:00', type: 'Online', link: 'https://meet.google.com/maplewood-r1', attendees: 'Sandra Huber (HR)', notes: 'Phone screening with HR. Discussed role scope, salary expectations and availability.', outcome: 'failed', done: true },
     ]
   },
+  { id: 'demo-tr6', company: 'Cedarhill Software', title: 'Technical Writer', location: 'Remote – EU', workModel: 'Remote', platform: 'Remotive', url: '', status: 'Applied', notes: 'Applied via careers page. Good match on API docs and structured authoring.', dateAdded: '2026-07-08', lastModified: '2026-07-08T10:00:00.000Z', interviewRounds: [] },
+  { id: 'demo-tr7', company: 'Ashford Analytics', title: 'Product Manager', location: 'Warsaw, Poland', workModel: 'Hybrid', platform: 'Indeed EU', url: '', status: 'Applied', notes: 'Referral from a contact at the company. Role aligns well with past experience.', dateAdded: '2026-07-15', lastModified: '2026-07-15T14:00:00.000Z', interviewRounds: [] },
 ];
 '''
 
@@ -340,10 +376,10 @@ content = content.replace(old6, new6, 1)
 #    demo-tr-prefixed entries, leaves anything the visitor added
 #    themselves untouched, and hides itself once none remain.
 # ------------------------------------------------------------------
-old7a = '''      <button class="tr-btn" onclick="document.getElementById('tr-import-input').click()">⬆ Import CSV</button>
+old7a = '''      <button class="tr-btn" onclick="document.getElementById('tr-import-input').click()">Import List</button>
       <input type="file" id="tr-import-input" accept=".csv" style="display:none" onchange="trImportCSV(event)">
     </div>'''
-new7a = '''      <button class="tr-btn" onclick="document.getElementById('tr-import-input').click()">⬆ Import CSV</button>
+new7a = '''      <button class="tr-btn" onclick="document.getElementById('tr-import-input').click()">Import List</button>
       <input type="file" id="tr-import-input" accept=".csv" style="display:none" onchange="trImportCSV(event)">
       <button class="tr-btn" id="tr-clearSampleBtn" onclick="trClearSampleJobs()" style="display:none">Clear sample jobs</button>
     </div>'''
@@ -363,7 +399,7 @@ if content.count(old7b) != 1:
     sys.exit(f"ERROR: expected exactly 1 occurrence of the tr-stats innerHTML block, found {content.count(old7b)}")
 content = content.replace(old7b, new7b, 1)
 
-old7c = "function trSetFilter(f) { trFilter = f; trRender(); }\n"
+old7c = "function trSetFilter(f) { trFilter = f; trPage = 1; trRender(); }\n"
 new7c = old7c + """
 function trClearSampleJobs() {
   const sampleCount = trJobs.filter(j => j.id.startsWith('demo-tr')).length;

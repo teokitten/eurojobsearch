@@ -216,6 +216,9 @@
   .source-item-label {
     font-size: 0.88rem;
     color: var(--text);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
   .source-row-right {
@@ -238,6 +241,19 @@
     cursor: default;
     user-select: none;
   }
+
+  .sh-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    display: inline-block;
+    cursor: default;
+  }
+  .sh-dot-green  { background: #3fb950; }
+  .sh-dot-yellow { background: #d29922; }
+  .sh-dot-red    { background: #f85149; }
+  .sh-dot-gray   { background: var(--text-s, #9098b1); opacity: 0.35; }
 
   .source-badge {
     display: inline-flex;
@@ -266,12 +282,41 @@
     max-width: 300px;
     padding: 8px 12px;
     border-radius: 6px;
-    white-space: normal;
+    white-space: pre-line;
     word-break: normal;
     line-height: 1.5;
     text-align: left;
     pointer-events: none;
   }
+
+  /* === Unified message card system =========================================
+   * Reference implementation: .rl-toast (LinkedIn rate-limit toast, fixed
+   * bottom-right). Do NOT modify .rl-toast — it is the visual standard.
+   *
+   * Surfaces unified here:
+   *   .warnings-box          — search warnings/errors
+   *                            was: rgba gray bg + gray border
+   *                            now: msg-card-warning (default) / msg-card-error (.is-error)
+   *   #tr-restore-notice     — tracker backup restore notice bar
+   *                            was: bespoke rgba amber bg + amber border
+   *                            now: msg-card-warning
+   *   #tr-restoreOverlay .tr-modal — restore confirmation modal
+   *                            was: plain dark modal, no accent
+   *                            now: amber left border (msg-card-warning style)
+   *   #linkedin-account-note — inline "requires a free account" notice
+   *                            was: border-top separator, no card bg
+   *                            now: msg-card-info
+   * ======================================================================== */
+  .msg-card {
+    background: #1a1d27;
+    border: 1px solid #2e3248;
+    border-radius: 10px;
+    padding: 0.55rem 0.85rem;
+  }
+  .msg-card-warning { border-left: 4px solid #f5a623; }
+  .msg-card-error   { border-left: 4px solid #f85149; }
+  .msg-card-success { border-left: 4px solid #3fb950; }
+  .msg-card-info    { border-left: 4px solid #388bfd; }
 
   /* LinkedIn rate-limit toast */
   .rl-toast {
@@ -527,13 +572,7 @@
 
 
   /* Warnings */
-  .warnings-box {
-    background: rgba(144,152,177,0.06);
-    border: 1px solid rgba(144,152,177,0.18);
-    border-radius: 8px;
-    padding: 0.55rem 0.85rem;
-    margin-bottom: 1rem;
-  }
+  .warnings-box { margin-bottom: 1rem; }
 
   .warn-toggle {
     background: none;
@@ -560,11 +599,8 @@
 
   .warn-details p + p { margin-top: 0.2rem; }
 
-  /* Error box (overrides warnings-box inline) */
-  .warnings-box.is-error {
-    background: rgba(255,92,92,0.06);
-    border-color: rgba(255,92,92,0.3);
-  }
+  /* Error box (overrides warning variant's left border) */
+  .warnings-box.is-error { border-left-color: #f85149; }
 
   .warnings-box.is-error p {
     font-size: 0.82rem;
@@ -1086,7 +1122,7 @@
 }
 
 /* ── Panels ── */
-#panel-search, #panel-tracker, #panel-sites {
+#panel-search, #panel-tracker, #panel-sites, #panel-activity {
   max-width: 1400px;
   margin: 0 auto;
   padding: 24px 32px;
@@ -1102,12 +1138,9 @@
   top: var(--tabs-h, 58px);
   z-index: 190;
   background: var(--bg);
-  margin-left: -32px;
-  margin-right: -32px;
-  padding-left: 32px;
-  padding-right: 32px;
   will-change: transform;
   border-bottom: 1px solid var(--border, #2e3248);
+  padding-top: 10px;
   padding-bottom: 1px;
 }
 .tr-sticky-top .tr-toolbar { margin-bottom: 0; }
@@ -1128,6 +1161,11 @@
 .tr-toolbar {
   display: flex; gap: 8px; flex-wrap: wrap;
   align-items: center; margin-bottom: 16px;
+}
+.tr-toolbar-sep {
+  width: 1px; height: 18px;
+  background: var(--border, #2e3248);
+  flex-shrink: 0; margin: 0 2px;
 }
 .tr-search {
   flex: 1; min-width: 200px; padding: 7px 10px;
@@ -1152,18 +1190,27 @@
 .tr-btn-primary:hover { background: var(--accent-h, #4a5ce0); }
 
 .tr-table-wrap { overflow-x: auto; position: relative; z-index: 1; }
-.tr-table { width: 100%; border-collapse: collapse; min-width: 800px; }
+.tr-pagination {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  justify-content: flex-end;
+  padding: 12px 0 4px;
+}
+.tr-table { width: 100%; border-collapse: separate; border-spacing: 0; min-width: 800px; }
 .tr-table thead th {
   text-align: left; padding: 8px 10px; font-size: 11px; font-weight: 600;
   color: var(--text-s, #9098b1); text-transform: uppercase;
   letter-spacing: .05em; border-bottom: 1px solid var(--border, #2e3248); white-space: nowrap;
+  background: var(--bg, #0d1117);
 }
-.tr-table tbody tr { border-bottom: 1px solid var(--border, #2e3248); transition: background .1s; }
+.tr-table tbody tr { transition: background .1s; }
 .tr-table tbody tr:hover { background: var(--surface, #161b22); }
-.tr-table tbody td { padding: 9px 10px; vertical-align: middle; font-size: 13px; color: var(--text, #e6edf3); }
+.tr-table tbody td { padding: 9px 10px; vertical-align: middle; font-size: 13px; color: var(--text, #e6edf3); border-bottom: 1px solid var(--border, #2e3248); }
 .tr-td-role { color: var(--text-s, #9098b1); max-width: 200px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .tr-td-notes { max-width: 200px; color: var(--text-s, #9098b1); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: pointer; }
 .tr-td-notes.open { white-space: normal; overflow: visible; }
+.tr-td-notes.editing { max-width: none; overflow: visible; white-space: normal; position: relative; z-index: 10; background: var(--bg, #0d1117); }
 .tr-badge { display: inline-block; padding: 2px 10px; border-radius: 20px; font-size: 12px; font-weight: 500; }
 .tr-status-select {
   border: none;
@@ -1308,17 +1355,196 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator{filter:invert(1)
   align-items: center;
   margin-top: 8px;
 }
+/* Card overflow menu */
+/* Mute keywords control (sidebar, below Keywords input) */
+#mute-control {
+  margin-bottom: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.mute-control-label {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--text-s);
+}
+.mute-control-row {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+.mute-kw-input {
+  flex: 1;
+  max-width: 260px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  padding: 4px 8px;
+  font-size: 0.82rem;
+  color: var(--text);
+  min-width: 0;
+}
+.mute-kw-add {
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  color: var(--text-s);
+  font-size: 0.82rem;
+  padding: 4px 10px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.mute-kw-add:hover { border-color: var(--accent); color: var(--text); }
+.muted-tags-row { display: flex; flex-wrap: wrap; gap: 5px; }
+.muted-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 2px 5px 2px 7px;
+  font-size: 0.78rem;
+  color: var(--text-s);
+  max-width: 180px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.muted-tag-remove {
+  background: none;
+  border: none;
+  color: var(--text-s);
+  cursor: pointer;
+  font-size: 13px;
+  padding: 0;
+  line-height: 1;
+  flex-shrink: 0;
+}
+.muted-tag-remove:hover { color: #f85149; }
+/* Activity report section */
+.tr-ar-section { margin-bottom: 18px; }
+.tr-ar-title { text-align: center; font-size: 0.95rem; font-weight: 700; color: var(--text, #e6edf3); margin-bottom: 12px; }
+.tr-ar-controls { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 14px; }
+.tr-ov-title { text-align: center; font-size: 0.92rem; font-weight: 700; color: var(--text, #e6edf3); margin-bottom: 8px; }
+
+/* Compact metric cards */
+.ar-metrics { display: flex; gap: 12px; flex-wrap: wrap; }
+.ar-m-card {
+  padding: 8px 12px; border-radius: 7px; flex-shrink: 0;
+  background: var(--surface, #161b22); border: 1px solid var(--border, #2e3248);
+}
+.ar-m-card.c-vol   { border-top: 2px solid var(--accent, #5b6ef5); }
+.ar-m-card.c-good  { border-top: 2px solid #3fb950; }
+.ar-m-card.c-bad   { border-top: 2px solid #e5534b; }
+.ar-m-card.c-time  { border-top: 2px solid #f5a623; }
+.ar-m-card.c-break { border-top: 2px solid #388bfd; }
+.ar-m-label { font-size: 0.67rem; font-weight: 600; color: var(--text-s, #9098b1); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px; }
+.ar-m-value { font-size: 1.15rem; font-weight: 700; color: var(--text, #e6edf3); line-height: 1.1; }
+.ar-m-sub   { font-size: 0.68rem; color: var(--text-s, #9098b1); margin-top: 2px; }
+.ar-m-list  { font-size: 0.73rem; color: var(--text, #e6edf3); line-height: 1.55; }
+.ar-m-empty { font-size: 0.85rem; color: var(--text-s, #9098b1); }
+
+/* ── Activity Report Tab ── */
+#panel-activity { max-width: 1200px; padding-bottom: 48px; }
+.aar-intro {
+  text-align: center;
+  padding: 2px 0 22px;
+  color: var(--text-s);
+  font-size: 0.85rem;
+  line-height: 1.7;
+}
+.aar-tab-link {
+  background: none; border: none; color: var(--accent); cursor: pointer;
+  font-size: inherit; font-family: inherit; padding: 0; text-decoration: underline;
+}
+.aar-tab-link:hover { color: var(--accent-h); }
+.aar-controls {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 8px; flex-wrap: wrap; margin-bottom: 20px;
+}
+.aar-controls-left { display: flex; align-items: center; gap: 8px; }
+.aar-m-cards { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 16px; }
+.aar-m-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 8px; padding: 14px 18px;
+  min-width: 120px; flex: 1 1 130px; max-width: 195px;
+}
+.aar-m-card.c-vol  { border-top: 2px solid var(--accent); }
+.aar-m-card.c-good { border-top: 2px solid #3fb950; }
+.aar-m-card.c-bad  { border-top: 2px solid #e5534b; }
+.aar-m-card.c-time { border-top: 2px solid #f5a623; }
+.aar-m-label   { font-size: 0.63rem; font-weight: 600; color: var(--text-s); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 4px; }
+.aar-m-value   { font-size: 1.45rem; font-weight: 700; color: var(--text); line-height: 1.1; }
+.aar-m-caption { font-size: 0.65rem; color: var(--text-s); margin-top: 4px; line-height: 1.4; }
+.aar-charts-row { display: grid; grid-template-columns: 285px 1fr; gap: 14px; margin-bottom: 14px; }
+.aar-chart-card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 18px 20px; }
+.aar-chart-title { font-size: 0.67rem; font-weight: 600; color: var(--text-s); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 4px; }
+.aar-chart-sub  { font-size: 0.68rem; color: var(--text-s); margin-bottom: 14px; line-height: 1.4; }
+.aar-period-btns { display: flex; gap: 4px; }
+.aar-period-btn {
+  padding: 3px 10px; border-radius: 4px; border: 1px solid var(--border);
+  background: transparent; color: var(--text-s); font-size: 10px;
+  cursor: pointer; font-family: inherit;
+}
+.aar-period-btn.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+.aar-donut-wrap { position: relative; width: 175px; height: 175px; margin: 0 auto 16px; }
+.aar-donut-center { position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); text-align: center; pointer-events: none; }
+.aar-donut-center-num { font-size: 1.7rem; font-weight: 700; color: var(--text); line-height: 1; }
+.aar-donut-center-lbl { font-size: 0.6rem; color: var(--text-s); text-transform: uppercase; letter-spacing: .05em; margin-top: 2px; }
+.aar-donut-legend { display: flex; flex-direction: column; gap: 5px; }
+.aar-donut-legend-item { display: flex; align-items: center; gap: 7px; font-size: 0.74rem; color: var(--text); }
+.aar-donut-legend-dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
+.aar-donut-legend-count { margin-left: auto; color: var(--text-s); font-size: 0.68rem; font-weight: 600; }
+.aar-countries-row { margin-bottom: 14px; }
+.aar-breakdown-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.aar-text-list { font-size: 0.78rem; color: var(--text); line-height: 1.8; }
+.aar-empty { text-align: center; color: var(--text-s); padding: 56px 0; font-size: 0.9rem; }
+
+/* Filter pills row with minimal backup control */
+.tr-pills-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 10px; }
+.tr-pills-row .tr-stats { flex: 1; min-width: 0; margin-bottom: 0; }
+.tr-backup-corner { display: flex; justify-content: flex-end; padding: 10px 0 4px; }
+.tr-backup-inline { display: flex; align-items: center; gap: 8px; font-size: 0.82rem; color: var(--text-s, #9098b1); }
+
+/* Save-as dropdown menu */
+.tr-save-menu { position: relative; display: inline-flex; }
+.tr-save-menu-drop {
+  display: none; position: absolute; top: calc(100% + 4px); left: 0;
+  background: var(--surface, #161b22); border: 1px solid var(--border, #2e3248);
+  border-radius: 8px; min-width: 120px; z-index: 300;
+  box-shadow: 0 4px 12px rgba(0,0,0,.4);
+}
+.tr-save-menu-drop.open { display: block; }
+.tr-save-menu-item {
+  padding: 8px 14px; font-size: 0.85rem; color: var(--text, #e6edf3);
+  cursor: pointer; white-space: nowrap;
+  display: flex; align-items: center; gap: 7px;
+}
+.tr-save-menu-item:first-child { border-radius: 8px 8px 0 0; }
+.tr-save-menu-item:last-child  { border-radius: 0 0 8px 8px; }
+.tr-save-menu-item:hover { background: var(--surface2, #21262d); }
+
 @media print {
   #main-tabs,
   #panel-search,
   .tr-toolbar,
   .tr-stats,
+  .tr-ar-section,
+  .tg-card,
+  .tr-backup-inline,
+  .tg-backup-restore,
   #tr-overlay,
   #tr-toast,
   .tr-btn-icon,
   .tr-iw-toggle,
   .tr-iw-expand-row,
   #tr-roundOverlay,
+  .tr-attach-gallery,
+  .tr-attach-btn,
+  .tr-lightbox,
+  #tr-pagination,
+  #tr-pagination-top,
   #panel-tracker .tr-table thead th:last-child,
   #panel-tracker .tr-table tbody td:last-child,
   #panel-tracker .tr-table thead th:nth-child(7),
@@ -1377,15 +1603,141 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator{filter:invert(1)
   }
 
   @page { size: A4 landscape; margin: 1.2cm; }
+
+  body.activity-print-mode #panel-tracker { display: none !important; }
+  body.activity-print-mode #activity-print-view { display: block !important; }
 }
+#activity-print-view {
+  display: none;
+  font-family: inherit;
+  padding: 1cm;
+}
+/* Backup toggle card */
+.tg-card {
+  display: flex; align-items: center; gap: 10px;
+  padding: 7px 12px; border-radius: 8px; flex-shrink: 0;
+}
+.tg-card-icon {
+  width: 30px; height: 30px; border-radius: 7px;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.tg-card-title { font-size: 0.88rem; font-weight: 600; color: var(--text, #e6edf3); }
+.tg-card-desc  { font-size: 0.76rem; color: var(--text-s, #9098b1); margin-top: 1px; }
+.tg-switch {
+  position: relative; display: inline-block;
+  width: 40px; height: 24px; flex-shrink: 0; cursor: pointer;
+}
+.tg-switch input { position: absolute; opacity: 0; width: 0; height: 0; pointer-events: none; }
+.tg-switch-pill {
+  position: absolute; inset: 0;
+  background: var(--border, #2e3248); border-radius: 12px; transition: background .2s;
+}
+.tg-switch-pill::after {
+  content: ''; position: absolute; top: 3px; left: 3px;
+  width: 18px; height: 18px; border-radius: 50%;
+  background: #fff; transition: transform .2s;
+}
+.tg-switch input:checked + .tg-switch-pill { background: var(--accent, #5b6ef5); }
+.tg-switch input:checked + .tg-switch-pill::after { transform: translateX(16px); }
+/* Backup card restore button row */
+.tg-backup-restore {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 0.78rem; color: var(--text-s, #9098b1);
+}
+.ar-date-label { color: var(--text-s); }
+.ar-date-input {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  padding: 4px 8px;
+  font-size: 0.82rem;
+  color: var(--text);
+  cursor: pointer;
+}
+/* Tracker backup restore notice */
+.tr-restore-notice {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin: 0.5rem 0;
+  font-size: 0.82rem;
+  color: var(--text-s, #9098b1);
+}
+/* Restore confirmation modal — amber left accent */
+#tr-restoreOverlay .tr-modal { border-left: 4px solid #f5a623; }
+.tr-restore-dismiss {
+  margin-left: auto;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--text-s, #9098b1);
+  font-size: 14px;
+  padding: 2px 5px;
+  border-radius: 4px;
+  line-height: 1;
+}
+.tr-restore-dismiss:hover { color: var(--text, #e6edf3); }
+/* File backup settings bar (kept for transition; replaced by .tr-backup-restore-bar) */
+.tr-file-backup-label {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  cursor: pointer;
+  user-select: none;
+}
+.tr-file-backup-hint { font-style: italic; }
+/* Attachment gallery in job edit modal */
+.tr-notes-wrap { position: relative; }
+#tr-fNotes { padding-bottom: 28px; }
+.tr-attach-btn {
+  position: absolute; bottom: 8px; left: 8px;
+  background: none; border: none; cursor: pointer;
+  padding: 3px; line-height: 0; border-radius: 3px;
+  color: var(--text-s, #9098b1); transition: color .15s;
+}
+.tr-attach-btn:hover { color: var(--text, #e6edf3); }
+.tr-attach-gallery { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; min-height: 0; }
+.tr-attach-thumb {
+  position: relative; width: 60px; height: 60px;
+  border: 1px solid var(--border, #2e3248); border-radius: 6px;
+  overflow: hidden; cursor: pointer; flex-shrink: 0;
+}
+.tr-attach-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.tr-attach-del {
+  position: absolute; top: 2px; right: 2px;
+  width: 16px; height: 16px;
+  background: rgba(0,0,0,0.65); border: none; border-radius: 50%;
+  color: #fff; font-size: 10px;
+  display: none; align-items: center; justify-content: center;
+  cursor: pointer; padding: 0; line-height: 1;
+}
+.tr-attach-thumb:hover .tr-attach-del { display: flex; }
+.tr-attach-msg { font-size: 0.78rem; color: var(--text-s, #9098b1); }
+/* Lightbox */
+.tr-lightbox {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.88);
+  z-index: 600; display: none;
+  align-items: center; justify-content: center;
+}
+.tr-lightbox.open { display: flex; }
+.tr-lightbox img { max-width: 90vw; max-height: 90vh; border-radius: 8px; }
+.tr-lightbox-close {
+  position: absolute; top: 16px; right: 20px;
+  background: none; border: none;
+  color: #fff; font-size: 28px; line-height: 1;
+  cursor: pointer; padding: 4px;
+}
+.tr-lightbox-close:hover { color: #ddd; }
 </style>
 </head>
 <body>
 
 <div id="main-tabs">
-  <button class="main-tab active" id="tab-btn-search" onclick="switchTab('search')">🔍 EuroJobSearch</button>
+  <button class="main-tab active" id="tab-btn-search" onclick="switchTab('search')"><span style="font-size:18px">🕴️</span> EuroJobSearch</button>
   <button class="main-tab" id="tab-btn-sites" onclick="switchTab('sites')">🔗 Other Sources</button>
   <button class="main-tab" id="tab-btn-tracker" onclick="switchTab('tracker')">📋 Job Application Tracker</button>
+  <button class="main-tab" id="tab-btn-activity" onclick="switchTab('activity')">📊 Activity Report</button>
 </div>
 <div id="panel-search">
 
@@ -1437,6 +1789,14 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator{filter:invert(1)
           title="Comma-separated AND filter: e.g. technical writer, freelance – returns jobs matching all terms"
           autocomplete="off"
         >
+        <div id="mute-control" style="margin-top:0.5rem;">
+          <label class="mute-control-label" for="mute-kw-input">Exclude from titles</label>
+          <div class="mute-control-row">
+            <input id="mute-kw-input" class="mute-kw-input" type="text" placeholder="e.g. intern, senior…">
+            <button id="mute-kw-add" class="mute-kw-add">Add</button>
+          </div>
+          <div id="mute-chips" class="muted-tags-row"></div>
+        </div>
         <div class="toggle-row" style="margin-top:0.5rem;">
           <label class="toggle-label" for="title-only">Title match only</label>
           <label class="toggle-switch">
@@ -1533,15 +1893,15 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator{filter:invert(1)
           </div>
           <div class="toolbar-row-2" id="workmodel-filters"></div>
           <div class="toolbar-row-countries" id="country-filters"></div>
-          <div id="linkedin-account-note" style="width:100%; border-top:1px solid var(--border); padding-top:8px; position:relative;">
+          <div id="linkedin-account-note" class="msg-card msg-card-info" style="width:100%; margin-top:8px; position:relative;">
             <p style="font-size:0.78rem; color:var(--text-s); margin:0; padding-right:20px;">
               ⓘ LinkedIn requires a <a href="https://www.linkedin.com/signup" target="_blank" rel="noopener noreferrer" style="color:var(--accent);">free account</a> to view full listings and apply.
             </p>
-            <button id="linkedin-account-note-close" aria-label="Dismiss" style="position:absolute; top:6px; right:0; background:none; border:none; color:var(--text-s); font-size:16px; cursor:pointer; line-height:1; padding:0;">×</button>
+            <button id="linkedin-account-note-close" aria-label="Dismiss" style="position:absolute; top:8px; right:8px; background:none; border:none; color:var(--text-s); font-size:16px; cursor:pointer; line-height:1; padding:0;">×</button>
           </div>
         </div>
 
-        <div id="warnings-box" class="warnings-box hidden"></div>
+        <div id="warnings-box" class="warnings-box msg-card msg-card-warning hidden"></div>
 
         <div id="pagination-top" style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:1rem;flex-wrap:wrap;">
           <div class="results-filter-wrap">
@@ -1823,6 +2183,7 @@ function _addCountryPill(key, label, activate = true) {
 const MORE_COUNTRIES_FLAT = [
   { key: 'austria',        label: '🇦🇹 Austria' },
   { key: 'belgium',        label: '🇧🇪 Belgium' },
+  { key: 'bulgaria',       label: '🇧🇬 Bulgaria' },
   { key: 'croatia',        label: '🇭🇷 Croatia' },
   { key: 'cyprus',         label: '🇨🇾 Cyprus' },
   { key: 'czech_republic', label: '🇨🇿 Czech Republic' },
@@ -1832,6 +2193,7 @@ const MORE_COUNTRIES_FLAT = [
   { key: 'france',         label: '🇫🇷 France' },
   { key: 'germany',        label: '🇩🇪 Germany' },
   { key: 'greece',         label: '🇬🇷 Greece' },
+  { key: 'hungary',        label: '🇭🇺 Hungary' },
   { key: 'iceland',        label: '🇮🇸 Iceland' },
   { key: 'ireland',        label: '🇮🇪 Ireland' },
   { key: 'italy',          label: '🇮🇹 Italy' },
@@ -1845,6 +2207,7 @@ const MORE_COUNTRIES_FLAT = [
   { key: 'portugal',       label: '🇵🇹 Portugal' },
   { key: 'romania',        label: '🇷🇴 Romania' },
   { key: 'slovakia',       label: '🇸🇰 Slovakia' },
+  { key: 'slovenia',       label: '🇸🇮 Slovenia' },
   { key: 'spain',          label: '🇪🇸 Spain' },
   { key: 'sweden',         label: '🇸🇪 Sweden' },
   { key: 'switzerland',    label: '🇨🇭 Switzerland' },
@@ -1978,8 +2341,75 @@ function _hideSrcTooltip() {
   _srcTooltipEl.style.display = 'none';
 }
 
+// Source health state (populated from /api/source-health)
+let _sourceHealth = {};
+
+async function loadSourceHealth() {
+  try {
+    const resp = await fetch('/api/source-health');
+    _sourceHealth = await resp.json();
+  } catch (e) {
+    // silently ignore – dots remain in gray state
+  }
+}
+
+function _shDotClass(h) {
+  if (!h) return 'sh-dot-gray';
+  if (!h.last_error && h.last_success_at) return 'sh-dot-green';
+  if (h.last_error && h.last_success_at)  return 'sh-dot-yellow';
+  if (h.last_error && !h.last_success_at) return 'sh-dot-red';
+  return 'sh-dot-gray';
+}
+
+function _shDuration(iso) {
+  if (!iso) return null;
+  const diff = (Date.now() - new Date(iso).getTime()) / 1000;
+  if (diff < 60)    return 'less than a minute';
+  if (diff < 3600)  return `${Math.round(diff / 60)}m`;
+  const hrs = Math.floor(diff / 3600);
+  const mins = Math.round((diff % 3600) / 60);
+  if (diff < 86400) return mins > 0 ? `${hrs}h ${mins}m` : `${hrs}h`;
+  return `${Math.round(diff / 86400)}d`;
+}
+
+function applySourceHealthDots() {
+  document.querySelectorAll('#sources-list label').forEach(lbl => {
+    const cb = lbl.querySelector('input[type="checkbox"]');
+    if (!cb) return;
+    const h = _sourceHealth[cb.value];
+    const container = lbl.querySelector('.source-label') || lbl;
+    let dot = lbl.querySelector('.sh-dot');
+    if (!dot) {
+      dot = document.createElement('span');
+      dot.className = 'sh-dot';
+      container.appendChild(dot);
+    } else if (dot.parentNode !== container) {
+      container.appendChild(dot);
+    }
+    dot.className = 'sh-dot ' + _shDotClass(h);
+    const parts = [];
+    if (h) {
+      if (h.error_since) {
+        parts.push(`Failing since ${new Date(h.error_since).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}.`);
+      } else if (h.last_success_at) {
+        parts.push(`Last fetched at ${new Date(h.last_success_at).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}.`);
+      }
+      if (h.last_count != null) parts.push(`${h.last_count} jobs fetched before filtering.`);
+      if (h.last_error) {
+        const errMsg = h.last_error;
+        parts.push(`Error: ${errMsg}${errMsg.endsWith('.') ? '' : '.'}`);
+      }
+    } else {
+      parts.push('No data yet – run a search to populate.');
+    }
+    const tipText = parts.join('\n');
+    dot.onmouseenter = () => _showSrcTooltip(dot, tipText);
+    dot.onmouseleave = _hideSrcTooltip;
+  });
+}
+
 // New sources that may not be in older saved settings – always default to checked
-const _NEW_SOURCES = new Set(['REMOTIVE', 'ARBEITNOW', 'JOBICY', 'WEWORKREMOTELY']);
+const _NEW_SOURCES = new Set(['REMOTIVE', 'ARBEITNOW', 'JOBICY', 'WEWORKREMOTELY', 'WORKABLE', 'RECRUITEE']);
 
 function syncSourcesAllPill() {
   const cbs = document.querySelectorAll('#sources-list input[type="checkbox"]:not(:disabled)');
@@ -2011,7 +2441,7 @@ async function loadSources() {
       item.innerHTML = `
         <input type="checkbox" value="${src.id}" checked>
         <span class="source-label">
-          <span class="source-item-label">${src.label}</span>
+          <span class="source-item-label" title="${src.label}">${src.label}</span>
           ${labelExtra}
         </span>
       `;
@@ -2081,6 +2511,8 @@ async function loadSources() {
     syncKarriereAt();
     syncArbeitnow();
     syncSourcesAllPill();
+    // Fetch initial health dots (gray until a search runs)
+    loadSourceHealth().then(applySourceHealthDots);
   } catch (e) {
     console.error('Failed to load sources config:', e);
   }
@@ -2113,6 +2545,520 @@ document.getElementById('keywords').addEventListener('keydown', e => {
 document.getElementById('keywords').addEventListener('input', saveSettings);
 document.getElementById('title-only').addEventListener('change', saveSettings);
 
+// ============================================================
+// Search activity log + activity report export
+// ============================================================
+const EJS_SEARCH_LOG_KEY = 'ejs_search_log';
+const EJS_SEARCH_LOG_CAP = 500;
+
+function _appendSearchLog(entry) {
+  try {
+    const log = JSON.parse(localStorage.getItem(EJS_SEARCH_LOG_KEY) || '[]');
+    log.push(entry);
+    if (log.length > EJS_SEARCH_LOG_CAP) log.splice(0, log.length - EJS_SEARCH_LOG_CAP);
+    localStorage.setItem(EJS_SEARCH_LOG_KEY, JSON.stringify(log));
+  } catch {}
+}
+
+const _AR_COUNTRY_MAP = (() => {
+  const entries = [
+    { name: 'Austria',        variants: ['at', 'austria', 'österreich', 'oesterreich',
+                               'vienna', 'wien',
+                               'lower austria', 'niederösterreich', 'niederoesterreich',
+                               'upper austria', 'oberösterreich', 'oberoesterreich',
+                               'styria', 'steiermark',
+                               'tyrol', 'tirol',
+                               'salzburg',
+                               'carinthia', 'kärnten', 'kaernten',
+                               'vorarlberg',
+                               'burgenland'] },
+    { name: 'Belgium',        variants: ['be', 'belgium', 'belgique', 'belgië', 'belgie'] },
+    { name: 'Croatia',        variants: ['hr', 'croatia', 'hrvatska'] },
+    { name: 'Cyprus',         variants: ['cy', 'cyprus'] },
+    { name: 'Czech Republic', variants: ['cz', 'czech republic', 'czechia', 'česká republika'] },
+    { name: 'Denmark',        variants: ['dk', 'denmark', 'danmark'] },
+    { name: 'Estonia',        variants: ['ee', 'estonia', 'eesti'] },
+    { name: 'Finland',        variants: ['fi', 'finland', 'suomi'] },
+    { name: 'France',         variants: ['fr', 'france'] },
+    { name: 'Germany',        variants: ['de', 'germany', 'deutschland'] },
+    { name: 'Greece',         variants: ['gr', 'greece', 'hellas'] },
+    { name: 'Iceland',        variants: ['is', 'iceland', 'island'] },
+    { name: 'Ireland',        variants: ['ie', 'ireland'] },
+    { name: 'Italy',          variants: ['it', 'italy', 'italia'] },
+    { name: 'Latvia',         variants: ['lv', 'latvia', 'latvija'] },
+    { name: 'Lithuania',      variants: ['lt', 'lithuania', 'lietuva'] },
+    { name: 'Luxembourg',     variants: ['lu', 'luxembourg', 'luxemburg'] },
+    { name: 'Malta',          variants: ['mt', 'malta'] },
+    { name: 'Netherlands',    variants: ['nl', 'netherlands', 'holland', 'the netherlands', 'nederland'] },
+    { name: 'Norway',         variants: ['no', 'norway', 'norge'] },
+    { name: 'Poland',         variants: ['pl', 'poland', 'polska'] },
+    { name: 'Portugal',       variants: ['pt', 'portugal'] },
+    { name: 'Romania',        variants: ['ro', 'romania', 'românia'] },
+    { name: 'Slovakia',       variants: ['sk', 'slovakia', 'slovensko', 'slovak republic'] },
+    { name: 'Spain',          variants: ['es', 'spain', 'españa', 'espana'] },
+    { name: 'Sweden',         variants: ['se', 'sweden', 'sverige'] },
+    { name: 'Switzerland',    variants: ['ch', 'switzerland', 'schweiz', 'suisse', 'svizzera'] },
+    { name: 'United Kingdom', variants: ['gb', 'uk', 'united kingdom', 'england', 'britain', 'great britain'] },
+  ];
+  const map = {};
+  entries.forEach(e => e.variants.forEach(v => { map[v] = e.name; }));
+  return map;
+})();
+
+function _arParseCountry(location) {
+  if (!location) return null;
+  const loc = location.trim();
+  if (!loc) return null;
+  if (/remote/i.test(loc)) return 'Remote';
+  const parts = loc.split(',').map(s => s.trim()).filter(Boolean);
+  const raw = parts[parts.length - 1] || null;
+  if (!raw) return null;
+  return _AR_COUNTRY_MAP[raw.toLowerCase()] || raw;
+}
+
+const _AR_PLATFORM_CANONICAL = (() => {
+  const map = {};
+  [
+    'LinkedIn', 'Indeed', 'Indeed EU', 'Glassdoor', 'Monster',
+    'StepStone', 'Karriere.at', 'EURES', 'XING',
+    'Welcome to the Jungle', 'EuroJobs', 'NoFluffJobs', 'Pracuj.pl',
+    'AngelList', 'Wellfound', 'Remotive', 'FlexJobs',
+    'Workable', 'Recruitee',
+  ].forEach(name => { map[name.toLowerCase()] = name; });
+  return map;
+})();
+
+
+// ============================================================
+// Activity Report Tab
+// ============================================================
+let _aarDonutChart = null, _aarTimelineChart = null, _aarCountriesChart = null;
+let _aarPeriod = 'week';
+
+function arGetDateRange2() {
+  const fromEl = document.getElementById('ar2-from');
+  const toEl   = document.getElementById('ar2-to');
+  const from = fromEl?.value ? new Date(fromEl.value + 'T00:00:00') : null;
+  const to   = toEl?.value   ? new Date(toEl.value   + 'T23:59:59') : null;
+  return [from, to];
+}
+
+function arComputeActivity(from, to) {
+  const inRange = j => {
+    if (!j.dateAdded) return false;
+    const d = new Date(j.dateAdded + 'T00:00:00');
+    if (from && d < from) return false;
+    if (to   && d > to)   return false;
+    return true;
+  };
+  const allRangeJobs = trJobs.filter(inRange);
+  const statusCounts = { Applied: 0, Interviewing: 0, Offer: 0, Rejected: 0, Saved: 0 };
+  allRangeJobs.forEach(j => { if (j.status in statusCounts) statusCounts[j.status]++; });
+
+  const activeStatuses = new Set(['Applied','Interviewing','Offer','Rejected']);
+  const rangeJobs = allRangeJobs.filter(j => activeStatuses.has(j.status));
+  const appCount = rangeJobs.length;
+  const interviewCount = rangeJobs.filter(j =>
+    j.status === 'Interviewing' || j.status === 'Offer' ||
+    (j.status === 'Rejected' && (j.interviewRounds || []).length > 0)
+  ).length;
+  const offerCount    = rangeJobs.filter(j => j.status === 'Offer').length;
+  const rejectedCount = rangeJobs.filter(j => j.status === 'Rejected').length;
+
+  let rangeDays;
+  if (from && to) {
+    rangeDays = Math.max(1, Math.round((to - from) / 86400000) + 1);
+  } else if (rangeJobs.length > 0) {
+    const dates = rangeJobs.map(j => new Date(j.dateAdded + 'T00:00:00').getTime());
+    rangeDays = Math.max(1, Math.round((Math.max(...dates) - Math.min(...dates)) / 86400000) + 1);
+  } else {
+    rangeDays = 14;
+  }
+  const appsPerWeek = appCount > 0 ? Math.round(appCount / (rangeDays / 7) * 10) / 10 : null;
+
+  let iTotal = 0, iRespCount = 0, rTotal = 0, rRespCount = 0;
+  rangeJobs.forEach(j => {
+    if (!j.dateAdded || !(j.interviewRounds || []).length) return;
+    const firstRound = j.interviewRounds.reduce((min, r) => {
+      const d = r.datetime ? new Date(r.datetime) : null;
+      return (d && (!min || d < min)) ? d : min;
+    }, null);
+    if (!firstRound) return;
+    const days = Math.round((firstRound - new Date(j.dateAdded + 'T00:00:00')) / 86400000);
+    if (days < 0) return;
+    if (j.status === 'Interviewing' || j.status === 'Offer' ||
+        (j.status === 'Rejected' && (j.interviewRounds || []).length > 0)) {
+      iTotal += days; iRespCount++;
+    }
+    if (j.status === 'Rejected') { rTotal += days; rRespCount++; }
+  });
+  const avgDaysToInterview = iRespCount > 0 ? Math.round(iTotal / iRespCount) : null;
+  const avgDaysToRejection = rRespCount > 0 ? Math.round(rTotal / rRespCount) : null;
+  const interviewRate = appCount > 0 ? Math.round(interviewCount / appCount * 100) : null;
+  const offerRate     = appCount > 0 ? Math.round(offerCount     / appCount * 100) : null;
+  const rejectionRate = appCount > 0 ? Math.round(rejectedCount  / appCount * 100) : null;
+
+  const workModelBreakdown = {};
+  rangeJobs.forEach(j => {
+    const wm = j.workModel || 'Other';
+    workModelBreakdown[wm] = (workModelBreakdown[wm] || 0) + 1;
+  });
+
+  const srcCounts = {};
+  const srcDisplay = {};
+  rangeJobs.forEach(j => {
+    const raw = (j.platform || '').trim();
+    const key = raw.toLowerCase() || 'unknown';
+    const display = _AR_PLATFORM_CANONICAL[key] || raw || 'Unknown';
+    srcCounts[key] = (srcCounts[key] || 0) + 1;
+    if (!srcDisplay[key]) srcDisplay[key] = display;
+  });
+  const srcSorted = Object.entries(srcCounts).sort((a, b) => b[1] - a[1]);
+  const TOP_N = 5;
+  const sourceBreakdown = srcSorted.length <= TOP_N
+    ? srcSorted.map(([key, count]) => ({ name: srcDisplay[key], count }))
+    : [
+        ...srcSorted.slice(0, TOP_N).map(([key, count]) => ({ name: srcDisplay[key], count })),
+        { name: 'Other', count: srcSorted.slice(TOP_N).reduce((s, [, n]) => s + n, 0) },
+      ];
+
+  const cntryCounts = {};
+  rangeJobs.forEach(j => {
+    const c = _arParseCountry(j.location) || 'Unknown';
+    cntryCounts[c] = (cntryCounts[c] || 0) + 1;
+  });
+  const countriesAll = Object.entries(cntryCounts)
+    .sort((a, b) => b[1] - a[1])
+    .map(([name, count]) => ({ name, count }));
+  const countriesBreakdown = countriesAll.length <= TOP_N
+    ? countriesAll
+    : [
+        ...countriesAll.slice(0, TOP_N),
+        { name: 'Other', count: countriesAll.slice(TOP_N).reduce((s, c) => s + c.count, 0) },
+      ];
+
+  let daysSinceLast = null;
+  if (rangeJobs.length > 0) {
+    const latestStr = rangeJobs.reduce((max, j) => (j.dateAdded > max ? j.dateAdded : max), '');
+    if (latestStr) daysSinceLast = Math.floor((Date.now() - new Date(latestStr + 'T00:00:00').getTime()) / 86400000);
+  }
+
+  const appsOverTime = {};
+  rangeJobs.forEach(j => { appsOverTime[j.dateAdded] = (appsOverTime[j.dateAdded] || 0) + 1; });
+
+  return {
+    appCount, interviewCount, offerCount, rejectedCount,
+    appsPerWeek, interviewRate, offerRate, rejectionRate,
+    avgDaysToInterview, iRespCount, avgDaysToRejection, rRespCount,
+    workModelBreakdown, sourceBreakdown, countriesBreakdown, daysSinceLast,
+    statusCounts, totalInRange: allRangeJobs.length,
+    appsOverTime, countriesAll,
+  };
+}
+
+function _aarGroupData(appsOverTime, period) {
+  const grouped = {};
+  Object.entries(appsOverTime).forEach(([dateStr, count]) => {
+    const d = new Date(dateStr + 'T00:00:00');
+    let key;
+    if (period === 'month') {
+      key = dateStr.slice(0, 7);
+    } else {
+      const day = d.getDay();
+      const diff = day === 0 ? -6 : 1 - day;
+      const mon = new Date(d.getTime() + diff * 86400000);
+      key = mon.toISOString().slice(0, 10);
+    }
+    grouped[key] = (grouped[key] || 0) + count;
+  });
+  return Object.entries(grouped).sort((a, b) => a[0].localeCompare(b[0]));
+}
+
+function _aarDestroyCharts() {
+  if (_aarDonutChart)     { _aarDonutChart.destroy();     _aarDonutChart = null; }
+  if (_aarTimelineChart)  { _aarTimelineChart.destroy();  _aarTimelineChart = null; }
+  if (_aarCountriesChart) { _aarCountriesChart.destroy(); _aarCountriesChart = null; }
+}
+
+function _aarRenderDonut(statusCounts, total) {
+  if (_aarDonutChart) { _aarDonutChart.destroy(); _aarDonutChart = null; }
+  const canvas = document.getElementById('aar-donut-canvas');
+  if (!canvas || typeof Chart === 'undefined') return;
+  const SC = { Applied: '#388bfd', Interviewing: '#3fb950', Offer: '#a371f7', Rejected: '#e5534b', Saved: '#d29922' };
+  const labels = ['Applied','Interviewing','Offer','Rejected','Saved'].filter(s => statusCounts[s] > 0);
+  _aarDonutChart = new Chart(canvas, {
+    type: 'doughnut',
+    data: {
+      labels,
+      datasets: [{ data: labels.map(s => statusCounts[s]), backgroundColor: labels.map(s => SC[s]), borderColor: '#1a1d27', borderWidth: 2 }]
+    },
+    options: {
+      cutout: '72%',
+      plugins: {
+        legend: { display: false },
+        tooltip: { callbacks: { label: ctx => ` ${ctx.label}: ${ctx.raw} (${Math.round(ctx.raw / total * 100)}%)` } },
+      },
+      animation: { duration: 500 },
+    }
+  });
+  const legend = document.getElementById('aar-donut-legend');
+  if (legend) legend.innerHTML = labels.map(s =>
+    `<div class="aar-donut-legend-item"><div class="aar-donut-legend-dot" style="background:${SC[s]}"></div><span>${s}</span><span class="aar-donut-legend-count">${statusCounts[s]}</span></div>`
+  ).join('');
+}
+
+function _aarRenderTimeline(appsOverTime) {
+  if (_aarTimelineChart) { _aarTimelineChart.destroy(); _aarTimelineChart = null; }
+  const canvas = document.getElementById('aar-timeline-canvas');
+  if (!canvas || typeof Chart === 'undefined') return;
+  const grouped = _aarGroupData(appsOverTime, _aarPeriod);
+  if (!grouped.length) return;
+  const labels = grouped.map(([key]) => {
+    if (_aarPeriod === 'month') {
+      const [y, mo] = key.split('-');
+      return new Date(+y, +mo - 1, 1).toLocaleDateString('en', { month: 'short', year: '2-digit' });
+    }
+    return new Date(key + 'T00:00:00').toLocaleDateString('en', { month: 'short', day: 'numeric' });
+  });
+  _aarTimelineChart = new Chart(canvas, {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [{ label: 'Applications', data: grouped.map(([, n]) => n), borderColor: '#5b6ef5', backgroundColor: 'rgba(91,110,245,0.12)', borderWidth: 2, pointRadius: grouped.length > 24 ? 0 : 3, pointHoverRadius: 5, tension: 0.35, fill: true }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false }, tooltip: { mode: 'index', intersect: false } },
+      scales: {
+        x: { ticks: { color: '#9098b1', font: { size: 10 }, maxRotation: 45 }, grid: { color: 'rgba(46,50,72,0.6)' } },
+        y: { ticks: { color: '#9098b1', font: { size: 10 }, stepSize: 1 }, grid: { color: 'rgba(46,50,72,0.6)' }, beginAtZero: true },
+      },
+      animation: { duration: 400 },
+    }
+  });
+}
+
+function _aarSetPeriod(period) {
+  _aarPeriod = period;
+  document.querySelectorAll('.aar-period-btn').forEach(b => b.classList.toggle('active', b.dataset.period === period));
+  const [from, to] = arGetDateRange2();
+  _aarRenderTimeline(arComputeActivity(from, to).appsOverTime);
+}
+
+function _aarRenderCountries(countriesAll) {
+  if (_aarCountriesChart) { _aarCountriesChart.destroy(); _aarCountriesChart = null; }
+  const canvas = document.getElementById('aar-countries-canvas');
+  if (!canvas || typeof Chart === 'undefined') return;
+  const top = countriesAll.slice(0, 12);
+  _aarCountriesChart = new Chart(canvas, {
+    type: 'bar',
+    data: {
+      labels: top.map(c => c.name),
+      datasets: [{ data: top.map(c => c.count), backgroundColor: 'rgba(56,139,253,0.8)', borderRadius: 3, borderSkipped: false }]
+    },
+    options: {
+      indexAxis: 'y', responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false }, tooltip: { callbacks: { label: ctx => ` ${ctx.raw} application${ctx.raw !== 1 ? 's' : ''}` } } },
+      scales: {
+        x: { ticks: { color: '#9098b1', font: { size: 10 }, stepSize: 1 }, grid: { color: 'rgba(46,50,72,0.6)' }, beginAtZero: true },
+        y: { ticks: { color: '#f0f0f5', font: { size: 11 } }, grid: { display: false } },
+      },
+      animation: { duration: 400 },
+    }
+  });
+}
+
+function arRenderActivity() {
+  const el = document.getElementById('aar-content');
+  if (!el) return;
+  const [from, to] = arGetDateRange2();
+  const m = arComputeActivity(from, to);
+
+  if (!m.totalInRange) {
+    el.innerHTML = '<div class="aar-empty">No tracked jobs with dates in this range.</div>';
+    _aarDestroyCharts();
+    return;
+  }
+
+  const acard = (label, value, caption, cls) =>
+    `<div class="aar-m-card${cls ? ' ' + cls : ''}">` +
+      `<div class="aar-m-label">${label}</div>` +
+      `<div class="aar-m-value">${value}</div>` +
+      `<div class="aar-m-caption">${caption}</div>` +
+    `</div>`;
+
+  const wm = m.workModelBreakdown;
+  const wmParts = ['Remote','Hybrid','On-site'].filter(k => (wm[k] || 0) > 0).map(k => `${k}: ${wm[k]}`);
+  if (wm['Other']) wmParts.push(`Other: ${wm['Other']}`);
+  const cntH = Math.max(80, Math.min(m.countriesAll.length, 12) * 36);
+
+  el.innerHTML =
+    (m.appCount > 0 ? `<div class="aar-m-cards">
+      ${acard('Applications', m.appCount, 'Applied, Interviewing, Offer &amp; Rejected entries', 'c-vol')}
+      ${m.appsPerWeek !== null ? acard('Per Week', m.appsPerWeek, 'Average applications submitted per week', 'c-vol') : ''}
+      ${m.daysSinceLast !== null ? acard('Days Since Last', m.daysSinceLast + 'd', 'Days elapsed since most recent application', 'c-vol') : ''}
+      ${acard('Interview Rate', m.interviewRate !== null ? m.interviewRate + '%' : '–', `${m.interviewCount} of ${m.appCount} reached Interviewing or further`, 'c-good')}
+      ${acard('Offer Rate', m.offerRate !== null ? m.offerRate + '%' : '–', `${m.offerCount} offer${m.offerCount !== 1 ? 's' : ''} received`, 'c-good')}
+      ${acard('Rejection Rate', m.rejectionRate !== null ? m.rejectionRate + '%' : '–', `${m.rejectedCount} explicit rejection${m.rejectedCount !== 1 ? 's' : ''}`, 'c-bad')}
+      ${m.avgDaysToInterview !== null ? acard('Avg. Days to Interview', m.avgDaysToInterview + 'd', `${m.iRespCount} entr${m.iRespCount !== 1 ? 'ies' : 'y'} with interview round dates`, 'c-time') : ''}
+      ${m.avgDaysToRejection !== null ? acard('Avg. Days to Rejection', m.avgDaysToRejection + 'd', `${m.rRespCount} rejected entr${m.rRespCount !== 1 ? 'ies' : 'y'} with round dates`, 'c-time') : ''}
+    </div>` : '') +
+    `<div class="aar-charts-row">
+      <div class="aar-chart-card">
+        <div class="aar-chart-title">Applications by Status</div>
+        <div class="aar-chart-sub">How your tracked jobs are distributed across each stage.</div>
+        <div class="aar-donut-wrap">
+          <canvas id="aar-donut-canvas"></canvas>
+          <div class="aar-donut-center">
+            <div class="aar-donut-center-num">${m.totalInRange}</div>
+            <div class="aar-donut-center-lbl">Total</div>
+          </div>
+        </div>
+        <div class="aar-donut-legend" id="aar-donut-legend"></div>
+      </div>
+      ${m.appCount > 0 ? `<div class="aar-chart-card">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+          <div class="aar-chart-title" style="margin:0">Applications Over Time</div>
+          <div class="aar-period-btns">
+            <button class="aar-period-btn${_aarPeriod === 'week' ? ' active' : ''}" data-period="week" onclick="_aarSetPeriod('week')">Week</button>
+            <button class="aar-period-btn${_aarPeriod === 'month' ? ' active' : ''}" data-period="month" onclick="_aarSetPeriod('month')">Month</button>
+          </div>
+        </div>
+        <div style="position:relative;height:200px;"><canvas id="aar-timeline-canvas"></canvas></div>
+      </div>` : ''}
+    </div>` +
+    (m.countriesAll.length > 0 ? `<div class="aar-chart-card aar-countries-row">
+      <div class="aar-chart-title">Countries</div>
+      <div style="position:relative;height:${cntH}px;"><canvas id="aar-countries-canvas"></canvas></div>
+    </div>` : '') +
+    ((wmParts.length || m.sourceBreakdown.length) ? `<div class="aar-breakdown-row">
+      ${wmParts.length ? `<div class="aar-chart-card"><div class="aar-chart-title">Work Model</div><div class="aar-text-list">${wmParts.join('<br>')}</div></div>` : ''}
+      ${m.sourceBreakdown.length ? `<div class="aar-chart-card"><div class="aar-chart-title">Top Sources</div><div class="aar-text-list">${m.sourceBreakdown.map(s => `${s.name}: ${s.count}`).join('<br>')}</div></div>` : ''}
+    </div>` : '');
+
+  _aarRenderDonut(m.statusCounts, m.totalInRange);
+  if (m.appCount > 0) {
+    _aarRenderTimeline(m.appsOverTime);
+  }
+  if (m.countriesAll.length > 0) _aarRenderCountries(m.countriesAll);
+}
+
+function arInitActivity() {
+  const fromEl = document.getElementById('ar2-from');
+  const toEl   = document.getElementById('ar2-to');
+  if (fromEl && !fromEl.value) {
+    const dates = trJobs.filter(j => j.dateAdded).map(j => j.dateAdded).sort();
+    if (dates.length) fromEl.value = dates[0];
+  }
+  if (toEl && !toEl.value) toEl.value = new Date().toISOString().slice(0, 10);
+  arRenderActivity();
+}
+
+function aarExportCSV() {
+  const [from, to] = arGetDateRange2();
+  arExportCSV(from, to);
+}
+
+function aarExportPDF() {
+  const [from, to] = arGetDateRange2();
+  arExportPDF(from, to);
+}
+
+
+function arExportCSV(from, to) {
+  if (from === undefined) [from, to] = arGetDateRange2();
+  const m = arComputeActivity(from, to);
+  const fromStr = from ? from.toISOString().slice(0, 10) : '';
+  const toStr   = to   ? to.toISOString().slice(0, 10)   : '';
+  const q = v => `"${String(v ?? '').replace(/"/g, '""')}"`;
+  const dash = '–';
+  const pct = (count, rate) => rate != null ? `${count} (${rate}%)` : count;
+  const rows = [
+    ['Section', 'Metric', 'Value'],
+    ['Report Period', 'From', fromStr],
+    ['Report Period', 'To',   toStr],
+    ['Volume & Pace', 'Applications',          m.appCount],
+    ['Volume & Pace', 'Applications per week', m.appsPerWeek != null ? m.appsPerWeek : dash],
+    ['Outcomes', 'Interviews', pct(m.interviewCount, m.interviewRate)],
+    ['Outcomes', 'Offers',     pct(m.offerCount,     m.offerRate)],
+    ['Outcomes', 'Rejected',   pct(m.rejectedCount,  m.rejectionRate)],
+    ['Response Timing', 'Avg days to interview', m.avgDaysToInterview != null ? m.avgDaysToInterview + 'd' : dash],
+    ['Response Timing', 'Avg days to rejection', m.avgDaysToRejection != null ? m.avgDaysToRejection + 'd' : dash],
+    ...['Remote', 'Hybrid', 'On-site', 'Other'].map(wm =>
+      ['Breakdown', `Work model - ${wm}`, m.workModelBreakdown[wm] ?? 0]
+    ),
+    ...m.sourceBreakdown.map(s  => ['Breakdown', `Source - ${s.name}`,  s.count]),
+    ...m.countriesBreakdown.map(c => ['Breakdown', `Country - ${c.name}`, c.count]),
+  ];
+  const csv = rows.map(r => r.map(q).join(',')).join('\r\n');
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([csv], {type:'text/csv'}));
+  a.download = `eurojobsearch-activity-report-${new Date().toISOString().slice(0, 10)}.csv`;
+  a.click();
+}
+
+function arExportPDF(from, to) {
+  if (from === undefined) [from, to] = arGetDateRange2();
+  const m = arComputeActivity(from, to);
+  const fromStr = from ? from.toISOString().slice(0, 10) : '–';
+  const toStr   = to   ? to.toISOString().slice(0, 10)   : '–';
+  const pv = document.getElementById('activity-print-view');
+
+  const secHead = t =>
+    `<div style="font-size:9px;font-weight:700;color:#555;text-transform:uppercase;letter-spacing:.08em;` +
+    `border-bottom:1px solid #ccc;padding-bottom:3px;margin:16px 0 8px;">${t}</div>`;
+
+  const stat = (label, value, sub) =>
+    `<div style="background:#f0f2f5;border-radius:6px;padding:10px 14px;min-width:110px;box-sizing:border-box;display:inline-block;margin:0 6px 6px 0;">` +
+      `<div style="font-size:9px;font-weight:600;color:#666;text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px;">${label}</div>` +
+      `<div style="font-size:22px;font-weight:700;color:#111;line-height:1;">${value}</div>` +
+      (sub ? `<div style="font-size:9px;color:#888;margin-top:3px;">${sub}</div>` : '') +
+    `</div>`;
+
+  const wm = m.workModelBreakdown;
+  const wmParts = ['Remote','Hybrid','On-site']
+    .filter(k => (wm[k] || 0) > 0).map(k => `${k}: ${wm[k]}`);
+  if (wm['Other']) wmParts.push(`Other: ${wm['Other']}`);
+  const srcLine = m.sourceBreakdown.map(s => `${s.name}: ${s.count}`).join(' · ');
+
+  pv.innerHTML =
+    `<h2 style="margin:0 0 2px;font-size:15px;font-weight:700;color:#111;">Job Search Activity Report</h2>` +
+    `<p style="margin:0 0 2px;font-size:11px;color:#555;">${fromStr} – ${toStr}</p>` +
+
+    secHead('Volume &amp; Pace') +
+    stat('Applications', m.appCount) +
+    stat('Applications / week', m.appsPerWeek !== null ? m.appsPerWeek : '–') +
+
+    secHead('Outcomes') +
+    stat('Interviews', m.interviewCount, m.appCount ? `${m.interviewRate ?? 0}% rate` : '') +
+    stat('Offers',     m.offerCount,     m.appCount ? `${m.offerRate ?? 0}% rate` : '') +
+    stat('Rejected',   m.rejectedCount,  m.appCount ? `${m.rejectionRate ?? 0}% rate` : '') +
+
+    secHead('Response Timing') +
+    stat('Avg. days to interview',
+      m.avgDaysToInterview !== null ? m.avgDaysToInterview + 'd' : '–',
+      m.iRespCount ? `${m.iRespCount} entr${m.iRespCount !== 1 ? 'ies' : 'y'} with rounds` : 'no round dates') +
+    stat('Avg. days to rejection',
+      m.avgDaysToRejection !== null ? m.avgDaysToRejection + 'd' : '–',
+      m.rRespCount ? `${m.rRespCount} rejected with rounds` : 'no round dates') +
+
+    secHead('Breakdown') +
+    (wmParts.length ? `<p style="margin:0 0 5px;font-size:11px;color:#222;"><strong>Work model:</strong> ${wmParts.join(' · ')}</p>` : '') +
+    (srcLine        ? `<p style="margin:0;font-size:11px;color:#222;"><strong>Sources:</strong> ${srcLine}</p>` : '');
+
+  const _title = document.title;
+  document.title = `eurojobsearch-activity-report-${new Date().toISOString().slice(0, 10)}`;
+  document.body.classList.add('activity-print-mode');
+  requestAnimationFrame(() => {
+    window.print();
+    window.addEventListener('afterprint', () => {
+      document.body.classList.remove('activity-print-mode');
+      pv.innerHTML = '';
+      document.title = _title;
+    }, { once: true });
+  });
+}
+
 async function runSearch() {
   const keywords = document.getElementById('keywords').value.trim();
   if (!keywords) {
@@ -2144,6 +3090,17 @@ async function runSearch() {
 
     const data = await resp.json();
     state.allResults = data.results || [];
+
+    // Append to search activity log
+    _appendSearchLog({
+      timestamp: new Date().toISOString(),
+      keywords,
+      countries,
+      work_models: workModels,
+      hours_old: hoursOld,
+      results_count: (data.results || []).length,
+      sources_queried: data.sources_queried || [],
+    });
 
     // Clear results filter on new search
     const _rf = document.getElementById('results-filter');
@@ -2478,12 +3435,57 @@ function _resultsFilterText() {
   return el ? el.value.trim().toLowerCase() : '';
 }
 
+// ============================================================
+// Mute list
+// ============================================================
+const EJS_MUTE_KEY = 'ejs_mute_list';
+
+function _getMuteList() {
+  try { return JSON.parse(localStorage.getItem(EJS_MUTE_KEY)) || { companies: [], keywords: [] }; }
+  catch { return { companies: [], keywords: [] }; }
+}
+function _saveMuteList(ml) { localStorage.setItem(EJS_MUTE_KEY, JSON.stringify(ml)); }
+
+function muteKeyword(kw) {
+  const ml = _getMuteList();
+  const norm = kw.trim();
+  if (norm && !ml.keywords.includes(norm)) { ml.keywords.push(norm); _saveMuteList(ml); }
+  renderJobList(); renderMuteControl();
+}
+function unmuteKeyword(kw) {
+  const ml = _getMuteList();
+  ml.keywords = ml.keywords.filter(k => k !== kw);
+  _saveMuteList(ml); renderJobList(); renderMuteControl();
+}
+
+function renderMuteControl() {
+  const chips = document.getElementById('mute-chips');
+  if (!chips) return;
+  const ml = _getMuteList();
+  chips.innerHTML = '';
+  ml.keywords.forEach(k => {
+    const tag = document.createElement('span');
+    tag.className = 'muted-tag';
+    tag.title = k;
+    tag.appendChild(document.createTextNode(k));
+    const btn = document.createElement('button');
+    btn.className = 'muted-tag-remove';
+    btn.textContent = '×';
+    btn.addEventListener('click', () => unmuteKeyword(k));
+    tag.appendChild(btn);
+    chips.appendChild(tag);
+  });
+}
+
 function applyFilters(jobs) {
   const filterText = _resultsFilterText();
   const hidden = _getHidden();
+  const ml = _getMuteList();
   let list = jobs.filter(j => {
     if (hidden.has(_jobSeenId(j))) return false;
     if (!_srcPredicate(j) || !_wmPredicate(j) || !_countryPredicate(j)) return false;
+    const ti = (j.title || '').toLowerCase();
+    if (ml.keywords.some(k => ti.includes(k.toLowerCase()))) return false;
     if (!filterText) return true;
     const hay = [j.title, j.company, j.location].join(' ').toLowerCase();
     return hay.includes(filterText);
@@ -2872,6 +3874,8 @@ function showResults(data) {
 
   buildSourceFilters(data.results, state.queriedSources);
   renderJobList();
+  // Refresh health dots after each search
+  loadSourceHealth().then(applySourceHealthDots);
 }
 
 function showError(msg) {
@@ -3040,6 +4044,8 @@ const TR_KEY = 'ejs_tracker_v1';
 const TR_STATUSES = ['Saved', 'Applied', 'Interviewing', 'Offer', 'Rejected'];
 let trJobs = [];
 let trFilter = 'all';
+let trPage = 1;
+const TR_PAGE_SIZE = 25;
 let trEditId = null;
 let trToastTimer;
 let trExpandedInterviews = new Set();
@@ -3082,6 +4088,10 @@ function trRender() {
     return srt === 'dateAsc' ? da - db : db - da;
   });
 
+  const totalPages = Math.max(1, Math.ceil(list.length / TR_PAGE_SIZE));
+  if (trPage > totalPages) trPage = totalPages;
+  const pageList = list.slice((trPage - 1) * TR_PAGE_SIZE, trPage * TR_PAGE_SIZE);
+
   const counts = { Saved: 0, Applied: 0, Interviewing: 0, Offer: 0, Rejected: 0 };
   trJobs.forEach(j => { if (counts[j.status] !== undefined) counts[j.status]++; });
   const allAppliedCount = counts.Applied + counts.Interviewing + counts.Offer + counts.Rejected;
@@ -3101,10 +4111,10 @@ function trRender() {
 
   const tbody = document.getElementById('tr-tbody');
   const empty = document.getElementById('tr-empty');
-  if (!list.length) { tbody.innerHTML = ''; empty.style.display = 'block'; return; }
+  if (!list.length) { tbody.innerHTML = ''; empty.style.display = 'block'; _trRenderPagination(0, 1); return; }
   empty.style.display = 'none';
 
-  tbody.innerHTML = list.map(j => {
+  tbody.innerHTML = pageList.map(j => {
     const co = trX(j.company || '—');
     const platCell = j.url
       ? `<a href="${trX(j.url)}" target="_blank" rel="noopener" class="tr-plat-link">${trX(j.platform || 'Link')} ↗</a>`
@@ -3127,16 +4137,115 @@ function trRender() {
         </div>
       </td>
       <td style="color:var(--text-s);font-size:12px;white-space:nowrap">${dateStr}</td>
-      <td class="tr-td-notes" onclick="this.classList.toggle('open')" title="${trX(j.notes || '')}">${j.notes ? trX(j.notes) : '<span style="opacity:.4">—</span>'}</td>
+      <td class="tr-td-notes" onclick="trEditNote(event,this,'${j.id}')">${j.notes ? trX(j.notes) : ''}</td>
       <td style="white-space:nowrap">
         <button class="tr-btn-icon" title="Edit" onclick="trOpenModal('${j.id}')">✎</button>
         <button class="tr-btn-icon del" title="Delete" onclick="trDelJob('${j.id}')">✕</button>
       </td>
     </tr>` + ((j.interviewRounds && j.interviewRounds.length && trExpandedInterviews.has(j.id)) ? trRenderInterviewExpandRow(j) : '');
   }).join('');
+  _trRenderPagination(list.length, totalPages);
 }
 
-function trSetFilter(f) { trFilter = f; trRender(); }
+function trSetFilter(f) { trFilter = f; trPage = 1; trRender(); }
+
+function _trRenderPagination(total, totalPages) {
+  const _svg = (d) => `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${d}</svg>`;
+  const IC = {
+    first: _svg('<polyline points="11 17 6 12 11 7"/><polyline points="18 17 13 12 18 7"/>'),
+    prev:  _svg('<polyline points="15 18 9 12 15 6"/>'),
+    next:  _svg('<polyline points="9 18 15 12 9 6"/>'),
+    last:  _svg('<polyline points="13 17 18 12 13 7"/><polyline points="6 17 11 12 6 7"/>'),
+  };
+  const mkBtn = (icon, label, disabled, onClick) => {
+    const btn = document.createElement('button');
+    btn.className = 'source-filter-btn';
+    btn.style.cssText = 'display:flex;align-items:center;gap:4px;';
+    btn.innerHTML = icon + label;
+    if (disabled) { btn.style.opacity = '0.4'; btn.style.cursor = 'default'; }
+    else btn.addEventListener('click', onClick);
+    return btn;
+  };
+  ['tr-pagination-top', 'tr-pagination'].forEach(id => {
+    const container = document.getElementById(id);
+    if (!container) return;
+    container.innerHTML = '';
+    if (totalPages <= 1) return;
+    container.appendChild(mkBtn(IC.first, 'First',    trPage === 1,          () => { trPage = 1;          trRender(); }));
+    container.appendChild(mkBtn(IC.prev,  'Previous', trPage === 1,          () => { trPage--;             trRender(); }));
+    const info = document.createElement('span');
+    info.style.cssText = 'color:#9098b1;font-size:13px;padding:0 0.25rem;';
+    info.textContent = `Page ${trPage} of ${totalPages}`;
+    container.appendChild(info);
+    container.appendChild(mkBtn(IC.next,  'Next',     trPage === totalPages, () => { trPage++;             trRender(); }));
+    container.appendChild(mkBtn(IC.last,  'Last',     trPage === totalPages, () => { trPage = totalPages;  trRender(); }));
+  });
+}
+
+function trEditNote(event, td, jobId) {
+  if (event.target.tagName === 'TEXTAREA') return;
+  const job = trJobs.find(j => j.id === jobId);
+  if (!job) return;
+  const original = job.notes || '';
+
+  const revert = (value) => {
+    td.classList.remove('editing');
+    td.innerHTML = trX(value);
+  };
+
+  td.classList.add('editing');
+
+  const ta = document.createElement('textarea');
+  ta.value = original;
+  ta.rows = 4;
+  ta.style.cssText = [
+    'width:100%', 'box-sizing:border-box', 'resize:both',
+    'font-size:13px', 'font-family:inherit', 'line-height:1.4',
+    'background:var(--surface,#161b22)', 'color:var(--text,#e6edf3)',
+    'border:1px solid var(--accent,#5b6ef5)', 'border-radius:4px',
+    'padding:6px 8px', 'outline:none', 'white-space:pre-wrap',
+  ].join(';');
+
+  let cancelled = false;
+
+  ta.addEventListener('keydown', e => {
+    if (e.key === 'Escape') { cancelled = true; ta.blur(); }
+    else if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); ta.blur(); }
+  });
+
+  ta.addEventListener('blur', () => {
+    if (cancelled) { revert(original); return; }
+    const newVal = ta.value;
+    job.notes = newVal;
+    trPersist();
+    revert(newVal);
+  });
+
+  const hint = document.createElement('div');
+  hint.style.cssText = 'font-size:11px;color:var(--text-s,#9098b1);margin-top:3px;white-space:normal;overflow:visible;';
+  hint.textContent = 'Enter to save · Shift+Enter for a new line · Esc to cancel';
+
+  td.innerHTML = '';
+  td.appendChild(ta);
+  td.appendChild(hint);
+  ta.focus();
+}
+
+function trToggleSaveMenu(id) {
+  const drop = document.querySelector('#' + id + ' .tr-save-menu-drop');
+  if (!drop) return;
+  const wasOpen = drop.classList.contains('open');
+  document.querySelectorAll('.tr-save-menu-drop.open').forEach(d => d.classList.remove('open'));
+  if (!wasOpen) drop.classList.add('open');
+}
+function trCloseSaveMenu(id) {
+  document.querySelector('#' + id + ' .tr-save-menu-drop')?.classList.remove('open');
+}
+document.addEventListener('click', e => {
+  if (!e.target.closest('.tr-save-menu')) {
+    document.querySelectorAll('.tr-save-menu-drop.open').forEach(d => d.classList.remove('open'));
+  }
+});
 
 function trIsRoundDone(r) {
   if (r.outcome === 'passed' || r.outcome === 'failed') return true;
@@ -3337,6 +4446,8 @@ function trOpenModal(id) {
   document.getElementById('tr-overlay').classList.add('open');
   document.getElementById('tr-fCompany').focus();
   setTimeout(trInitAllAutocomplete, 0);
+  _trAttachPending = [];
+  trAttachRenderGallery();
 }
 
 function trSetF(id, val) { const el = document.getElementById(id); if (el) el.value = val; }
@@ -3348,6 +4459,7 @@ function trCloseModal(force) {
   if (!force && trModalHasContent()) return;
   document.getElementById('tr-overlay').classList.remove('open');
   trEditId = null;
+  _trAttachPending = [];
 }
 
 function trSaveJob() {
@@ -3370,7 +4482,11 @@ function trSaveJob() {
     if (i !== -1) trJobs[i] = { ...trJobs[i], ...data };
     trToast('Updated.');
   } else {
-    trJobs.unshift({ id: 'tr' + Date.now(), ...data });
+    const newId = 'tr' + Date.now();
+    const pendingIds = _trAttachPending.map(p => p.id);
+    _trAttachPending.forEach(p => _attDbPut({ id: p.id, jobId: newId, dataUrl: p.dataUrl, addedAt: new Date().toISOString() }).catch(() => {}));
+    _trAttachPending = [];
+    trJobs.unshift({ id: newId, ...data, attachmentIds: pendingIds });
     trToast('Added.');
   }
   trPersist(); trCloseModal(true); trRender();
@@ -3388,6 +4504,8 @@ function trUpdateStatus(id, newStatus) {
 
 function trDelJob(id) {
   if (!confirm('Delete this entry?')) return;
+  const job = trJobs.find(j => j.id === id);
+  if (job?.attachmentIds?.length) job.attachmentIds.forEach(imgId => _attDbDelete(imgId).catch(() => {}));
   trJobs = trJobs.filter(j => j.id !== id);
   trPersist(); trRender(); trToast('Deleted.');
   trRefreshCardStates();
@@ -3492,12 +4610,15 @@ function trExportCSV() {
   const csv = [headers.join(','), ...rows].join('\r\n');
   const a = document.createElement('a');
   a.href = URL.createObjectURL(new Blob([csv], {type:'text/csv'}));
-  a.download = `job-applications-${new Date().toISOString().slice(0,10)}.csv`;
+  a.download = `eurojobsearch-application-list-${new Date().toISOString().slice(0,10)}.csv`;
   a.click();
 }
 
 function trExportPDF() {
+  const _title = document.title;
+  document.title = `eurojobsearch-application-list-${new Date().toISOString().slice(0, 10)}`;
   window.print();
+  document.title = _title;
 }
 
 function trImportCSV(event) {
@@ -3558,6 +4679,38 @@ function trImportCSV(event) {
   reader.readAsText(file);
 }
 
+function trImportJSON(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  event.target.value = '';
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    let parsed;
+    try { parsed = JSON.parse(e.target.result); } catch (_) {
+      trToast("This doesn't look like a valid tracker backup file.");
+      return;
+    }
+    if (!Array.isArray(parsed) || (parsed.length > 0 && typeof parsed[0].id === 'undefined')) {
+      trToast("This doesn't look like a valid tracker backup file.");
+      return;
+    }
+    const existingIds = new Set(trJobs.map(j => j.id));
+    const newEntries = parsed.filter(j => j.id && !existingIds.has(j.id));
+    if (newEntries.length === 0) {
+      trToast('No new entries to import — all entries already exist in your tracker.');
+      return;
+    }
+    _bkPendingNewEntries = newEntries;
+    const n = newEntries.length;
+    const skipped = parsed.length - n;
+    document.getElementById('tr-restoreModalBody').textContent =
+      `This will add ${n} entr${n === 1 ? 'y' : 'ies'} from this file that aren't in your current list.` +
+      (skipped > 0 ? ` ${skipped} entr${skipped === 1 ? 'y' : 'ies'} already present will be skipped.` : '');
+    document.getElementById('tr-restoreOverlay').classList.add('open');
+  };
+  reader.readAsText(file);
+}
+
 function trAddFromCard(job, btnEl) {
   if (btnEl.classList.contains('tracked')) return;
 
@@ -3602,26 +4755,364 @@ function _updateStickyOffsets() {
 window.addEventListener('load', _updateStickyOffsets);
 window.addEventListener('resize', _updateStickyOffsets);
 
+// ── Tracker attachments ────────────────────────────────────────────────────────
+let _trAttachPending = []; // in-memory images for new jobs not yet saved
+
+const ATT_DB_NAME = 'ejs-attachments-db';
+const ATT_STORE   = 'images';
+
+function _attDbOpen() {
+  return new Promise((resolve, reject) => {
+    const req = indexedDB.open(ATT_DB_NAME, 1);
+    req.onupgradeneeded = e => e.target.result.createObjectStore(ATT_STORE, { keyPath: 'id' });
+    req.onsuccess = e => resolve(e.target.result);
+    req.onerror = () => reject(req.error);
+  });
+}
+async function _attDbPut(record) {
+  const db = await _attDbOpen();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(ATT_STORE, 'readwrite');
+    const req = tx.objectStore(ATT_STORE).put(record);
+    req.onsuccess = () => { db.close(); resolve(); };
+    req.onerror = () => { db.close(); reject(req.error); };
+  });
+}
+async function _attDbGet(id) {
+  const db = await _attDbOpen();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(ATT_STORE, 'readonly');
+    const req = tx.objectStore(ATT_STORE).get(id);
+    req.onsuccess = () => { db.close(); resolve(req.result); };
+    req.onerror = () => { db.close(); reject(req.error); };
+  });
+}
+async function _attDbDelete(id) {
+  const db = await _attDbOpen();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(ATT_STORE, 'readwrite');
+    const req = tx.objectStore(ATT_STORE).delete(id);
+    req.onsuccess = () => { db.close(); resolve(); };
+    req.onerror = () => { db.close(); reject(req.error); };
+  });
+}
+
+async function trAttachRenderGallery() {
+  const gallery = document.getElementById('tr-attach-gallery');
+  if (!gallery) return;
+  gallery.innerHTML = '';
+  const ids = trEditId
+    ? (trJobs.find(j => j.id === trEditId)?.attachmentIds || [])
+    : _trAttachPending.map(p => p.id);
+  for (const id of ids) {
+    const record = trEditId ? await _attDbGet(id) : _trAttachPending.find(p => p.id === id);
+    if (!record) continue;
+    const thumb = document.createElement('div');
+    thumb.className = 'tr-attach-thumb';
+    const img = document.createElement('img');
+    img.src = record.dataUrl;
+    img.alt = 'Screenshot';
+    img.addEventListener('click', () => trOpenLightbox(record.dataUrl));
+    const del = document.createElement('button');
+    del.className = 'tr-attach-del';
+    del.title = 'Delete';
+    del.textContent = '✕';
+    del.addEventListener('click', e => { e.stopPropagation(); trAttachDelete(id); });
+    thumb.appendChild(img);
+    thumb.appendChild(del);
+    gallery.appendChild(thumb);
+  }
+}
+
+async function _trAttachStore(dataUrl) {
+  const id = `img_${Date.now()}_${Math.random().toString(36).slice(2)}`;
+  const msg = document.getElementById('tr-attach-msg');
+  if (trEditId) {
+    try {
+      await _attDbPut({ id, jobId: trEditId, dataUrl, addedAt: new Date().toISOString() });
+      const job = trJobs.find(j => j.id === trEditId);
+      if (job) { job.attachmentIds = [...(job.attachmentIds || []), id]; trPersist(); }
+    } catch (_) {
+      if (msg) { msg.textContent = "Couldn't save screenshot — storage may be full."; setTimeout(() => { msg.textContent = ''; }, 4000); }
+      return;
+    }
+  } else {
+    _trAttachPending.push({ id, dataUrl });
+  }
+  trAttachRenderGallery();
+}
+
+function trAttachPick() { document.getElementById('tr-attach-input').click(); }
+
+async function trAttachFiles(event) {
+  for (const file of [...event.target.files]) {
+    const dataUrl = await new Promise((res, rej) => { const fr = new FileReader(); fr.onload = e => res(e.target.result); fr.onerror = rej; fr.readAsDataURL(file); });
+    await _trAttachStore(dataUrl);
+  }
+  event.target.value = '';
+}
+
+async function trAttachDelete(id) {
+  if (trEditId) {
+    await _attDbDelete(id).catch(() => {});
+    const job = trJobs.find(j => j.id === trEditId);
+    if (job) { job.attachmentIds = (job.attachmentIds || []).filter(i => i !== id); trPersist(); }
+  } else {
+    _trAttachPending = _trAttachPending.filter(p => p.id !== id);
+  }
+  trAttachRenderGallery();
+}
+
+function trOpenLightbox(dataUrl) {
+  document.getElementById('tr-lightbox-img').src = dataUrl;
+  document.getElementById('tr-lightbox').classList.add('open');
+}
+function trCloseLightbox() {
+  document.getElementById('tr-lightbox').classList.remove('open');
+  document.getElementById('tr-lightbox-img').src = '';
+}
+
+// ── Tracker backup ─────────────────────────────────────────────────────────────
+const TR_BACKUP_KEY      = 'ejs_tracker_backup';
+const TR_BACKUP_META_KEY = 'ejs_tracker_backup_meta';
+const TR_FILE_BACKUP_ON  = 'ejs_tracker_file_backup_on';
+const _THREE_DAYS_MS     = 3 * 24 * 60 * 60 * 1000;
+
+function trMaybeBackup() {
+  if (trJobs.length < 1) return;
+  let meta = {};
+  try { meta = JSON.parse(localStorage.getItem(TR_BACKUP_META_KEY)) || {}; } catch (_) {}
+  const now = Date.now();
+  if (meta.lastBackupAt && now - new Date(meta.lastBackupAt).getTime() < _THREE_DAYS_MS) return;
+  let existing = [];
+  try { existing = JSON.parse(localStorage.getItem(TR_BACKUP_KEY)) || []; } catch (_) {}
+  if (trJobs.length <= 1 && existing.length >= 10) {
+    console.warn('Tracker data dropped significantly, skipping backup to avoid overwriting a good backup with bad data');
+    return;
+  }
+  try {
+    localStorage.setItem(TR_BACKUP_KEY, JSON.stringify(trJobs));
+    meta.lastBackupAt = new Date().toISOString();
+    localStorage.setItem(TR_BACKUP_META_KEY, JSON.stringify(meta));
+  } catch (_) {}
+}
+
+function trCheckRestoreAvailable() {
+  const notice = document.getElementById('tr-restore-notice');
+  if (!notice) return;
+  let backup = null;
+  try { backup = JSON.parse(localStorage.getItem(TR_BACKUP_KEY)); } catch (_) {}
+  if (!Array.isArray(backup) || backup.length === 0) { notice.style.display = 'none'; return; }
+  const existingIds = new Set(trJobs.map(j => j.id));
+  const newCount = backup.filter(j => !existingIds.has(j.id)).length;
+  if (newCount === 0) { notice.style.display = 'none'; return; }
+  let meta = {};
+  try { meta = JSON.parse(localStorage.getItem(TR_BACKUP_META_KEY)) || {}; } catch (_) {}
+  const dateStr = meta.lastBackupAt
+    ? new Date(meta.lastBackupAt).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })
+    : 'unknown date';
+  document.getElementById('tr-restore-text').textContent =
+    `localStorage backup: ${backup.length} entr${backup.length === 1 ? 'y' : 'ies'} saved on ${dateStr}.`;
+  notice.style.display = 'flex';
+}
+
+let _bkPendingBackup  = null;
+let _bkPendingNewEntries = null;
+
+function trRestoreFromBackup() {
+  let backup = null;
+  try { backup = JSON.parse(localStorage.getItem(TR_BACKUP_KEY)); } catch (_) {}
+  if (!Array.isArray(backup) || backup.length === 0) return;
+  const existingIds = new Set(trJobs.map(j => j.id));
+  const newEntries = backup.filter(j => !existingIds.has(j.id));
+  if (newEntries.length === 0) { document.getElementById('tr-restore-notice').style.display = 'none'; return; }
+  let meta = {};
+  try { meta = JSON.parse(localStorage.getItem(TR_BACKUP_META_KEY)) || {}; } catch (_) {}
+  const dateStr = meta.lastBackupAt
+    ? new Date(meta.lastBackupAt).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })
+    : 'unknown date';
+  _bkPendingBackup     = backup;
+  _bkPendingNewEntries = newEntries;
+  const n = newEntries.length;
+  document.getElementById('tr-restoreModalBody').textContent =
+    `This will add ${n} entr${n === 1 ? 'y' : 'ies'} from the backup (saved on ${dateStr}) that aren't in your current list.`;
+  document.getElementById('tr-restoreOverlay').classList.add('open');
+}
+
+function trCloseRestoreModal() {
+  document.getElementById('tr-restoreOverlay').classList.remove('open');
+  _bkPendingBackup     = null;
+  _bkPendingNewEntries = null;
+}
+
+function trDoRestoreMerge() {
+  if (!_bkPendingNewEntries) return;
+  trJobs = [...trJobs, ..._bkPendingNewEntries];
+  trPersist();
+  trRender();
+  trCloseRestoreModal();
+  document.getElementById('tr-restore-notice').style.display = 'none';
+  _updateStickyOffsets();
+}
+
+// IndexedDB helpers for FileSystemFileHandle persistence (handles can't be stored in localStorage)
+function _bkDbOpen() {
+  return new Promise((resolve, reject) => {
+    const req = indexedDB.open('ejs-backup-db', 1);
+    req.onupgradeneeded = e => e.target.result.createObjectStore('handles');
+    req.onsuccess = e => resolve(e.target.result);
+    req.onerror = () => reject(req.error);
+  });
+}
+async function _bkDbGet(key) {
+  const db = await _bkDbOpen();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction('handles', 'readonly');
+    const req = tx.objectStore('handles').get(key);
+    req.onsuccess = () => { db.close(); resolve(req.result); };
+    req.onerror = () => { db.close(); reject(req.error); };
+  });
+}
+async function _bkDbPut(key, value) {
+  const db = await _bkDbOpen();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction('handles', 'readwrite');
+    const req = tx.objectStore('handles').put(value, key);
+    req.onsuccess = () => { db.close(); resolve(); };
+    req.onerror = () => { db.close(); reject(req.error); };
+  });
+}
+
+async function _bkWriteFile(handle) {
+  let meta = {};
+  try { meta = JSON.parse(localStorage.getItem(TR_BACKUP_META_KEY)) || {}; } catch (_) {}
+  const lastCount = meta.lastFileBackupCount ?? null;
+  if (lastCount !== null && trJobs.length <= 1 && lastCount >= 10) {
+    console.warn('Tracker data dropped significantly, skipping file backup to avoid overwriting a good backup with bad data');
+    return false;
+  }
+  const writable = await handle.createWritable();
+  await writable.write(JSON.stringify(trJobs, null, 2));
+  await writable.close();
+  meta.lastFileBackupAt = new Date().toISOString();
+  meta.lastFileBackupCount = trJobs.length;
+  localStorage.setItem(TR_BACKUP_META_KEY, JSON.stringify(meta));
+  return true;
+}
+
+async function trInitFileBackupAttempt() {
+  if (!localStorage.getItem(TR_FILE_BACKUP_ON)) return;
+  let meta = {};
+  try { meta = JSON.parse(localStorage.getItem(TR_BACKUP_META_KEY)) || {}; } catch (_) {}
+  const now = Date.now();
+  if (meta.lastFileBackupAt && now - new Date(meta.lastFileBackupAt).getTime() < _THREE_DAYS_MS) return;
+  let handle;
+  try { handle = await _bkDbGet('tracker'); } catch (_) { return; }
+  if (!handle) return;
+  let perm;
+  try { perm = await handle.requestPermission({ mode: 'readwrite' }); } catch (_) { return; }
+  if (perm !== 'granted') return; // browser requires a fresh prompt; skip silently this cycle
+  try { await _bkWriteFile(handle); } catch (_) {}
+}
+
+function trInitFileBackupSetting() {
+  const toggle = document.getElementById('tr-file-backup-toggle');
+  if (toggle) toggle.checked = !!localStorage.getItem(TR_FILE_BACKUP_ON);
+}
+
+async function trToggleFileBackup(checked) {
+  const hint   = document.getElementById('tr-file-backup-hint');
+  const toggle = document.getElementById('tr-file-backup-toggle');
+  if (!checked) {
+    localStorage.removeItem(TR_FILE_BACKUP_ON);
+    hint.textContent = '';
+    return;
+  }
+  if (!window.showSaveFilePicker) {
+    hint.textContent = 'Requires Chrome or Edge — not supported in this browser.';
+    toggle.checked = false;
+    return;
+  }
+  let handle;
+  try {
+    handle = await window.showSaveFilePicker({
+      suggestedName: 'eurojobsearch-tracker-backup.json',
+      types: [{ description: 'JSON backup', accept: { 'application/json': ['.json'] } }],
+    });
+  } catch (_) {
+    // User cancelled picker
+    toggle.checked = false;
+    hint.textContent = '';
+    return;
+  }
+  try { await _bkDbPut('tracker', handle); } catch (_) {}
+  localStorage.setItem(TR_FILE_BACKUP_ON, '1');
+  hint.textContent = 'Saving…';
+  try {
+    const wrote = await _bkWriteFile(handle);
+    hint.textContent = wrote
+      ? `Backed up ${trJobs.length} entr${trJobs.length === 1 ? 'y' : 'ies'}.`
+      : 'Skipped — current data looks incomplete.';
+  } catch (_) {
+    hint.textContent = 'Write failed — check file permissions.';
+  }
+  setTimeout(() => { hint.textContent = ''; }, 4000);
+}
+
 function switchTab(tab) {
   document.getElementById('panel-search').style.display = tab === 'search' ? '' : 'none';
   document.getElementById('panel-sites').style.display = tab === 'sites' ? '' : 'none';
   document.getElementById('panel-tracker').style.display = tab === 'tracker' ? '' : 'none';
+  document.getElementById('panel-activity').style.display = tab === 'activity' ? '' : 'none';
   document.getElementById('tab-btn-search').classList.toggle('active', tab === 'search');
   document.getElementById('tab-btn-sites').classList.toggle('active', tab === 'sites');
   document.getElementById('tab-btn-tracker').classList.toggle('active', tab === 'tracker');
-  if (tab === 'tracker') { trRender(); _updateStickyOffsets(); }
+  document.getElementById('tab-btn-activity').classList.toggle('active', tab === 'activity');
+  if (tab === 'tracker') { trRender(); requestAnimationFrame(_updateStickyOffsets); }
+  if (tab === 'activity') arInitActivity();
   localStorage.setItem('ejs_active_tab', tab);
 }
 
 document.addEventListener('keydown', e => {
-  if (e.key === 'Escape') { trCloseModal(false); trCloseRoundModal(); }
+  if (e.key === 'Escape') { trCloseLightbox(); trCloseModal(false); trCloseRoundModal(); trCloseRestoreModal(); }
 });
 
 trLoad();
+trMaybeBackup();
 document.addEventListener('DOMContentLoaded', function() {
   document.getElementById('tr-fRoundType').addEventListener('input', trUpdateRoundLinkVisibility);
   const _savedTab = localStorage.getItem('ejs_active_tab');
   if (_savedTab === 'tracker') switchTab('tracker');
+  else if (_savedTab === 'activity') switchTab('activity');
+  renderMuteControl();
+  const _muteAddBtn = document.getElementById('mute-kw-add');
+  const _muteInput  = document.getElementById('mute-kw-input');
+  if (_muteAddBtn && _muteInput) {
+    _muteAddBtn.addEventListener('click', () => {
+      const k = _muteInput.value.trim();
+      if (k) { muteKeyword(k); _muteInput.value = ''; }
+    });
+    _muteInput.addEventListener('keydown', e => {
+      if (e.key === 'Enter') _muteAddBtn.click();
+    });
+  }
+  trCheckRestoreAvailable();
+  trInitFileBackupSetting();
+  trInitFileBackupAttempt();
+  // Paste images into the notes field → attach as screenshot
+  document.getElementById('tr-fNotes').addEventListener('paste', async function(e) {
+    const items = e.clipboardData?.items;
+    if (!items) return;
+    for (const item of items) {
+      if (!item.type.startsWith('image/')) continue;
+      e.preventDefault();
+      const blob = item.getAsFile();
+      const dataUrl = await new Promise(res => { const fr = new FileReader(); fr.onload = ev => res(ev.target.result); fr.readAsDataURL(blob); });
+      await _trAttachStore(dataUrl);
+      trToast('Screenshot added.');
+      break;
+    }
+  });
 });
 </script>
 
@@ -3639,12 +5130,28 @@ document.addEventListener('DOMContentLoaded', function() {
 
 <div id="panel-tracker" style="display:none">
 
-  <div class="tr-sticky-top">
-    <div id="tr-stats" class="tr-stats"></div>
+  <!-- Local backup controls — top-right, scrolls with page -->
+  <div class="tr-backup-corner">
+    <div class="tr-backup-inline">
+      <span>Enable local backup to a JSON file</span>
+      <label class="tg-switch" title="Enable local backup">
+        <input type="checkbox" id="tr-file-backup-toggle" onchange="trToggleFileBackup(this.checked)">
+        <span class="tg-switch-pill"></span>
+      </label>
+      <button class="tr-btn" onclick="document.getElementById('tr-import-json-input').click()">Restore JSON</button>
+      <input type="file" id="tr-import-json-input" accept=".json,application/json" style="display:none" onchange="trImportJSON(event)">
+      <span class="tr-file-backup-hint" id="tr-file-backup-hint"></span>
+    </div>
+  </div>
 
+  <!-- Sticky toolbar -->
+  <div class="tr-sticky-top">
+    <div class="tr-pills-row">
+      <div id="tr-stats" class="tr-stats"></div>
+    </div>
     <div class="tr-toolbar">
-      <input class="tr-search" id="tr-search" type="text" placeholder="Search company, role, notes…" oninput="trRender()">
-      <select class="tr-sort" id="tr-sort" onchange="trRender()">
+      <input class="tr-search" id="tr-search" type="text" placeholder="Search company, role, notes…" oninput="trPage=1;trRender()">
+      <select class="tr-sort" id="tr-sort" onchange="trPage=1;trRender()">
         <option value="dateDesc">Date (newest first)</option>
         <option value="dateAsc">Date (oldest first)</option>
         <option value="company">Company A–Z</option>
@@ -3652,13 +5159,25 @@ document.addEventListener('DOMContentLoaded', function() {
         <option value="lastModified">Recently updated</option>
       </select>
       <button class="tr-btn tr-btn-primary" onclick="trOpenModal(null)">+ Add Job</button>
-      <button class="tr-btn" onclick="trExportCSV()">⬇ Export CSV</button>
-      <button class="tr-btn" onclick="trExportPDF()">🖨 Print / PDF</button>
-      <button class="tr-btn" onclick="document.getElementById('tr-import-input').click()">⬆ Import CSV</button>
+      <span class="tr-toolbar-sep"></span>
+      <div class="tr-save-menu" id="tr-save-menu">
+        <button class="tr-btn" onclick="trToggleSaveMenu('tr-save-menu')">Save List As ▾</button>
+        <div class="tr-save-menu-drop">
+          <div class="tr-save-menu-item" onclick="trExportCSV();trCloseSaveMenu('tr-save-menu')"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="1"/><path d="M3 9h18M9 3v18"/></svg>CSV</div>
+          <div class="tr-save-menu-item" onclick="trExportPDF();trCloseSaveMenu('tr-save-menu')"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="16" y2="17"/></svg>PDF</div>
+        </div>
+      </div>
+      <span class="tr-toolbar-sep"></span>
+      <button class="tr-btn" onclick="document.getElementById('tr-import-input').click()">Import List</button>
       <input type="file" id="tr-import-input" accept=".csv" style="display:none" onchange="trImportCSV(event)">
     </div>
+    <div id="tr-restore-notice" class="tr-restore-notice msg-card msg-card-warning" style="display:none">
+      <span id="tr-restore-text"></span>
+      <button class="tr-btn" onclick="trRestoreFromBackup()">Restore</button>
+      <button class="tr-restore-dismiss" onclick="document.getElementById('tr-restore-notice').style.display='none';_updateStickyOffsets()" title="Dismiss">✕</button>
+    </div>
   </div><!-- end tr-sticky-top -->
-
+  <div id="tr-pagination-top" class="tr-pagination"></div>
   <div class="tr-table-wrap">
     <table class="tr-table">
       <thead>
@@ -3674,6 +5193,7 @@ document.addEventListener('DOMContentLoaded', function() {
       No entries yet. Add a job manually or click "+ Track" on any search result.
     </div>
   </div>
+  <div id="tr-pagination" class="tr-pagination"></div>
 
   <div id="tr-overlay" class="tr-overlay" onclick="if(event.target===this)trCloseModal(false)">
     <div class="tr-modal">
@@ -3706,7 +5226,18 @@ document.addEventListener('DOMContentLoaded', function() {
           <div class="tr-field"><label>Date Added</label><input id="tr-fDate" type="date"></div>
         </div>
         <div class="tr-field"><label>URL</label><input id="tr-fUrl" type="url" placeholder="https://…" autocomplete="off"></div>
-        <div class="tr-field"><label>Notes</label><textarea id="tr-fNotes" placeholder="Context, contacts, follow-ups…"></textarea></div>
+        <div class="tr-field">
+          <label>Notes</label>
+          <div class="tr-notes-wrap">
+            <textarea id="tr-fNotes" placeholder="Context, contacts, follow-ups…"></textarea>
+            <button type="button" class="tr-attach-btn" onclick="trAttachPick()" title="Attach a screenshot">
+              <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l8.57-8.57A4 4 0 1 1 18 8.84l-8.59 8.57a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>
+            </button>
+          </div>
+          <div class="tr-attach-gallery" id="tr-attach-gallery"></div>
+          <span class="tr-attach-msg" id="tr-attach-msg"></span>
+          <input type="file" id="tr-attach-input" accept="image/*" multiple style="display:none" onchange="trAttachFiles(event)">
+        </div>
       </div>
       <div class="tr-modal-foot">
         <button class="tr-btn" onclick="trCloseModal(true)">Cancel</button>
@@ -3777,11 +5308,57 @@ document.addEventListener('DOMContentLoaded', function() {
     </div>
   </div>
 
+  <div id="tr-restoreOverlay" class="tr-overlay" onclick="if(event.target===this) trCloseRestoreModal()">
+    <div class="tr-modal" style="max-width:400px">
+      <div class="tr-modal-head">
+        <span>Restore from backup?</span>
+        <button class="tr-modal-x" onclick="trCloseRestoreModal()">✕</button>
+      </div>
+      <div class="tr-modal-body">
+        <p id="tr-restoreModalBody" style="margin:0;font-size:0.9rem;color:var(--text-s,#9098b1);line-height:1.5"></p>
+      </div>
+      <div class="tr-modal-foot">
+        <button class="tr-btn" onclick="trCloseRestoreModal()">Cancel</button>
+        <button class="tr-btn tr-btn-primary" onclick="trDoRestoreMerge()">Restore</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="tr-lightbox" class="tr-lightbox" onclick="if(event.target===this)trCloseLightbox()">
+    <button class="tr-lightbox-close" onclick="trCloseLightbox()">✕</button>
+    <img id="tr-lightbox-img" src="" alt="Screenshot">
+  </div>
+
   <div id="tr-toast" class="tr-toast"></div>
 </div><!-- end panel-tracker -->
+<div id="panel-activity" style="display:none">
+  <div class="aar-intro">
+    Analytics for applications tracked in the <button class="aar-tab-link" onclick="switchTab('tracker')">Job Application Tracker</button>.
+    Jobs without a date aren't included in this dashboard.
+  </div>
+  <div class="aar-controls">
+    <div class="aar-controls-left">
+      <span class="ar-date-label">From</span>
+      <input class="ar-date-input" type="date" id="ar2-from" onchange="arRenderActivity()">
+      <span class="ar-date-label">To</span>
+      <input class="ar-date-input" type="date" id="ar2-to" onchange="arRenderActivity()">
+    </div>
+    <div class="tr-save-menu" id="aar-save-menu">
+      <button class="tr-btn" onclick="trToggleSaveMenu('aar-save-menu')">Save Report As ▾</button>
+      <div class="tr-save-menu-drop">
+        <div class="tr-save-menu-item" onclick="aarExportCSV();trCloseSaveMenu('aar-save-menu')"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="1"/><path d="M3 9h18M9 3v18"/></svg>CSV</div>
+        <div class="tr-save-menu-item" onclick="aarExportPDF();trCloseSaveMenu('aar-save-menu')"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="16" y2="17"/></svg>PDF</div>
+      </div>
+    </div>
+  </div>
+  <div id="aar-content"></div>
+</div>
+
+<div id="activity-print-view"></div>
 <footer style="text-align:center;padding:1.5rem 1rem;font-size:0.8rem;color:var(--text-s);">
   Built by <a href="https://teokitten.github.io" target="_blank" rel="noopener noreferrer" class="footer-link">Teo Moldovanu</a>
 </footer>
 
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
 </body>
 </html>
