@@ -1029,7 +1029,9 @@ def _fetch_recruitee(keywords: str, countries: list[str], title_only: bool, slug
                     country = offer.get("country", "") or ""
                     location = ", ".join(filter(None, [city, country]))
                 content      = offer.get("description", "") or ""
-                content_text = _strip_html(content)
+                requirements = offer.get("requirements", "") or ""
+                combined     = (content + ("\n" + requirements if requirements else "")).strip()
+                content_text = _strip_html(combined)
                 if not _keywords_match(keywords, title) and (title_only or not _keywords_match(keywords, content_text)):
                     continue
                 published = offer.get("published_at") or offer.get("created_at")
@@ -1048,7 +1050,7 @@ def _fetch_recruitee(keywords: str, countries: list[str], title_only: bool, slug
                     "also_on": [],
                     "is_remote": bool(offer.get("remote", False)),
                     "is_hybrid": bool(offer.get("hybrid", False)),
-                    "description": content[:500],
+                    "description": combined[:5000],
                 }
                 detected = _detect_job_countries(job_dict)
                 if not detected:
@@ -1898,6 +1900,7 @@ def api_search():
     all_jobs: list = []
     all_warnings: list = []
     linkedin_rate_limited = False
+    linkedin_fail_reason = None  # "rate_limited" | "timeout" | None
 
     companies = _load_companies()
     futures_map = {}
@@ -1956,6 +1959,8 @@ def api_search():
                 if name == "LINKEDIN_EU":
                     jobs, warnings, rl = result
                     linkedin_rate_limited = rl
+                    if rl:
+                        linkedin_fail_reason = "rate_limited"
                 else:
                     jobs, warnings = result
                 # Greenhouse filtering is applied inside _fetch_greenhouse (per slug).
@@ -1981,7 +1986,14 @@ def api_search():
             except concurrent.futures.TimeoutError:
                 msg = f"{name}: timed out – source skipped"
                 print(f"[{name}] timed out after 45s")
-                all_warnings.append(msg)
+                if name == "LINKEDIN_EU":
+                    linkedin_rate_limited = True
+                    linkedin_fail_reason = "timeout"
+                    # Toast covers this case for LinkedIn; skip the
+                    # duplicate warnings-box entry. Source-health tooltip
+                    # below is unaffected and still records it.
+                else:
+                    all_warnings.append(msg)
                 with _SOURCE_HEALTH_LOCK:
                     _existing = _SOURCE_HEALTH.get(name, {})
                     _now_fail = datetime.utcnow().isoformat() + "Z"
@@ -2085,6 +2097,7 @@ def api_search():
         "warnings": all_warnings,
         "sources_queried": sources_queried,
         "linkedin_rate_limited": linkedin_rate_limited,
+        "linkedin_fail_reason": linkedin_fail_reason,
     })
 
 

@@ -1070,6 +1070,7 @@
   .getsetup-header { margin-bottom: 1rem; }
   .getsetup-header h2 { font-size: 1rem; font-weight: 700; margin-bottom: 0.2rem; color: #AFA9EC; }
   .getsetup-header p { font-size: 0.8rem; color: var(--text-s); }
+  .tab-panel-title { font-size: 1rem; font-weight: 700; margin: 0 0 0.2rem; color: #AFA9EC; }
 
   /* Job cards source badge colors */
   .src-GLASSDOOR  { background: var(--source-glassdoor); }
@@ -1447,11 +1448,12 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator{filter:invert(1)
 
 /* ── Activity Report Tab ── */
 #panel-activity { max-width: 1200px; padding-bottom: 48px; }
+
 .aar-intro {
-  text-align: center;
+  text-align: left;
   padding: 2px 0 22px;
   color: var(--text-s);
-  font-size: 0.85rem;
+  font-size: 0.88rem;
   line-height: 1.7;
 }
 .aar-tab-link {
@@ -1477,6 +1479,7 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator{filter:invert(1)
 .aar-m-label   { font-size: 0.63rem; font-weight: 600; color: var(--text-s); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 4px; }
 .aar-m-value   { font-size: 1.45rem; font-weight: 700; color: var(--text); line-height: 1.1; }
 .aar-m-caption { font-size: 0.65rem; color: var(--text-s); margin-top: 4px; line-height: 1.4; }
+.aar-sample-note { font-size: 0.63rem; color: var(--text-muted, #6e7691); font-style: italic; }
 .aar-charts-row { display: grid; grid-template-columns: 285px 1fr; gap: 14px; margin-bottom: 14px; }
 .aar-chart-card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 18px 20px; }
 .aar-chart-title { font-size: 0.67rem; font-weight: 600; color: var(--text-s); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 4px; }
@@ -1498,13 +1501,15 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator{filter:invert(1)
 .aar-donut-legend-count { margin-left: auto; color: var(--text-s); font-size: 0.68rem; font-weight: 600; }
 .aar-countries-row { margin-bottom: 14px; }
 .aar-breakdown-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.aar-breakdown-row-3 { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 14px; }
 .aar-text-list { font-size: 0.78rem; color: var(--text); line-height: 1.8; }
 .aar-empty { text-align: center; color: var(--text-s); padding: 56px 0; font-size: 0.9rem; }
 
 /* Filter pills row with minimal backup control */
 .tr-pills-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 10px; }
 .tr-pills-row .tr-stats { flex: 1; min-width: 0; margin-bottom: 0; }
-.tr-backup-corner { display: flex; justify-content: flex-end; padding: 10px 0 4px; }
+.tr-backup-corner { display: flex; flex-direction: column; align-items: flex-end; padding: 10px 0 4px; }
+.tr-backup-status { font-size: 0.72rem; color: var(--text-muted, #6e7691); margin-top: 3px; }
 .tr-backup-inline { display: flex; align-items: center; gap: 8px; font-size: 0.82rem; color: var(--text-s, #9098b1); }
 
 /* Save-as dropdown menu */
@@ -1535,6 +1540,9 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator{filter:invert(1)
   .tr-backup-inline,
   .tg-backup-restore,
   #tr-overlay,
+  #tr-dup-overlay,
+  #tr-stale-notice,
+  #tr-restore-notice,
   #tr-toast,
   .tr-btn-icon,
   .tr-iw-toggle,
@@ -1647,14 +1655,22 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator{filter:invert(1)
 }
 .ar-date-label { color: var(--text-s); }
 .ar-date-input {
-  background: var(--bg);
-  border: 1px solid var(--border);
-  border-radius: 5px;
-  padding: 4px 8px;
-  font-size: 0.82rem;
-  color: var(--text);
-  cursor: pointer;
+  font-size: 0.82rem; font-family: inherit;
+  color: var(--text); background: var(--surface);
+  border: 1px solid var(--border); border-radius: 4px;
+  padding: 2px 4px;
 }
+.ar-tf-summary { font-size: 0.88rem; color: var(--text); }
+.ar-tf-change-btn, .ar-tf-done-btn {
+  background: none; border: none; padding: 0;
+  font-size: 0.82rem; font-family: inherit;
+  color: var(--text-s); cursor: pointer;
+  text-decoration: underline; text-decoration-style: dotted;
+  text-underline-offset: 3px;
+}
+.ar-tf-change-btn { margin-left: 8px; }
+.ar-tf-done-btn { margin-left: 6px; }
+.ar-tf-change-btn:hover, .ar-tf-done-btn:hover { color: var(--accent, #5b6ef5); }
 /* Tracker backup restore notice */
 .tr-restore-notice {
   display: flex;
@@ -1782,7 +1798,7 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator{filter:invert(1)
       <h1>Euro<span>Job</span>Search</h1>
     </div>
     <p class="tagline">European jobs only.</p>
-    <p class="subtitle">Search across job boards and company career pages – all in one place.</p>
+    <p class="subtitle">Find opportunities across Europe, track every application, and measure your response and interview rates over time.</p>
   </header>
 
   <!-- Main grid -->
@@ -1929,6 +1945,7 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator{filter:invert(1)
         <div id="pagination" style="display:flex;align-items:center;gap:10px;margin-top:1rem;flex-wrap:wrap;"></div>
 
         <div id="no-results" class="no-results hidden"></div>
+
       </div>
 
     </main>
@@ -1942,8 +1959,8 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator{filter:invert(1)
 <!-- LinkedIn rate-limit toast (must be in DOM before script runs) -->
 <div class="rl-toast" id="rl-toast">
   <button class="rl-toast-close" id="rl-toast-close" aria-label="Dismiss">×</button>
-  <p class="rl-toast-title">LinkedIn unavailable</p>
-  <p class="rl-toast-body">LinkedIn has rate-limited this IP address and has been unchecked automatically. Your other sources are unaffected. Try again later.</p>
+  <p class="rl-toast-title" id="rl-toast-title">LinkedIn unavailable</p>
+  <p class="rl-toast-body" id="rl-toast-body">LinkedIn has rate-limited this IP address and has been unchecked automatically. Your other sources are unaffected. Try again later.</p>
 </div>
 
 <script>
@@ -2784,14 +2801,14 @@ const _AR_COUNTRY_MAP = (() => {
                                'burgenland'] },
     { name: 'Belgium',        variants: ['be', 'belgium', 'belgique', 'belgië', 'belgie'] },
     { name: 'Croatia',        variants: ['hr', 'croatia', 'hrvatska'] },
-    { name: 'Cyprus',         variants: ['cy', 'cyprus'] },
+    { name: 'Cyprus',         variants: ['cy', 'cyprus', 'κύπρος'] },
     { name: 'Czech Republic', variants: ['cz', 'czech republic', 'czechia', 'česká republika'] },
     { name: 'Denmark',        variants: ['dk', 'denmark', 'danmark'] },
     { name: 'Estonia',        variants: ['ee', 'estonia', 'eesti'] },
     { name: 'Finland',        variants: ['fi', 'finland', 'suomi'] },
     { name: 'France',         variants: ['fr', 'france'] },
     { name: 'Germany',        variants: ['de', 'germany', 'deutschland'] },
-    { name: 'Greece',         variants: ['gr', 'greece', 'hellas'] },
+    { name: 'Greece',         variants: ['gr', 'greece', 'hellas', 'ελλάδα', 'ελλάς'] },
     { name: 'Iceland',        variants: ['is', 'iceland', 'island'] },
     { name: 'Ireland',        variants: ['ie', 'ireland'] },
     { name: 'Italy',          variants: ['it', 'italy', 'italia'] },
@@ -2808,12 +2825,128 @@ const _AR_COUNTRY_MAP = (() => {
     { name: 'Spain',          variants: ['es', 'spain', 'españa', 'espana'] },
     { name: 'Sweden',         variants: ['se', 'sweden', 'sverige'] },
     { name: 'Switzerland',    variants: ['ch', 'switzerland', 'schweiz', 'suisse', 'svizzera'] },
-    { name: 'United Kingdom', variants: ['gb', 'uk', 'united kingdom', 'england', 'britain', 'great britain'] },
+    { name: 'United Kingdom',        variants: ['gb', 'uk', 'united kingdom', 'england', 'britain', 'great britain'] },
+    { name: 'Bulgaria',             variants: ['bg', 'bulgaria', 'българия'] },
+    { name: 'Hungary',              variants: ['hu', 'hungary', 'magyarország'] },
+    { name: 'Slovenia',             variants: ['si', 'slovenia', 'slovenija'] },
+    { name: 'Europe (unspecified)', variants: ['eu', 'emea', 'europe', 'european union', 'europe (unspecified)'] },
   ];
   const map = {};
   entries.forEach(e => e.variants.forEach(v => { map[v] = e.name; }));
   return map;
 })();
+
+// City → display country name. Mirrors _EU_CITIES in app.py — keep in sync.
+const _AR_CITY_MAP = {
+  // Austria
+  "wien": "Austria", "vienna": "Austria", "graz": "Austria",
+  "linz": "Austria", "salzburg": "Austria", "innsbruck": "Austria",
+  "klagenfurt": "Austria",
+  // Belgium
+  "brussels": "Belgium", "bruxelles": "Belgium", "brussel": "Belgium",
+  "antwerp": "Belgium", "antwerpen": "Belgium",
+  "ghent": "Belgium", "gent": "Belgium", "liège": "Belgium",
+  // France
+  "paris": "France", "lyon": "France", "marseille": "France",
+  "toulouse": "France", "nice": "France", "nantes": "France",
+  "strasbourg": "France", "montpellier": "France", "bordeaux": "France",
+  "lille": "France",
+  // Germany
+  "berlin": "Germany", "munich": "Germany", "münchen": "Germany",
+  "hamburg": "Germany", "frankfurt": "Germany",
+  "cologne": "Germany", "köln": "Germany",
+  "düsseldorf": "Germany", "stuttgart": "Germany",
+  "dortmund": "Germany", "essen": "Germany", "leipzig": "Germany",
+  "bremen": "Germany", "dresden": "Germany", "hannover": "Germany",
+  "nürnberg": "Germany", "nuremberg": "Germany",
+  // Ireland
+  "dublin": "Ireland", "cork": "Ireland", "galway": "Ireland",
+  "limerick": "Ireland",
+  // Luxembourg
+  "luxembourg city": "Luxembourg",
+  // Netherlands
+  "amsterdam": "Netherlands", "rotterdam": "Netherlands",
+  "utrecht": "Netherlands", "eindhoven": "Netherlands",
+  "den haag": "Netherlands", "the hague": "Netherlands",
+  "groningen": "Netherlands",
+  // Switzerland
+  "zurich": "Switzerland", "zürich": "Switzerland",
+  "geneva": "Switzerland", "genève": "Switzerland",
+  "bern": "Switzerland", "basel": "Switzerland",
+  "lausanne": "Switzerland",
+  // United Kingdom
+  "london": "United Kingdom", "manchester": "United Kingdom",
+  "edinburgh": "United Kingdom", "birmingham": "United Kingdom",
+  "bristol": "United Kingdom", "leeds": "United Kingdom",
+  "glasgow": "United Kingdom", "liverpool": "United Kingdom",
+  "sheffield": "United Kingdom", "belfast": "United Kingdom",
+  "cardiff": "United Kingdom",
+  // Denmark
+  "copenhagen": "Denmark", "københavn": "Denmark",
+  "aarhus": "Denmark", "odense": "Denmark",
+  // Estonia
+  "tallinn": "Estonia", "tartu": "Estonia",
+  // Finland
+  "helsinki": "Finland", "tampere": "Finland", "turku": "Finland",
+  "espoo": "Finland", "vantaa": "Finland",
+  // Iceland
+  "reykjavik": "Iceland",
+  // Latvia
+  "riga": "Latvia",
+  // Lithuania
+  "vilnius": "Lithuania", "kaunas": "Lithuania",
+  // Norway
+  "oslo": "Norway", "bergen": "Norway", "trondheim": "Norway",
+  // Sweden
+  "stockholm": "Sweden", "gothenburg": "Sweden", "göteborg": "Sweden",
+  "malmö": "Sweden", "uppsala": "Sweden", "linköping": "Sweden",
+  "västerås": "Sweden", "örebro": "Sweden", "norrköping": "Sweden",
+  "helsingborg": "Sweden", "jönköping": "Sweden", "umeå": "Sweden",
+  "lund": "Sweden", "borås": "Sweden", "sundsvall": "Sweden",
+  // Croatia
+  "zagreb": "Croatia", "split": "Croatia",
+  // Cyprus
+  "nicosia": "Cyprus", "limassol": "Cyprus",
+  // Greece
+  "athens": "Greece", "αθήνα": "Greece", "thessaloniki": "Greece",
+  "piraeus": "Greece",
+  // Italy
+  "milan": "Italy", "milano": "Italy", "rome": "Italy", "roma": "Italy",
+  "turin": "Italy", "torino": "Italy", "naples": "Italy", "napoli": "Italy",
+  "bologna": "Italy", "florence": "Italy", "firenze": "Italy",
+  "venice": "Italy", "venezia": "Italy",
+  // Malta
+  "valletta": "Malta",
+  // Portugal
+  "lisbon": "Portugal", "lisboa": "Portugal", "porto": "Portugal",
+  "braga": "Portugal",
+  // Spain
+  "barcelona": "Spain", "madrid": "Spain", "valencia": "Spain",
+  "seville": "Spain", "sevilla": "Spain", "bilbao": "Spain",
+  "malaga": "Spain", "málaga": "Spain",
+  // Czech Republic
+  "prague": "Czech Republic", "praha": "Czech Republic",
+  "brno": "Czech Republic", "ostrava": "Czech Republic",
+  // Poland
+  "warsaw": "Poland", "warszawa": "Poland",
+  "krakow": "Poland", "kraków": "Poland",
+  "wroclaw": "Poland", "wrocław": "Poland",
+  "gdansk": "Poland", "gdańsk": "Poland",
+  "poznan": "Poland", "poznań": "Poland",
+  // Romania
+  "bucharest": "Romania", "bucurești": "Romania",
+  "cluj": "Romania", "cluj-napoca": "Romania",
+  "iași": "Romania", "timișoara": "Romania",
+  "brașov": "Romania", "brasov": "Romania",
+  // Slovakia
+  "bratislava": "Slovakia", "košice": "Slovakia",
+  // Bulgaria
+  "sofia": "Bulgaria", "plovdiv": "Bulgaria", "varna": "Bulgaria",
+  // Hungary
+  "budapest": "Hungary", "debrecen": "Hungary", "szeged": "Hungary",
+  // Slovenia
+  "ljubljana": "Slovenia", "maribor": "Slovenia",
+};
 
 function _arParseCountry(location) {
   if (!location) return null;
@@ -2823,7 +2956,26 @@ function _arParseCountry(location) {
   const parts = loc.split(',').map(s => s.trim()).filter(Boolean);
   const raw = parts[parts.length - 1] || null;
   if (!raw) return null;
-  return _AR_COUNTRY_MAP[raw.toLowerCase()] || raw;
+  // Country name/code check on last segment
+  const country = _AR_COUNTRY_MAP[raw.toLowerCase()];
+  if (country) return country;
+  // City check: try each segment from last to first
+  for (let i = parts.length - 1; i >= 0; i--) {
+    const city = _AR_CITY_MAP[parts[i].toLowerCase()];
+    if (city) return city;
+  }
+  // Space-token fallback: handles "Κύπρος GR"-style fused segments.
+  // Check left-to-right so an explicit native-script country name wins over
+  // a potentially-wrong 2-letter code appended by a scraper.
+  for (let i = parts.length - 1; i >= 0; i--) {
+    const tokens = parts[i].split(/\s+/).filter(Boolean);
+    for (const t of tokens) {
+      const tl = t.toLowerCase();
+      const m = _AR_COUNTRY_MAP[tl] || _AR_CITY_MAP[tl];
+      if (m) return m;
+    }
+  }
+  return null;
 }
 
 const _AR_PLATFORM_CANONICAL = (() => {
@@ -2851,6 +3003,11 @@ function arGetDateRange2() {
   const from = fromEl?.value ? new Date(fromEl.value + 'T00:00:00') : null;
   const to   = toEl?.value   ? new Date(toEl.value   + 'T23:59:59') : null;
   return [from, to];
+}
+
+function _arFmtDateLong(d, fallback) {
+  if (!d) return fallback ?? '';
+  return d.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
 }
 
 function arComputeActivity(from, to) {
@@ -2956,6 +3113,79 @@ function arComputeActivity(from, to) {
   const appsOverTime = {};
   rangeJobs.forEach(j => { appsOverTime[j.dateAdded] = (appsOverTime[j.dateAdded] || 0) + 1; });
 
+  // Interview rate by source
+  const srcIRMap = {};
+  rangeJobs.forEach(j => {
+    const raw = (j.platform || '').trim();
+    const key = raw.toLowerCase() || 'unknown';
+    const display = _AR_PLATFORM_CANONICAL[key] || raw || 'Unknown';
+    if (!srcIRMap[key]) srcIRMap[key] = { name: display, appCount: 0, interviewCount: 0 };
+    srcIRMap[key].appCount++;
+    if (j.status === 'Interviewing' || j.status === 'Offer' ||
+        (j.status === 'Rejected' && (j.interviewRounds || []).length > 0)) {
+      srcIRMap[key].interviewCount++;
+    }
+  });
+  const srcIRBreakdown = Object.values(srcIRMap)
+    .map(s => ({ ...s, rate: Math.round(s.interviewCount / s.appCount * 100) }))
+    .sort((a, b) => b.rate - a.rate || b.appCount - a.appCount);
+
+  // Interview rate by work model
+  const wmIRMap = {};
+  rangeJobs.forEach(j => {
+    const wm = j.workModel || 'Other';
+    if (!wmIRMap[wm]) wmIRMap[wm] = { appCount: 0, interviewCount: 0 };
+    wmIRMap[wm].appCount++;
+    if (j.status === 'Interviewing' || j.status === 'Offer' ||
+        (j.status === 'Rejected' && (j.interviewRounds || []).length > 0)) {
+      wmIRMap[wm].interviewCount++;
+    }
+  });
+  const wmIRBreakdown = Object.entries(wmIRMap)
+    .map(([name, d]) => ({ name, ...d, rate: Math.round(d.interviewCount / d.appCount * 100) }))
+    .sort((a, b) => b.rate - a.rate || b.appCount - a.appCount);
+
+  // Country stacked status data (all statuses, top 12 + "Other countries" overflow so every
+  // job in allRangeJobs is accounted for and chart totals match the donut exactly).
+  const _MI_MAX_COUNTRIES = 12;
+  const cntryStatuses = {};
+  allRangeJobs.forEach(j => {
+    const c = _arParseCountry(j.location) || 'Unknown';
+    if (!cntryStatuses[c]) cntryStatuses[c] = { count: 0, statuses: {} };
+    cntryStatuses[c].count++;
+    cntryStatuses[c].statuses[j.status] = (cntryStatuses[c].statuses[j.status] || 0) + 1;
+  });
+  const _cntryEntries = Object.entries(cntryStatuses).sort((a, b) => b[1].count - a[1].count);
+  let countriesStatusData;
+  if (_cntryEntries.length <= _MI_MAX_COUNTRIES) {
+    countriesStatusData = _cntryEntries.map(([name, d]) => ({ name, count: d.count, statuses: d.statuses }));
+  } else {
+    const _shown = _cntryEntries.slice(0, _MI_MAX_COUNTRIES);
+    const _rest  = _cntryEntries.slice(_MI_MAX_COUNTRIES);
+    const _otherStatuses = {};
+    _rest.forEach(([, d]) => Object.entries(d.statuses).forEach(([st, n]) => {
+      _otherStatuses[st] = (_otherStatuses[st] || 0) + n;
+    }));
+    countriesStatusData = [
+      ..._shown.map(([name, d]) => ({ name, count: d.count, statuses: d.statuses })),
+      { name: 'Other countries', count: _rest.reduce((s, [, d]) => s + d.count, 0), statuses: _otherStatuses },
+    ];
+  }
+
+  // Top job titles (exact string, top 5 + Other)
+  const titleCounts = {};
+  rangeJobs.forEach(j => {
+    const t = (j.title || 'Unknown').trim();
+    titleCounts[t] = (titleCounts[t] || 0) + 1;
+  });
+  const titlesSorted = Object.entries(titleCounts).sort((a, b) => b[1] - a[1]);
+  const topTitles = titlesSorted.length <= TOP_N
+    ? titlesSorted.map(([name, count]) => ({ name, count }))
+    : [
+        ...titlesSorted.slice(0, TOP_N).map(([name, count]) => ({ name, count })),
+        { name: 'Other', count: titlesSorted.slice(TOP_N).reduce((s, [, n]) => s + n, 0) },
+      ];
+
   return {
     appCount, interviewCount, offerCount, rejectedCount,
     appsPerWeek, interviewRate, offerRate, rejectionRate,
@@ -2963,6 +3193,7 @@ function arComputeActivity(from, to) {
     workModelBreakdown, sourceBreakdown, countriesBreakdown, daysSinceLast,
     statusCounts, totalInRange: allRangeJobs.length,
     appsOverTime, countriesAll,
+    srcIRBreakdown, wmIRBreakdown, countriesStatusData, topTitles,
   };
 }
 
@@ -3006,7 +3237,50 @@ function _aarRenderDonut(statusCounts, total) {
       cutout: '72%',
       plugins: {
         legend: { display: false },
-        tooltip: { callbacks: { label: ctx => ` ${ctx.label}: ${ctx.raw} (${Math.round(ctx.raw / total * 100)}%)` } },
+        tooltip: {
+          enabled: false,
+          external: function({ chart, tooltip }) {
+            const TIP_ID = 'aar-donut-tooltip';
+            let el = document.getElementById(TIP_ID);
+            if (!el) {
+              el = document.createElement('div');
+              el.id = TIP_ID;
+              Object.assign(el.style, {
+                position: 'absolute', pointerEvents: 'none',
+                background: 'rgba(22,27,34,0.82)', color: '#e6edf3',
+                borderRadius: '6px', padding: '6px 10px',
+                fontSize: '12px', lineHeight: '1.5',
+                border: '1px solid rgba(255,255,255,0.12)',
+                whiteSpace: 'nowrap', zIndex: '10',
+              });
+              chart.canvas.parentNode.appendChild(el);
+            }
+            if (tooltip.opacity === 0) { el.style.opacity = '0'; return; }
+            const dp = tooltip.dataPoints?.[0];
+            if (!dp) return;
+            el.textContent = `${dp.label}: ${dp.raw} (${Math.round(dp.raw / total * 100)}%)`;
+            el.style.opacity = '1';
+            // Arc geometry — all values are in CSS pixels (Chart.js handles DPR internally)
+            const arc = chart.getDatasetMeta(0).data[dp.dataIndex];
+            const mid = (arc.startAngle + arc.endAngle) / 2;
+            const co  = Math.cos(mid);
+            const si  = Math.sin(mid);
+            const GAP = 14; // px clearance beyond the outer ring
+            // Anchor point in canvas coords
+            const ax = arc.x + co * (arc.outerRadius + GAP);
+            const ay = arc.y + si * (arc.outerRadius + GAP);
+            // Offset of canvas within its parent (.aar-donut-wrap, position:relative)
+            const ox = chart.canvas.offsetLeft;
+            const oy = chart.canvas.offsetTop;
+            el.style.left = (ox + ax) + 'px';
+            el.style.top  = (oy + ay) + 'px';
+            // Push the box away from center with CSS transform — no dependency on rendered size
+            if      (co > 0.3)  el.style.transform = 'translate(8px, -50%)';
+            else if (co < -0.3) el.style.transform = 'translate(calc(-100% - 8px), -50%)';
+            else if (si < -0.3) el.style.transform = 'translate(-50%, calc(-100% - 8px))';
+            else                el.style.transform = 'translate(-50%, 8px)';
+          },
+        },
       },
       animation: { duration: 500 },
     }
@@ -3055,27 +3329,42 @@ function _aarSetPeriod(period) {
   _aarRenderTimeline(arComputeActivity(from, to).appsOverTime);
 }
 
-function _aarRenderCountries(countriesAll) {
+function _aarRenderCountries(data) {
   if (_aarCountriesChart) { _aarCountriesChart.destroy(); _aarCountriesChart = null; }
   const canvas = document.getElementById('aar-countries-canvas');
   if (!canvas || typeof Chart === 'undefined') return;
-  const top = countriesAll.slice(0, 12);
+  const SC = { Applied: '#388bfd', Interviewing: '#3fb950', Offer: '#a371f7', Rejected: '#e5534b', Saved: '#d29922' };
+  const STATUS_ORDER = ['Saved', 'Applied', 'Interviewing', 'Offer', 'Rejected'];
+  const activeStatuses = STATUS_ORDER.filter(s => data.some(c => (c.statuses[s] || 0) > 0));
   _aarCountriesChart = new Chart(canvas, {
     type: 'bar',
     data: {
-      labels: top.map(c => c.name),
-      datasets: [{ data: top.map(c => c.count), backgroundColor: 'rgba(56,139,253,0.8)', borderRadius: 3, borderSkipped: false }]
+      labels: data.map(c => c.name),
+      datasets: activeStatuses.map(s => ({
+        label: s,
+        data: data.map(c => c.statuses[s] || 0),
+        backgroundColor: SC[s],
+        borderRadius: 0,
+        borderSkipped: false,
+      }))
     },
     options: {
       indexAxis: 'y', responsive: true, maintainAspectRatio: false,
-      plugins: { legend: { display: false }, tooltip: { callbacks: { label: ctx => ` ${ctx.raw} application${ctx.raw !== 1 ? 's' : ''}` } } },
+      plugins: {
+        legend: { display: false },
+        tooltip: { mode: 'index', axis: 'y', intersect: false, callbacks: { label: ctx => ` ${ctx.dataset.label}: ${ctx.raw}` } }
+      },
       scales: {
-        x: { ticks: { color: '#9098b1', font: { size: 10 }, stepSize: 1 }, grid: { color: 'rgba(46,50,72,0.6)' }, beginAtZero: true },
-        y: { ticks: { color: '#f0f0f5', font: { size: 11 } }, grid: { display: false } },
+        x: { stacked: true, ticks: { color: '#9098b1', font: { size: 10 }, stepSize: 1 }, grid: { color: 'rgba(46,50,72,0.6)' }, beginAtZero: true },
+        y: { stacked: true, ticks: { color: '#f0f0f5', font: { size: 11 } }, grid: { display: false } },
       },
       animation: { duration: 400 },
     }
   });
+  const legend = document.getElementById('aar-countries-legend');
+  if (legend) legend.innerHTML = activeStatuses.map(s =>
+    `<div class="aar-donut-legend-item"><div class="aar-donut-legend-dot" style="background:${SC[s]}"></div><span>${s}</span></div>`
+  ).join('');
 }
 
 function arRenderActivity() {
@@ -3100,16 +3389,16 @@ function arRenderActivity() {
   const wm = m.workModelBreakdown;
   const wmParts = ['Remote','Hybrid','On-site'].filter(k => (wm[k] || 0) > 0).map(k => `${k}: ${wm[k]}`);
   if (wm['Other']) wmParts.push(`Other: ${wm['Other']}`);
-  const cntH = Math.max(80, Math.min(m.countriesAll.length, 12) * 36);
+  const cntH = Math.max(80, m.countriesStatusData.length * 36);
 
   el.innerHTML =
     (m.appCount > 0 ? `<div class="aar-m-cards">
       ${acard('Applications', m.appCount, 'Applied, Interviewing, Offer &amp; Rejected entries', 'c-vol')}
       ${m.appsPerWeek !== null ? acard('Per Week', m.appsPerWeek, 'Average applications submitted per week', 'c-vol') : ''}
       ${m.daysSinceLast !== null ? acard('Days Since Last', m.daysSinceLast + 'd', 'Days elapsed since most recent application', 'c-vol') : ''}
-      ${acard('Interview Rate', m.interviewRate !== null ? m.interviewRate + '%' : '–', `${m.interviewCount} of ${m.appCount} reached Interviewing or further`, 'c-good')}
-      ${acard('Offer Rate', m.offerRate !== null ? m.offerRate + '%' : '–', `${m.offerCount} offer${m.offerCount !== 1 ? 's' : ''} received`, 'c-good')}
-      ${acard('Rejection Rate', m.rejectionRate !== null ? m.rejectionRate + '%' : '–', `${m.rejectedCount} explicit rejection${m.rejectedCount !== 1 ? 's' : ''}`, 'c-bad')}
+      ${acard('Interview Rate', m.interviewRate !== null ? m.interviewRate + '%' : '–', `${m.interviewCount} of ${m.appCount} reached Interviewing or further${m.appCount < 10 ? '<br><span class="aar-sample-note">Small sample — treat as early signal, not a trend.</span>' : ''}`, 'c-good')}
+      ${acard('Offer Rate', m.offerRate !== null ? m.offerRate + '%' : '–', `${m.offerCount} of ${m.appCount} reached Offer${m.appCount < 10 ? '<br><span class="aar-sample-note">Small sample — treat as early signal, not a trend.</span>' : ''}`, 'c-good')}
+      ${acard('Rejection Rate', m.rejectionRate !== null ? m.rejectionRate + '%' : '–', `${m.rejectedCount} of ${m.appCount} rejected${m.appCount < 10 ? '<br><span class="aar-sample-note">Small sample — treat as early signal, not a trend.</span>' : ''}`, 'c-bad')}
       ${m.avgDaysToInterview !== null ? acard('Avg. Days to Interview', m.avgDaysToInterview + 'd', `${m.iRespCount} entr${m.iRespCount !== 1 ? 'ies' : 'y'} with interview round dates`, 'c-time') : ''}
       ${m.avgDaysToRejection !== null ? acard('Avg. Days to Rejection', m.avgDaysToRejection + 'd', `${m.rRespCount} rejected entr${m.rRespCount !== 1 ? 'ies' : 'y'} with round dates`, 'c-time') : ''}
     </div>` : '') +
@@ -3137,20 +3426,48 @@ function arRenderActivity() {
         <div style="position:relative;height:200px;"><canvas id="aar-timeline-canvas"></canvas></div>
       </div>` : ''}
     </div>` +
-    (m.countriesAll.length > 0 ? `<div class="aar-chart-card aar-countries-row">
+    (m.countriesStatusData.length > 0 ? `<div class="aar-chart-card aar-countries-row">
       <div class="aar-chart-title">Countries</div>
       <div style="position:relative;height:${cntH}px;"><canvas id="aar-countries-canvas"></canvas></div>
+      <div id="aar-countries-legend" class="aar-donut-legend" style="flex-direction:row;flex-wrap:wrap;gap:8px 18px;margin-top:10px;"></div>
     </div>` : '') +
-    ((wmParts.length || m.sourceBreakdown.length) ? `<div class="aar-breakdown-row">
+    ((wmParts.length || m.sourceBreakdown.length || m.topTitles.length) ? `<div class="aar-breakdown-row-3">
       ${wmParts.length ? `<div class="aar-chart-card"><div class="aar-chart-title">Work Model</div><div class="aar-text-list">${wmParts.join('<br>')}</div></div>` : ''}
       ${m.sourceBreakdown.length ? `<div class="aar-chart-card"><div class="aar-chart-title">Top Sources</div><div class="aar-text-list">${m.sourceBreakdown.map(s => `${s.name}: ${s.count}`).join('<br>')}</div></div>` : ''}
+      ${m.topTitles.length ? `<div class="aar-chart-card"><div class="aar-chart-title">Top Roles Applied To</div><div class="aar-text-list">${m.topTitles.map(t => `${t.name}: ${t.count}`).join('<br>')}</div></div>` : ''}
     </div>` : '');
 
   _aarRenderDonut(m.statusCounts, m.totalInRange);
   if (m.appCount > 0) {
     _aarRenderTimeline(m.appsOverTime);
   }
-  if (m.countriesAll.length > 0) _aarRenderCountries(m.countriesAll);
+  if (m.countriesStatusData.length > 0) _aarRenderCountries(m.countriesStatusData);
+}
+
+function arDateModeEdit() {
+  const text = document.getElementById('ar-timeframe-text');
+  const edit = document.getElementById('ar-timeframe-edit');
+  if (text) text.style.display = 'none';
+  if (edit) edit.style.display = 'flex';
+}
+
+function arDateModeText() {
+  const text = document.getElementById('ar-timeframe-text');
+  const edit = document.getElementById('ar-timeframe-edit');
+  if (text) text.style.display = '';
+  if (edit) edit.style.display = 'none';
+}
+
+function arUpdateDateBtns() {
+  const fmt = v => v
+    ? new Date(v + 'T00:00:00').toLocaleDateString('en-US', { month: 'long', day: 'numeric' })
+    : null;
+  const fromVal = document.getElementById('ar2-from')?.value;
+  const toVal   = document.getElementById('ar2-to')?.value;
+  const fromStr = fmt(fromVal) || 'All time';
+  const toStr   = fmt(toVal)   || 'Today';
+  const summary = document.getElementById('ar-tf-summary');
+  if (summary) summary.textContent = 'From ' + fromStr + ' to ' + toStr;
 }
 
 function arInitActivity() {
@@ -3161,6 +3478,8 @@ function arInitActivity() {
     if (dates.length) fromEl.value = dates[0];
   }
   if (toEl && !toEl.value) toEl.value = new Date().toISOString().slice(0, 10);
+  arDateModeText();
+  arUpdateDateBtns();
   arRenderActivity();
 }
 
@@ -3178,8 +3497,8 @@ function aarExportPDF() {
 function arExportCSV(from, to) {
   if (from === undefined) [from, to] = arGetDateRange2();
   const m = arComputeActivity(from, to);
-  const fromStr = from ? from.toISOString().slice(0, 10) : '';
-  const toStr   = to   ? to.toISOString().slice(0, 10)   : '';
+  const fromStr = _arFmtDateLong(from);
+  const toStr   = _arFmtDateLong(to);
   const q = v => `"${String(v ?? '').replace(/"/g, '""')}"`;
   const dash = '–';
   const pct = (count, rate) => rate != null ? `${count} (${rate}%)` : count;
@@ -3199,6 +3518,7 @@ function arExportCSV(from, to) {
     ),
     ...m.sourceBreakdown.map(s  => ['Breakdown', `Source - ${s.name}`,  s.count]),
     ...m.countriesBreakdown.map(c => ['Breakdown', `Country - ${c.name}`, c.count]),
+    ...m.topTitles.map(t => ['Breakdown', `Role - ${t.name}`, t.count]),
   ];
   const csv = rows.map(r => r.map(q).join(',')).join('\r\n');
   const a = document.createElement('a');
@@ -3210,8 +3530,8 @@ function arExportCSV(from, to) {
 function arExportPDF(from, to) {
   if (from === undefined) [from, to] = arGetDateRange2();
   const m = arComputeActivity(from, to);
-  const fromStr = from ? from.toISOString().slice(0, 10) : '–';
-  const toStr   = to   ? to.toISOString().slice(0, 10)   : '–';
+  const fromStr = _arFmtDateLong(from, '–');
+  const toStr   = _arFmtDateLong(to,   '–');
   const pv = document.getElementById('activity-print-view');
 
   const secHead = t =>
@@ -3254,7 +3574,8 @@ function arExportPDF(from, to) {
 
     secHead('Breakdown') +
     (wmParts.length ? `<p style="margin:0 0 5px;font-size:11px;color:#222;"><strong>Work model:</strong> ${wmParts.join(' · ')}</p>` : '') +
-    (srcLine        ? `<p style="margin:0;font-size:11px;color:#222;"><strong>Sources:</strong> ${srcLine}</p>` : '');
+    (srcLine        ? `<p style="margin:0 0 5px;font-size:11px;color:#222;"><strong>Sources:</strong> ${srcLine}</p>` : '') +
+    (m.topTitles.length ? `<p style="margin:0;font-size:11px;color:#222;"><strong>Top roles:</strong> ${m.topTitles.map(t => `${t.name}: ${t.count}`).join(' · ')}</p>` : '');
 
   const _title = document.title;
   document.title = `eurojobsearch-activity-report-${new Date().toISOString().slice(0, 10)}`;
@@ -3979,7 +4300,7 @@ function buildJobCard(job) {
 
   const trackBtn = card.querySelector('[data-track]');
   if (trackBtn) {
-    const alreadyTracked = job.url && trJobs.some(tj => tj.url && tj.url === job.url);
+    const alreadyTracked = !!_trFindTracked(job);
     if (alreadyTracked) {
       trackBtn.textContent = '✓ Tracked';
       trackBtn.classList.add('tracked');
@@ -4042,14 +4363,15 @@ function showResults(data) {
 
   state.queriedSources = data.sources_queried || [];
 
-  // LinkedIn rate-limit: auto-deselect and show toast only when rate-limited AND returned 0 results
+  // LinkedIn rate-limit or timeout: auto-deselect and show toast only when
+  // flagged AND returned 0 results
   if (data.linkedin_rate_limited) {
     const liCb = document.querySelector('#sources-list input[value="LINKEDIN_EU"]');
     const liResultCount = (data.results || []).filter(r => r.source === 'LINKEDIN_EU').length;
     if (liCb && liCb.checked && liResultCount === 0) {
       liCb.checked = false;
       saveSettings();
-      showLinkedInRateLimitModal();
+      showLinkedInRateLimitModal(data.linkedin_fail_reason);
     }
   }
 
@@ -4232,8 +4554,14 @@ document.getElementById('linkedin-account-note-close').addEventListener('click',
   try { localStorage.setItem(LI_ACCOUNT_NOTE_KEY, '1'); } catch (_) {}
 });
 
-function showLinkedInRateLimitModal() {
+function showLinkedInRateLimitModal(reason) {
   const toast = document.getElementById('rl-toast');
+  const body = document.getElementById('rl-toast-body');
+  if (reason === 'timeout') {
+    body.textContent = 'This search took too long for LinkedIn to finish (too many countries selected) and has been unchecked automatically. Your other sources are unaffected. Try a narrower country selection, or search again.';
+  } else {
+    body.textContent = 'LinkedIn has rate-limited this IP address and has been unchecked automatically. Your other sources are unaffected. Try again later.';
+  }
   toast.classList.remove('visible');
   // Re-trigger animation by forcing reflow
   void toast.offsetWidth;
@@ -4252,12 +4580,15 @@ if (_didRestore) showRestoreNotice();
 // ── Tracker ──────────────────────────────────────────────────────────────
 const TR_KEY = 'ejs_tracker_v1';
 const TR_STATUSES = ['Saved', 'Applied', 'Interviewing', 'Offer', 'Rejected'];
+const TR_STALE_SAVED_DAYS = 7;
 let trJobs = [];
 let trFilter = 'all';
 let trPage = 1;
 const TR_PAGE_SIZE = 25;
 let trEditId = null;
 let trToastTimer;
+let _trStaleDismissedCount = 0;
+let _trDupCallback = null;
 let trExpandedInterviews = new Set();
 let trRoundEditJobId = null;
 let trRoundEditId = null;
@@ -4300,10 +4631,14 @@ function trRender() {
   const q = (document.getElementById('tr-search').value || '').toLowerCase();
   const srt = document.getElementById('tr-sort').value;
   const ORDER = { Applied: 0, Interviewing: 1, Saved: 2, Rejected: 3, Offer: 4 };
+  const staleCutoff = new Date(Date.now() - TR_STALE_SAVED_DAYS * 86400000);
 
   let list = trJobs.filter(j => {
     if (trFilter === 'allApplied') return ['Applied', 'Interviewing', 'Offer', 'Rejected'].includes(j.status);
-    if (trFilter !== 'all' && j.status !== trFilter) return false;
+    if (trFilter === 'staleSaved') {
+      if (j.status !== 'Saved') return false;
+      if (!j.dateAdded || new Date(j.dateAdded + 'T00:00:00') > staleCutoff) return false;
+    } else if (trFilter !== 'all' && j.status !== trFilter) return false;
     if (q) {
       const hay = [j.company, j.title, j.platform, j.location, j.notes].join(' ').toLowerCase();
       if (!hay.includes(q)) return false;
@@ -4361,7 +4696,7 @@ function trRender() {
       : `<span style="color:var(--text-s,#9098b1);font-size:12px">${trX(j.platform || '')}</span>`;
     const loc = [j.location, j.workModel].filter(Boolean).join(' · ');
     const dateStr = j.dateAdded
-      ? new Date(j.dateAdded + 'T00:00:00').toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })
+      ? new Date(j.dateAdded + 'T00:00:00').toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
       : '—';
     return `<tr>
       <td style="font-weight:600">${co}</td>
@@ -4385,6 +4720,7 @@ function trRender() {
     </tr>` + ((j.interviewRounds && j.interviewRounds.length && trExpandedInterviews.has(j.id)) ? trRenderInterviewExpandRow(j) : '');
   }).join('');
   _trRenderPagination(list.length, totalPages);
+  trRenderStaleSavedNotice();
 }
 
 function trSetFilter(f) { trFilter = f; trPage = 1; trRender(); }
@@ -4397,6 +4733,49 @@ function trClearSampleJobs() {
   trPersist();
   trRender();
   trToast('Sample jobs removed.');
+}
+
+function trRenderStaleSavedNotice() {
+  const cutoff = new Date(Date.now() - TR_STALE_SAVED_DAYS * 86400000);
+  const staleCount = trJobs.filter(j =>
+    j.status === 'Saved' && j.dateAdded &&
+    new Date(j.dateAdded + 'T00:00:00') <= cutoff
+  ).length;
+  const el = document.getElementById('tr-stale-notice');
+  if (!el) return;
+  const show = staleCount > 0 && staleCount !== _trStaleDismissedCount;
+  el.style.display = show ? '' : 'none';
+  if (show) {
+    const msg = document.getElementById('tr-stale-msg');
+    if (msg) msg.textContent = `${staleCount} saved job${staleCount !== 1 ? 's' : ''} ${staleCount !== 1 ? 'haven\'t' : 'hasn\'t'} been applied to in ${TR_STALE_SAVED_DAYS}+ days — worth a second look before they go stale.`;
+  }
+  _updateStickyOffsets();
+}
+
+function trDismissStaleSaved() {
+  const cutoff = new Date(Date.now() - TR_STALE_SAVED_DAYS * 86400000);
+  _trStaleDismissedCount = trJobs.filter(j =>
+    j.status === 'Saved' && j.dateAdded &&
+    new Date(j.dateAdded + 'T00:00:00') <= cutoff
+  ).length;
+  document.getElementById('tr-stale-notice').style.display = 'none';
+  _updateStickyOffsets();
+}
+
+function trShowDupConfirm(msg, onConfirm) {
+  document.getElementById('tr-dup-msg').textContent = msg;
+  document.getElementById('tr-dup-overlay').classList.add('open');
+  _trDupCallback = onConfirm;
+}
+function trDupCancel() {
+  document.getElementById('tr-dup-overlay').classList.remove('open');
+  _trDupCallback = null;
+}
+function trDupProceed() {
+  document.getElementById('tr-dup-overlay').classList.remove('open');
+  const cb = _trDupCallback;
+  _trDupCallback = null;
+  if (cb) cb();
 }
 
 function _trRenderPagination(total, totalPages) {
@@ -4438,12 +4817,18 @@ function trEditNote(event, td, jobId) {
   if (!job) return;
   const original = job.notes || '';
 
+  _trInlineEditJobId = jobId;
+
   const revert = (value) => {
+    _trInlineEditJobId = null;
     td.classList.remove('editing');
     td.innerHTML = trX(value);
   };
 
   td.classList.add('editing');
+
+  const wrap = document.createElement('div');
+  wrap.className = 'tr-notes-wrap';
 
   const ta = document.createElement('textarea');
   ta.value = original;
@@ -4453,7 +4838,7 @@ function trEditNote(event, td, jobId) {
     'font-size:13px', 'font-family:inherit', 'line-height:1.4',
     'background:var(--surface,#161b22)', 'color:var(--text,#e6edf3)',
     'border:1px solid var(--accent,#5b6ef5)', 'border-radius:4px',
-    'padding:6px 8px', 'outline:none', 'white-space:pre-wrap',
+    'padding:6px 8px 28px 8px', 'outline:none', 'white-space:pre-wrap',
   ].join(';');
 
   let cancelled = false;
@@ -4471,14 +4856,48 @@ function trEditNote(event, td, jobId) {
     revert(newVal);
   });
 
+  ta.addEventListener('paste', async function(e) {
+    const items = e.clipboardData?.items;
+    if (!items) return;
+    for (const item of items) {
+      if (!item.type.startsWith('image/')) continue;
+      e.preventDefault();
+      const blob = item.getAsFile();
+      const dataUrl = await new Promise(res => { const fr = new FileReader(); fr.onload = ev => res(ev.target.result); fr.readAsDataURL(blob); });
+      await _trAttachStore(dataUrl);
+      trToast('Screenshot added.');
+      break;
+    }
+  });
+
+  const attachBtn = document.createElement('button');
+  attachBtn.type = 'button';
+  attachBtn.className = 'tr-attach-btn';
+  attachBtn.title = 'Attach a screenshot';
+  attachBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l8.57-8.57A4 4 0 1 1 18 8.84l-8.59 8.57a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>';
+  attachBtn.addEventListener('mousedown', e => {
+    e.preventDefault(); // keep focus on textarea so blur/revert doesn't fire
+    trAttachPick();
+  });
+
+  wrap.appendChild(ta);
+  wrap.appendChild(attachBtn);
+
+  const gallery = document.createElement('div');
+  gallery.id = 'tr-attach-gallery-inline';
+  gallery.className = 'tr-attach-gallery';
+
   const hint = document.createElement('div');
   hint.style.cssText = 'font-size:11px;color:var(--text-s,#9098b1);margin-top:3px;white-space:normal;overflow:visible;';
   hint.textContent = 'Enter to save · Shift+Enter for a new line · Esc to cancel';
 
   td.innerHTML = '';
-  td.appendChild(ta);
+  td.appendChild(wrap);
+  td.appendChild(gallery);
   td.appendChild(hint);
   ta.focus();
+
+  trAttachRenderGallery();
 }
 
 function trToggleSaveMenu(id) {
@@ -4712,10 +5131,20 @@ function trCloseModal(force) {
   _trAttachPending = [];
 }
 
-function trSaveJob() {
+function trSaveJob(force = false) {
   const company = document.getElementById('tr-fCompany').value.trim();
   const title   = document.getElementById('tr-fTitle').value.trim();
   if (!title) { trToast('Job title is required.'); return; }
+  if (!trEditId && !force) {
+    const dupJob = _trFindTracked({ title, company });
+    if (dupJob) {
+      trShowDupConfirm(
+        `You already have "${title}" at ${company || 'this company'} tracked (status: ${dupJob.status}). Add it again anyway?`,
+        () => trSaveJob(true)
+      );
+      return;
+    }
+  }
   const data = {
     company, title,
     location:  document.getElementById('tr-fLocation').value.trim(),
@@ -4763,8 +5192,9 @@ function trDelJob(id) {
 
 function trRefreshCardStates() {
   document.querySelectorAll('.card-track-btn').forEach(btn => {
-    const url = btn.dataset.jobUrl;
-    const stillTracked = url && trJobs.some(tj => tj.url && tj.url === url);
+    const card = btn.closest('.job-card');
+    const job = card && card._jobData;
+    const stillTracked = job && !!_trFindTracked(job);
     if (!stillTracked && btn.classList.contains('tracked')) {
       btn.textContent = 'Add to Tracker';
       btn.classList.remove('tracked');
@@ -4937,22 +5367,27 @@ function trImportJSON(event) {
   reader.onload = function(e) {
     let parsed;
     try { parsed = JSON.parse(e.target.result); } catch (_) {
-      trToast("This doesn't look like a valid tracker backup file.");
+      trToast("This doesn't look like a valid backup file.");
       return;
     }
-    if (!Array.isArray(parsed) || (parsed.length > 0 && typeof parsed[0].id === 'undefined')) {
-      trToast("This doesn't look like a valid tracker backup file.");
+    // Support both old (bare array) and new (combined object with .tracker) formats
+    let trackerEntries = parsed;
+    if (!Array.isArray(parsed) && parsed && Array.isArray(parsed.tracker)) {
+      trackerEntries = parsed.tracker;
+    }
+    if (!Array.isArray(trackerEntries) || (trackerEntries.length > 0 && typeof trackerEntries[0].id === 'undefined')) {
+      trToast("This doesn't look like a valid backup file.");
       return;
     }
     const existingIds = new Set(trJobs.map(j => j.id));
-    const newEntries = parsed.filter(j => j.id && !existingIds.has(j.id));
+    const newEntries = trackerEntries.filter(j => j.id && !existingIds.has(j.id));
     if (newEntries.length === 0) {
       trToast('No new entries to import — all entries already exist in your tracker.');
       return;
     }
     _bkPendingNewEntries = newEntries;
     const n = newEntries.length;
-    const skipped = parsed.length - n;
+    const skipped = trackerEntries.length - n;
     document.getElementById('tr-restoreModalBody').textContent =
       `This will add ${n} entr${n === 1 ? 'y' : 'ies'} from this file that aren't in your current list.` +
       (skipped > 0 ? ` ${skipped} entr${skipped === 1 ? 'y' : 'ies'} already present will be skipped.` : '');
@@ -4961,23 +5396,29 @@ function trImportJSON(event) {
   reader.readAsText(file);
 }
 
-function trAddFromCard(job, btnEl) {
-  if (btnEl.classList.contains('tracked')) return;
-
+function _trFindTracked(job) {
   const titleNorm   = (job.title   || '').trim().toLowerCase();
   const companyNorm = (job.company || '').trim().toLowerCase();
-
-  const duplicate = trJobs.find(tj =>
+  return trJobs.find(tj =>
     tj.title.trim().toLowerCase()   === titleNorm &&
     tj.company.trim().toLowerCase() === companyNorm
   );
+}
 
+function trAddFromCard(job, btnEl) {
+  if (btnEl.classList.contains('tracked')) return;
+  const duplicate = _trFindTracked(job);
   if (duplicate) {
-    const via = duplicate.platform || duplicate.url || 'another source';
-    const proceed = confirm(`"${job.title}" at ${job.company || 'this company'} is already in your tracker (added via ${via}). Add again anyway?`);
-    if (!proceed) return;
+    trShowDupConfirm(
+      `"${job.title}" at ${job.company || 'this company'} is already tracked (status: ${duplicate.status}). Add it again anyway?`,
+      () => _trDoAddFromCard(job, btnEl)
+    );
+    return;
   }
+  _trDoAddFromCard(job, btnEl);
+}
 
+function _trDoAddFromCard(job, btnEl) {
   const workModel = job.is_remote ? 'Remote' : job.is_hybrid ? 'Hybrid' : 'On-site';
   trJobs.unshift({
     id: 'tr' + Date.now(),
@@ -5007,6 +5448,7 @@ window.addEventListener('resize', _updateStickyOffsets);
 
 // ── Tracker attachments ────────────────────────────────────────────────────────
 let _trAttachPending = []; // in-memory images for new jobs not yet saved
+let _trInlineEditJobId = null; // job being edited in the inline notes editor
 
 const ATT_DB_NAME = 'ejs-attachments-db';
 const ATT_STORE   = 'images';
@@ -5048,39 +5490,46 @@ async function _attDbDelete(id) {
 }
 
 async function trAttachRenderGallery() {
-  const gallery = document.getElementById('tr-attach-gallery');
-  if (!gallery) return;
-  gallery.innerHTML = '';
-  const ids = trEditId
-    ? (trJobs.find(j => j.id === trEditId)?.attachmentIds || [])
+  const effectiveId = trEditId || _trInlineEditJobId;
+  const ids = effectiveId
+    ? (trJobs.find(j => j.id === effectiveId)?.attachmentIds || [])
     : _trAttachPending.map(p => p.id);
-  for (const id of ids) {
-    const record = trEditId ? await _attDbGet(id) : _trAttachPending.find(p => p.id === id);
-    if (!record) continue;
-    const thumb = document.createElement('div');
-    thumb.className = 'tr-attach-thumb';
-    const img = document.createElement('img');
-    img.src = record.dataUrl;
-    img.alt = 'Screenshot';
-    img.addEventListener('click', () => trOpenLightbox(record.dataUrl));
-    const del = document.createElement('button');
-    del.className = 'tr-attach-del';
-    del.title = 'Delete';
-    del.textContent = '✕';
-    del.addEventListener('click', e => { e.stopPropagation(); trAttachDelete(id); });
-    thumb.appendChild(img);
-    thumb.appendChild(del);
-    gallery.appendChild(thumb);
-  }
+
+  const _renderTo = async (gallery) => {
+    if (!gallery) return;
+    gallery.innerHTML = '';
+    for (const id of ids) {
+      const record = effectiveId ? await _attDbGet(id) : _trAttachPending.find(p => p.id === id);
+      if (!record) continue;
+      const thumb = document.createElement('div');
+      thumb.className = 'tr-attach-thumb';
+      const img = document.createElement('img');
+      img.src = record.dataUrl;
+      img.alt = 'Screenshot';
+      img.addEventListener('click', () => trOpenLightbox(record.dataUrl));
+      const del = document.createElement('button');
+      del.className = 'tr-attach-del';
+      del.title = 'Delete';
+      del.textContent = '✕';
+      del.addEventListener('click', e => { e.stopPropagation(); trAttachDelete(id); });
+      thumb.appendChild(img);
+      thumb.appendChild(del);
+      gallery.appendChild(thumb);
+    }
+  };
+
+  await _renderTo(document.getElementById('tr-attach-gallery'));
+  await _renderTo(document.getElementById('tr-attach-gallery-inline'));
 }
 
 async function _trAttachStore(dataUrl) {
   const id = `img_${Date.now()}_${Math.random().toString(36).slice(2)}`;
   const msg = document.getElementById('tr-attach-msg');
-  if (trEditId) {
+  const effectiveId = trEditId || _trInlineEditJobId;
+  if (effectiveId) {
     try {
-      await _attDbPut({ id, jobId: trEditId, dataUrl, addedAt: new Date().toISOString() });
-      const job = trJobs.find(j => j.id === trEditId);
+      await _attDbPut({ id, jobId: effectiveId, dataUrl, addedAt: new Date().toISOString() });
+      const job = trJobs.find(j => j.id === effectiveId);
       if (job) { job.attachmentIds = [...(job.attachmentIds || []), id]; trPersist(); }
     } catch (_) {
       if (msg) { msg.textContent = "Couldn't save screenshot — storage may be full."; setTimeout(() => { msg.textContent = ''; }, 4000); }
@@ -5103,9 +5552,10 @@ async function trAttachFiles(event) {
 }
 
 async function trAttachDelete(id) {
-  if (trEditId) {
+  const effectiveId = trEditId || _trInlineEditJobId;
+  if (effectiveId) {
     await _attDbDelete(id).catch(() => {});
-    const job = trJobs.find(j => j.id === trEditId);
+    const job = trJobs.find(j => j.id === effectiveId);
     if (job) { job.attachmentIds = (job.attachmentIds || []).filter(i => i !== id); trPersist(); }
   } else {
     _trAttachPending = _trAttachPending.filter(p => p.id !== id);
@@ -5128,6 +5578,16 @@ const TR_BACKUP_META_KEY = 'ejs_tracker_backup_meta';
 const TR_FILE_BACKUP_ON  = 'ejs_tracker_file_backup_on';
 const _THREE_DAYS_MS     = 3 * 24 * 60 * 60 * 1000;
 
+// Returns false (skip backup) when current count dropped drastically vs. previous, to avoid
+// overwriting a good backup with what looks like a corrupt/wiped dataset.
+function _guardAgainstDataDrop(currentCount, previousCount, minPrevious = 10) {
+  if (currentCount <= 1 && previousCount >= minPrevious) {
+    console.warn('Data dropped significantly — skipping backup to avoid overwriting good data');
+    return false;
+  }
+  return true;
+}
+
 function trMaybeBackup() {
   if (trJobs.length < 1) return;
   let meta = {};
@@ -5136,10 +5596,7 @@ function trMaybeBackup() {
   if (meta.lastBackupAt && now - new Date(meta.lastBackupAt).getTime() < _THREE_DAYS_MS) return;
   let existing = [];
   try { existing = JSON.parse(localStorage.getItem(TR_BACKUP_KEY)) || []; } catch (_) {}
-  if (trJobs.length <= 1 && existing.length >= 10) {
-    console.warn('Tracker data dropped significantly, skipping backup to avoid overwriting a good backup with bad data');
-    return;
-  }
+  if (!_guardAgainstDataDrop(trJobs.length, existing.length)) return;
   try {
     localStorage.setItem(TR_BACKUP_KEY, JSON.stringify(trJobs));
     meta.lastBackupAt = new Date().toISOString();
@@ -5166,7 +5623,7 @@ function trCheckRestoreAvailable() {
   notice.style.display = 'flex';
 }
 
-let _bkPendingBackup  = null;
+let _bkPendingBackup     = null;
 let _bkPendingNewEntries = null;
 
 function trRestoreFromBackup() {
@@ -5197,9 +5654,11 @@ function trCloseRestoreModal() {
 
 function trDoRestoreMerge() {
   if (!_bkPendingNewEntries) return;
-  trJobs = [...trJobs, ..._bkPendingNewEntries];
-  trPersist();
-  trRender();
+  if (_bkPendingNewEntries.length > 0) {
+    trJobs = [...trJobs, ..._bkPendingNewEntries];
+    trPersist();
+    trRender();
+  }
   trCloseRestoreModal();
   document.getElementById('tr-restore-notice').style.display = 'none';
   _updateStickyOffsets();
@@ -5237,12 +5696,10 @@ async function _bkWriteFile(handle) {
   let meta = {};
   try { meta = JSON.parse(localStorage.getItem(TR_BACKUP_META_KEY)) || {}; } catch (_) {}
   const lastCount = meta.lastFileBackupCount ?? null;
-  if (lastCount !== null && trJobs.length <= 1 && lastCount >= 10) {
-    console.warn('Tracker data dropped significantly, skipping file backup to avoid overwriting a good backup with bad data');
-    return false;
-  }
+  if (lastCount !== null && !_guardAgainstDataDrop(trJobs.length, lastCount)) return false;
+  const backupPayload = { tracker: trJobs };
   const writable = await handle.createWritable();
-  await writable.write(JSON.stringify(trJobs, null, 2));
+  await writable.write(JSON.stringify(backupPayload, null, 2));
   await writable.close();
   meta.lastFileBackupAt = new Date().toISOString();
   meta.lastFileBackupCount = trJobs.length;
@@ -5263,6 +5720,31 @@ async function trInitFileBackupAttempt() {
   try { perm = await handle.requestPermission({ mode: 'readwrite' }); } catch (_) { return; }
   if (perm !== 'granted') return; // browser requires a fresh prompt; skip silently this cycle
   try { await _bkWriteFile(handle); } catch (_) {}
+}
+
+function _relTime(isoStr) {
+  if (!isoStr) return null;
+  const ms = Date.now() - new Date(isoStr).getTime();
+  const mins = Math.floor(ms / 60000);
+  if (mins < 2) return 'just now';
+  if (mins < 60) return `${mins} minutes ago`;
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24) return `${hrs} hour${hrs !== 1 ? 's' : ''} ago`;
+  const days = Math.floor(hrs / 24);
+  return `${days} day${days !== 1 ? 's' : ''} ago`;
+}
+
+function trRenderBackupStatus() {
+  const el = document.getElementById('tr-backup-status');
+  if (!el) return;
+  let meta = {};
+  try { meta = JSON.parse(localStorage.getItem(TR_BACKUP_META_KEY)) || {}; } catch (_) {}
+  const fileOn = !!localStorage.getItem(TR_FILE_BACKUP_ON);
+  const lsTime = _relTime(meta.lastBackupAt);
+  const fileTime = fileOn ? _relTime(meta.lastFileBackupAt) : null;
+  const parts = [lsTime ? `Auto-backed up ${lsTime}` : 'Auto-backup: not run yet'];
+  if (fileOn) parts.push(fileTime ? `File: ${fileTime}` : 'File: not run yet');
+  el.textContent = parts.join(' · ');
 }
 
 function trInitFileBackupSetting() {
@@ -5309,6 +5791,7 @@ async function trToggleFileBackup(checked) {
   setTimeout(() => { hint.textContent = ''; }, 4000);
 }
 
+
 function switchTab(tab) {
   document.getElementById('panel-search').style.display = tab === 'search' ? '' : 'none';
   document.getElementById('panel-sites').style.display = tab === 'sites' ? '' : 'none';
@@ -5348,6 +5831,7 @@ document.addEventListener('DOMContentLoaded', function() {
   }
   trCheckRestoreAvailable();
   trInitFileBackupSetting();
+  trRenderBackupStatus();
   trInitFileBackupAttempt();
   // Paste images into the notes field → attach as screenshot
   document.getElementById('tr-fNotes').addEventListener('paste', async function(e) {
@@ -5369,11 +5853,9 @@ document.addEventListener('DOMContentLoaded', function() {
 </div><!-- end panel-search -->
 
 <div id="panel-sites" style="display:none">
-  <section class="getsetup" id="recommended-sites" style="margin-top:1.5rem;">
-    <div class="getsetup-header">
-      <h2>Other Sources</h2>
-      <p style="color:var(--text-muted);font-size:0.8rem;">These sources don't have a public API and can't be searched automatically. Open them directly to search manually.</p>
-    </div>
+  <h2 class="tab-panel-title">Other Sources</h2>
+  <div class="aar-intro">Manually explore additional job boards and company career pages that don't offer a public API.</div>
+  <section class="getsetup" id="recommended-sites">
     <div id="site-categories"></div>
   </section>
 </div><!-- end panel-sites -->
@@ -5392,6 +5874,12 @@ document.addEventListener('DOMContentLoaded', function() {
       <input type="file" id="tr-import-json-input" accept=".json,application/json" style="display:none" onchange="trImportJSON(event)">
       <span class="tr-file-backup-hint" id="tr-file-backup-hint"></span>
     </div>
+    <div class="tr-backup-status" id="tr-backup-status"></div>
+  </div>
+
+  <h2 class="tab-panel-title">Job Application Tracker</h2>
+  <div class="aar-intro">
+    Turn search results into a tracked pipeline and back it all up locally so your history is never lost.
   </div>
 
   <!-- Sticky toolbar -->
@@ -5426,6 +5914,11 @@ document.addEventListener('DOMContentLoaded', function() {
       <span id="tr-restore-text"></span>
       <button class="tr-btn" onclick="trRestoreFromBackup()">Restore</button>
       <button class="tr-restore-dismiss" onclick="document.getElementById('tr-restore-notice').style.display='none';_updateStickyOffsets()" title="Dismiss">✕</button>
+    </div>
+    <div id="tr-stale-notice" class="tr-restore-notice msg-card msg-card-warning" style="display:none">
+      <span id="tr-stale-msg"></span>
+      <button class="tr-btn" onclick="trSetFilter('staleSaved')">Show</button>
+      <button class="tr-restore-dismiss" onclick="trDismissStaleSaved()" title="Dismiss">✕</button>
     </div>
   </div><!-- end tr-sticky-top -->
   <div id="tr-pagination-top" class="tr-pagination"></div>
@@ -5580,19 +6073,43 @@ document.addEventListener('DOMContentLoaded', function() {
     <img id="tr-lightbox-img" src="" alt="Screenshot">
   </div>
 
+  <div id="tr-dup-overlay" class="tr-overlay" onclick="if(event.target===this)trDupCancel()">
+    <div class="tr-modal" style="max-width:420px">
+      <div class="tr-modal-head">
+        <span>Possible Duplicate</span>
+        <button class="tr-modal-x" onclick="trDupCancel()">✕</button>
+      </div>
+      <div class="tr-modal-body">
+        <p id="tr-dup-msg" style="margin:0;line-height:1.6;font-size:0.88rem;color:var(--text-s)"></p>
+      </div>
+      <div class="tr-modal-foot">
+        <button class="tr-btn" onclick="trDupCancel()">Cancel</button>
+        <button class="tr-btn tr-btn-primary" onclick="trDupProceed()">Add Anyway</button>
+      </div>
+    </div>
+  </div>
+
   <div id="tr-toast" class="tr-toast"></div>
 </div><!-- end panel-tracker -->
 <div id="panel-activity" style="display:none">
+  <h2 class="tab-panel-title">Activity Report</h2>
   <div class="aar-intro">
-    Analytics for applications tracked in the <button class="aar-tab-link" onclick="switchTab('tracker')">Job Application Tracker</button>.
-    Jobs without a date aren't included in this dashboard.
+    Review application volume, interview and offer rates, and response times across your tracked jobs.<br>
+    <em>Jobs without a date aren't included.</em>
   </div>
   <div class="aar-controls">
     <div class="aar-controls-left">
-      <span class="ar-date-label">From</span>
-      <input class="ar-date-input" type="date" id="ar2-from" onchange="arRenderActivity()">
-      <span class="ar-date-label">To</span>
-      <input class="ar-date-input" type="date" id="ar2-to" onchange="arRenderActivity()">
+      <div id="ar-timeframe-text">
+        <span class="ar-tf-summary" id="ar-tf-summary"></span>
+        <button class="ar-tf-change-btn" onclick="arDateModeEdit()">Change timeframe</button>
+      </div>
+      <div id="ar-timeframe-edit" style="display:none;align-items:center;gap:8px;flex-wrap:wrap;">
+        <span class="ar-date-label">From</span>
+        <input class="ar-date-input" type="date" id="ar2-from" onchange="arRenderActivity(); arUpdateDateBtns()">
+        <span class="ar-date-label">to</span>
+        <input class="ar-date-input" type="date" id="ar2-to" onchange="arRenderActivity(); arUpdateDateBtns()">
+        <button class="ar-tf-done-btn" onclick="arDateModeText()">Done</button>
+      </div>
     </div>
     <div class="tr-save-menu" id="aar-save-menu">
       <button class="tr-btn" onclick="trToggleSaveMenu('aar-save-menu')">Save Report As ▾</button>
@@ -5606,6 +6123,7 @@ document.addEventListener('DOMContentLoaded', function() {
 </div>
 
 <div id="activity-print-view"></div>
+
 <footer style="text-align:center;padding:1.5rem 1rem;font-size:0.8rem;color:var(--text-s);">
   Built by <a href="https://teokitten.github.io" target="_blank" rel="noopener noreferrer" class="footer-link">Teo Moldovanu</a>
 </footer>
