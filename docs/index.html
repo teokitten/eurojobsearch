@@ -5804,7 +5804,18 @@ function switchTab(tab) {
   if (tab === 'tracker') { trRender(); requestAnimationFrame(_updateStickyOffsets); }
   if (tab === 'activity') arInitActivity();
   localStorage.setItem('ejs_active_tab', tab);
+  const _hash = '#' + tab;
+  if (window.location.hash !== _hash) {
+    history.replaceState(null, '', _hash);
+  }
 }
+
+window.addEventListener('hashchange', () => {
+  const _tab = window.location.hash.replace('#', '');
+  if (['search', 'sites', 'tracker', 'activity'].includes(_tab)) {
+    switchTab(_tab);
+  }
+});
 
 document.addEventListener('keydown', e => {
   if (e.key === 'Escape') { trCloseLightbox(); trCloseModal(false); trCloseRoundModal(); trCloseRestoreModal(); }
@@ -5814,9 +5825,15 @@ trLoad();
 trMaybeBackup();
 document.addEventListener('DOMContentLoaded', function() {
   document.getElementById('tr-fRoundType').addEventListener('input', trUpdateRoundLinkVisibility);
-  const _savedTab = localStorage.getItem('ejs_active_tab');
-  if (_savedTab === 'tracker') switchTab('tracker');
-  else if (_savedTab === 'activity') switchTab('activity');
+  const _validTabs = ['search', 'sites', 'tracker', 'activity'];
+  const _hashTab = window.location.hash.replace('#', '');
+  if (_validTabs.includes(_hashTab)) {
+    switchTab(_hashTab);
+  } else {
+    const _savedTab = localStorage.getItem('ejs_active_tab');
+    if (_savedTab === 'tracker') switchTab('tracker');
+    else if (_savedTab === 'activity') switchTab('activity');
+  }
   renderMuteControl();
   const _muteAddBtn = document.getElementById('mute-kw-add');
   const _muteInput  = document.getElementById('mute-kw-input');
