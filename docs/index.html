@@ -1541,6 +1541,7 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator{filter:invert(1)
   .tg-backup-restore,
   #tr-overlay,
   #tr-dup-overlay,
+  #tr-rejreason-overlay,
   #tr-stale-notice,
   #tr-restore-notice,
   #tr-toast,
@@ -2995,6 +2996,7 @@ const _AR_PLATFORM_CANONICAL = (() => {
 // Activity Report Tab
 // ============================================================
 let _aarDonutChart = null, _aarTimelineChart = null, _aarCountriesChart = null;
+let _aarRejectionChart = null, _aarRoundsChart = null;
 let _aarPeriod = 'week';
 
 function arGetDateRange2() {
@@ -3186,6 +3188,34 @@ function arComputeActivity(from, to) {
         { name: 'Other', count: titlesSorted.slice(TOP_N).reduce((s, [, n]) => s + n, 0) },
       ];
 
+  // Rejection reason breakdown
+  const rejectedJobsList = rangeJobs.filter(j => j.status === 'Rejected');
+  let rejNoInterview = 0, rejAfterInterview = 0, rejUnspecified = 0;
+  rejectedJobsList.forEach(j => {
+    if ((j.interviewRounds || []).length > 0) rejAfterInterview++;
+    else if (j.rejectionType === 'after_interview') rejAfterInterview++;
+    else if (j.rejectionType === 'no_interview') rejNoInterview++;
+    else rejUnspecified++;
+  });
+  const rejectionBreakdown = [
+    { key: 'no_interview',    label: 'No interview',    count: rejNoInterview },
+    { key: 'after_interview', label: 'After interview', count: rejAfterInterview },
+    { key: 'unspecified',     label: 'Unspecified',     count: rejUnspecified },
+  ].filter(r => r.count > 0);
+
+  // Interview round count distribution (any status with rounds logged)
+  const roundBuckets = { '1 round': 0, '2 rounds': 0, '3 rounds': 0, '4+ rounds': 0 };
+  allRangeJobs.forEach(j => {
+    const n = (j.interviewRounds || []).length;
+    if (n === 1) roundBuckets['1 round']++;
+    else if (n === 2) roundBuckets['2 rounds']++;
+    else if (n === 3) roundBuckets['3 rounds']++;
+    else if (n >= 4) roundBuckets['4+ rounds']++;
+  });
+  const roundsDistribution = Object.entries(roundBuckets)
+    .filter(([, count]) => count > 0)
+    .map(([label, count]) => ({ label, count }));
+
   return {
     appCount, interviewCount, offerCount, rejectedCount,
     appsPerWeek, interviewRate, offerRate, rejectionRate,
@@ -3194,6 +3224,7 @@ function arComputeActivity(from, to) {
     statusCounts, totalInRange: allRangeJobs.length,
     appsOverTime, countriesAll,
     srcIRBreakdown, wmIRBreakdown, countriesStatusData, topTitles,
+    rejectionBreakdown, roundsDistribution,
   };
 }
 
@@ -3219,6 +3250,8 @@ function _aarDestroyCharts() {
   if (_aarDonutChart)     { _aarDonutChart.destroy();     _aarDonutChart = null; }
   if (_aarTimelineChart)  { _aarTimelineChart.destroy();  _aarTimelineChart = null; }
   if (_aarCountriesChart) { _aarCountriesChart.destroy(); _aarCountriesChart = null; }
+  if (_aarRejectionChart) { _aarRejectionChart.destroy(); _aarRejectionChart = null; }
+  if (_aarRoundsChart)    { _aarRoundsChart.destroy();    _aarRoundsChart = null; }
 }
 
 function _aarRenderDonut(statusCounts, total) {
@@ -3367,6 +3400,54 @@ function _aarRenderCountries(data) {
   ).join('');
 }
 
+function _aarRenderRejectionBreakdown(data) {
+  if (_aarRejectionChart) { _aarRejectionChart.destroy(); _aarRejectionChart = null; }
+  const canvas = document.getElementById('aar-rejection-canvas');
+  if (!canvas || typeof Chart === 'undefined') return;
+  const RC = { no_interview: '#e5534b', after_interview: '#f0883e', unspecified: '#6e7681' };
+  _aarRejectionChart = new Chart(canvas, {
+    type: 'pie',
+    data: {
+      labels: data.map(d => d.label),
+      datasets: [{ data: data.map(d => d.count), backgroundColor: data.map(d => RC[d.key]), borderColor: '#1a1d27', borderWidth: 2 }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: { callbacks: { label: ctx => ` ${ctx.label}: ${ctx.raw} (${Math.round(ctx.raw / ctx.dataset.data.reduce((a,b) => a+b, 0) * 100)}%)` } }
+      },
+      animation: { duration: 400 },
+    }
+  });
+  const legend = document.getElementById('aar-rejection-legend');
+  if (legend) legend.innerHTML = data.map(d =>
+    `<div class="aar-donut-legend-item"><div class="aar-donut-legend-dot" style="background:${RC[d.key]}"></div><span>${d.label}</span><span class="aar-donut-legend-count">${d.count}</span></div>`
+  ).join('');
+}
+
+function _aarRenderRoundsDistribution(data) {
+  if (_aarRoundsChart) { _aarRoundsChart.destroy(); _aarRoundsChart = null; }
+  const canvas = document.getElementById('aar-rounds-canvas');
+  if (!canvas || typeof Chart === 'undefined') return;
+  _aarRoundsChart = new Chart(canvas, {
+    type: 'bar',
+    data: {
+      labels: data.map(d => d.label),
+      datasets: [{ data: data.map(d => d.count), backgroundColor: '#5b6ef5', borderRadius: 4, borderSkipped: false }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false }, tooltip: { callbacks: { label: ctx => ` ${ctx.raw} job${ctx.raw !== 1 ? 's' : ''}` } } },
+      scales: {
+        x: { ticks: { color: '#9098b1', font: { size: 10 } }, grid: { display: false } },
+        y: { ticks: { color: '#9098b1', font: { size: 10 }, stepSize: 1 }, grid: { color: 'rgba(46,50,72,0.6)' }, beginAtZero: true },
+      },
+      animation: { duration: 400 },
+    }
+  });
+}
+
 function arRenderActivity() {
   const el = document.getElementById('aar-content');
   if (!el) return;
@@ -3431,17 +3512,33 @@ function arRenderActivity() {
       <div style="position:relative;height:${cntH}px;"><canvas id="aar-countries-canvas"></canvas></div>
       <div id="aar-countries-legend" class="aar-donut-legend" style="flex-direction:row;flex-wrap:wrap;gap:8px 18px;margin-top:10px;"></div>
     </div>` : '') +
+    ((m.rejectionBreakdown.length > 0 || m.roundsDistribution.length > 0) ? `<div class="aar-charts-row">
+      ${m.rejectionBreakdown.length > 0 ? `<div class="aar-chart-card">
+        <div class="aar-chart-title">Rejection Breakdown</div>
+        <div class="aar-chart-sub">How rejections split between no interview and after interviewing.</div>
+        <div style="position:relative;height:200px;"><canvas id="aar-rejection-canvas"></canvas></div>
+        <div class="aar-donut-legend" id="aar-rejection-legend"></div>
+      </div>` : ''}
+      ${m.roundsDistribution.length > 0 ? `<div class="aar-chart-card">
+        <div class="aar-chart-title">Interview Rounds</div>
+        <div class="aar-chart-sub">How many rounds your interview processes typically take.</div>
+        <div style="position:relative;height:200px;"><canvas id="aar-rounds-canvas"></canvas></div>
+      </div>` : ''}
+    </div>` : '') +
     ((wmParts.length || m.sourceBreakdown.length || m.topTitles.length) ? `<div class="aar-breakdown-row-3">
       ${wmParts.length ? `<div class="aar-chart-card"><div class="aar-chart-title">Work Model</div><div class="aar-text-list">${wmParts.join('<br>')}</div></div>` : ''}
       ${m.sourceBreakdown.length ? `<div class="aar-chart-card"><div class="aar-chart-title">Top Sources</div><div class="aar-text-list">${m.sourceBreakdown.map(s => `${s.name}: ${s.count}`).join('<br>')}</div></div>` : ''}
       ${m.topTitles.length ? `<div class="aar-chart-card"><div class="aar-chart-title">Top Roles Applied To</div><div class="aar-text-list">${m.topTitles.map(t => `${t.name}: ${t.count}`).join('<br>')}</div></div>` : ''}
-    </div>` : '');
+    </div>` : '') +
+    '';
 
   _aarRenderDonut(m.statusCounts, m.totalInRange);
   if (m.appCount > 0) {
     _aarRenderTimeline(m.appsOverTime);
   }
   if (m.countriesStatusData.length > 0) _aarRenderCountries(m.countriesStatusData);
+  if (m.rejectionBreakdown.length > 0) _aarRenderRejectionBreakdown(m.rejectionBreakdown);
+  if (m.roundsDistribution.length > 0) _aarRenderRoundsDistribution(m.roundsDistribution);
 }
 
 function arDateModeEdit() {
@@ -4590,6 +4687,7 @@ let trToastTimer;
 let _trStaleDismissedCount = 0;
 let _trDupCallback = null;
 let trExpandedInterviews = new Set();
+let trExpandedRejections = new Set();
 let trRoundEditJobId = null;
 let trRoundEditId = null;
 
@@ -4704,11 +4802,11 @@ function trRender() {
       <td style="color:var(--text-s);font-size:12px">${trX(loc)}</td>
       <td>${platCell}</td>
       <td>
-        <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+        <div style="display:flex;flex-direction:column;align-items:flex-start;gap:4px">
           <select class="tr-status-select tr-badge tr-badge-${trX(j.status)}" onchange="trUpdateStatus('${j.id}', this.value)">
             ${TR_STATUSES.map(s => `<option value="${s}"${s === j.status ? ' selected' : ''}>${s}</option>`).join('')}
           </select>
-          ${trInterviewSummaryHtml(j)}
+          <div style="display:flex;gap:6px;flex-wrap:wrap">${trInterviewSummaryHtml(j)}${trRejectionSummaryHtml(j)}</div>
         </div>
       </td>
       <td style="color:var(--text-s);font-size:12px;white-space:nowrap">${dateStr}</td>
@@ -4717,7 +4815,9 @@ function trRender() {
         <button class="tr-btn-icon" title="Edit" onclick="trOpenModal('${j.id}')">✎</button>
         <button class="tr-btn-icon del" title="Delete" onclick="trDelJob('${j.id}')">✕</button>
       </td>
-    </tr>` + ((j.interviewRounds && j.interviewRounds.length && trExpandedInterviews.has(j.id)) ? trRenderInterviewExpandRow(j) : '');
+    </tr>` +
+      ((j.interviewRounds && j.interviewRounds.length && trExpandedInterviews.has(j.id)) ? trRenderInterviewExpandRow(j) : '') +
+      ((j.status === 'Rejected' && !(j.interviewRounds || []).length && trExpandedRejections.has(j.id)) ? trRenderRejectionExpandRow(j) : '');
   }).join('');
   _trRenderPagination(list.length, totalPages);
   trRenderStaleSavedNotice();
@@ -4776,6 +4876,30 @@ function trDupProceed() {
   const cb = _trDupCallback;
   _trDupCallback = null;
   if (cb) cb();
+}
+
+let _trRejReasonJobId = null;
+
+function trOpenRejReasonModal(jobId) {
+  _trRejReasonJobId = jobId;
+  document.getElementById('tr-rejreason-overlay').classList.add('open');
+}
+function trRejReasonCancel() {
+  document.getElementById('tr-rejreason-overlay').classList.remove('open');
+  _trRejReasonJobId = null;
+  trRender();
+}
+function trRejReasonPick(type) {
+  const job = trJobs.find(j => j.id === _trRejReasonJobId);
+  document.getElementById('tr-rejreason-overlay').classList.remove('open');
+  _trRejReasonJobId = null;
+  if (!job) return;
+  job.rejectionType = type;
+  job.status = 'Rejected';
+  job.lastModified = new Date().toISOString();
+  trPersist();
+  trRender();
+  trToast('Marked Rejected.');
 }
 
 function _trRenderPagination(total, totalPages) {
@@ -4951,6 +5075,54 @@ function trInterviewSummaryHtml(j) {
   return `<button class="tr-iw-toggle" onclick="trToggleInterview('${j.id}')" title="Interview rounds">
     <span class="tr-iw-chevron${open ? ' open' : ''}">&#9662;</span> ${label}
   </button>`;
+}
+
+function trRejectionSummaryHtml(j) {
+  if (j.status !== 'Rejected') return '';
+  if ((j.interviewRounds || []).length) return '';
+  if (!j.rejectionType) return '';
+  const label = j.rejectionType === 'after_interview'
+    ? '\u{1F5E3}️ After interview'
+    : '✍️ No interview';
+  return `<button class="tr-iw-toggle" onclick="trOpenRejReasonModal('${j.id}')" title="Change rejection reason">${label}</button>`;
+}
+
+function trRenderRejectionExpandRow(j) {
+  const options = [
+    { key: 'no_interview',    label: 'No interview',    icon: '✍️' },
+    { key: 'after_interview', label: 'After interview', icon: '\u{1F5E3}️' },
+  ];
+  const chips = options.map(o => {
+    const active = j.rejectionType === o.key;
+    return `<span class="tr-iw-chip ${active ? 'done' : 'upcoming'}" style="cursor:pointer" onclick="trSetRejectionType('${j.id}','${o.key}')">
+      <span class="tr-iw-chip-check">${active ? '&#10003;' : ''}</span>
+      <span>${o.icon} ${o.label}</span>
+    </span>`;
+  }).join('');
+  return `<tr class="tr-iw-expand-row">
+    <td colspan="4"></td>
+    <td colspan="4">
+      <div class="tr-iw-rounds-wrap">${chips}</div>
+    </td>
+  </tr>`;
+}
+
+function trToggleRejectionType(id) {
+  if (trExpandedRejections.has(id)) trExpandedRejections.delete(id);
+  else trExpandedRejections.add(id);
+  trRender();
+}
+
+function trSetRejectionType(id, type) {
+  const job = trJobs.find(j => j.id === id);
+  if (!job) return;
+  job.rejectionType = type;
+  job.status = 'Rejected';
+  job.lastModified = new Date().toISOString();
+  trPersist();
+  trExpandedRejections.delete(id);
+  trRender();
+  trToast('Marked Rejected.');
 }
 
 function trRenderInterviewExpandRow(j) {
@@ -5174,6 +5346,14 @@ function trSaveJob(force = false) {
 function trUpdateStatus(id, newStatus) {
   const job = trJobs.find(j => j.id === id);
   if (!job) return;
+  const needsRejectionReason = newStatus === 'Rejected'
+    && !(job.interviewRounds || []).length
+    && !job.rejectionType;
+  if (needsRejectionReason) {
+    trOpenRejReasonModal(id);
+    trRender();
+    return;
+  }
   job.status = newStatus;
   job.lastModified = new Date().toISOString();
   trPersist();
@@ -6100,6 +6280,25 @@ document.addEventListener('DOMContentLoaded', function() {
       <div class="tr-modal-foot">
         <button class="tr-btn" onclick="trDupCancel()">Cancel</button>
         <button class="tr-btn tr-btn-primary" onclick="trDupProceed()">Add Anyway</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="tr-rejreason-overlay" class="tr-overlay" onclick="if(event.target===this)trRejReasonCancel()">
+    <div class="tr-modal" style="max-width:420px">
+      <div class="tr-modal-head">
+        <span>Rejection Reason</span>
+        <button class="tr-modal-x" onclick="trRejReasonCancel()">✕</button>
+      </div>
+      <div class="tr-modal-body">
+        <p style="margin:0 0 12px;line-height:1.6;font-size:0.88rem;color:var(--text-s)">How were you rejected?</p>
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <button class="tr-btn" style="justify-content:flex-start;text-align:left" onclick="trRejReasonPick('no_interview')">&#9997;&#65039; No interview</button>
+          <button class="tr-btn" style="justify-content:flex-start;text-align:left" onclick="trRejReasonPick('after_interview')">&#128483;&#65039; After interview</button>
+        </div>
+      </div>
+      <div class="tr-modal-foot">
+        <button class="tr-btn" onclick="trRejReasonCancel()">Cancel</button>
       </div>
     </div>
   </div>
