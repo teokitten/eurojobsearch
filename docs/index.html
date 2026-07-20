@@ -1246,7 +1246,7 @@
 .tr-btn-icon.del:hover { border-color: #e5534b; color: #e5534b; }
 .tr-empty { text-align: center; padding: 48px 24px; color: var(--text-s, #9098b1); }
 
-.tr-iw-toggle{background:none;border:none;color:var(--text-s,#9098b1);font-size:11px;cursor:pointer;display:inline-flex;align-items:center;gap:3px;padding:2px 4px;border-radius:4px}
+.tr-iw-toggle{background:none;border:none;color:var(--text-s,#9098b1);font-size:11px;cursor:pointer;display:inline-flex;align-items:center;gap:3px;padding:2px 4px;border-radius:4px;white-space:nowrap}
 .tr-iw-toggle:hover{background:var(--surface2,#21262d);color:var(--text,#e6edf3)}
 .tr-iw-chevron{display:inline-block;transition:transform .15s}
 .tr-iw-chevron.open{transform:rotate(180deg)}
@@ -4829,7 +4829,7 @@ function trRender() {
           <select class="tr-status-select tr-badge tr-badge-${trX(j.status)}" onchange="trUpdateStatus('${j.id}', this.value)">
             ${TR_STATUSES.map(s => `<option value="${s}"${s === j.status ? ' selected' : ''}>${s}</option>`).join('')}
           </select>
-          <div style="display:flex;gap:6px;flex-wrap:wrap">${trInterviewSummaryHtml(j)}${trRejectionSummaryHtml(j)}</div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap">${trRejectionSummaryHtml(j)}${trInterviewSummaryHtml(j)}</div>
         </div>
       </td>
       <td style="color:var(--text-s);font-size:12px;white-space:nowrap">${dateStr}</td>
@@ -5085,15 +5085,21 @@ function trSetRoundOutcome(jobId, roundId, outcome) {
 function trInterviewSummaryHtml(j) {
   const rounds = j.interviewRounds || [];
   if (!rounds.length) {
-    if (j.status !== 'Interviewing') return '';
-    return `<button class="tr-iw-toggle" onclick="trOpenRoundModal('${j.id}', null)">+ interview date</button>`;
+    if (j.status === 'Interviewing') {
+      return `<button class="tr-iw-toggle" onclick="trOpenRoundModal('${j.id}', null)">+ interview date</button>`;
+    }
+    if (j.status === 'Rejected' && j.rejectionType === 'after_interview') {
+      return `<button class="tr-iw-toggle" onclick="trOpenRoundModal('${j.id}', null)">+ add round details</button>`;
+    }
+    return '';
   }
   const now = new Date();
   const nextUpcoming = rounds.filter(r => !trIsRoundDone(r) && new Date(r.datetime) >= now)
     .sort((a, b) => new Date(a.datetime) - new Date(b.datetime))[0];
+  const roundCountLabel = `${rounds.length} round${rounds.length > 1 ? 's' : ''}`;
   const label = (j.status === 'Interviewing' && nextUpcoming)
     ? trFmtRoundDate(nextUpcoming.datetime)
-    : `${rounds.length} round${rounds.length > 1 ? 's' : ''}`;
+    : (j.status === 'Rejected' ? '\u{1F5E3}️ After interview' : roundCountLabel);
   const open = trExpandedInterviews.has(j.id);
   return `<button class="tr-iw-toggle" onclick="trToggleInterview('${j.id}')" title="Interview rounds">
     <span class="tr-iw-chevron${open ? ' open' : ''}">&#9662;</span> ${label}
