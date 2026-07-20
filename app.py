@@ -390,8 +390,12 @@ def _keyword_in(keyword: str, *fields) -> bool:
 
 
 def _primary_keyword(keywords: str) -> str:
-    """First comma-separated part – used as search_term for source APIs."""
-    return keywords.split(',')[0].strip()
+    """First comma-separated part's first pipe-alternative – used as search_term
+    for source APIs. External APIs don't understand OR syntax, so only the
+    single first alternative is sent upstream; the rest is matched locally
+    via _keywords_match."""
+    first_part = keywords.split(',')[0].strip()
+    return first_part.split('|')[0].strip()
 
 _KEYWORD_SYNONYMS: dict[str, list[str]] = {
     "freelance": ["freelance", "contractor", "contract", "b2b", "mission", "cdd", "werkvertrag", "freiberuflich", "freiberufler"],
@@ -403,12 +407,22 @@ _KEYWORD_SYNONYMS: dict[str, list[str]] = {
 }
 
 def _keywords_match(keywords: str, *fields) -> bool:
-    """All comma-separated parts must match; each part expands to synonyms if available."""
+    """Comma-separated parts are AND'd together. Within each part, pipe-separated
+    alternatives are OR'd - any one matching satisfies that part. Each
+    alternative expands to synonyms if available."""
     parts = [p.strip() for p in keywords.split(',') if p.strip()]
+    combined = " ".join((f or "").lower() for f in fields)
     for part in parts:
-        synonyms = _KEYWORD_SYNONYMS.get(part.lower(), [part.lower()])
-        combined = " ".join((f or "").lower() for f in fields)
-        if not any(syn in combined for syn in synonyms):
+        alternatives = [a.strip() for a in part.split('|') if a.strip()]
+        if not alternatives:
+            continue
+        part_matches = False
+        for alt in alternatives:
+            synonyms = _KEYWORD_SYNONYMS.get(alt.lower(), [alt.lower()])
+            if any(syn in combined for syn in synonyms):
+                part_matches = True
+                break
+        if not part_matches:
             return False
     return True
 

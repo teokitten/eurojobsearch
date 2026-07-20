@@ -1803,7 +1803,7 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator{filter:invert(1)
           class="text-input"
           type="text"
           placeholder="e.g. technical writer, freelance"
-          title="Comma-separated AND filter: e.g. technical writer, freelance – returns jobs matching all terms"
+          title="Comma = AND, pipe = OR. &quot;technical writer, freelance&quot; needs both. &quot;technical writer | copywriter&quot; needs either. Combine: &quot;technical writer | copywriter, freelance&quot;."
           autocomplete="off"
         >
         <div id="mute-control" style="margin-top:0.5rem;">
@@ -2544,7 +2544,13 @@ function getSelectedSources() {
 // ============================================================
 // Search
 // ============================================================
-document.getElementById('search-btn').addEventListener('click', runSearch);
+document.getElementById('search-btn').addEventListener('click', () => {
+  if (_searchAbortController) {
+    cancelSearch();
+  } else {
+    runSearch();
+  }
+});
 document.getElementById('results-filter').addEventListener('input', () => {
   const val = document.getElementById('results-filter').value;
   document.getElementById('results-filter-clear').classList.toggle('visible', val.length > 0);
@@ -3477,6 +3483,14 @@ function arExportPDF(from, to) {
   });
 }
 
+function cancelSearch() {
+  if (_searchAbortController) {
+    _searchAbortController.abort();
+  }
+}
+
+let _searchAbortController = null;
+
 async function runSearch() {
   const keywords = document.getElementById('keywords').value.trim();
   if (!keywords) {
@@ -3492,12 +3506,14 @@ async function runSearch() {
   const workModels = [...state.activeWorkModels];
 
   showLoading();
+  _searchAbortController = new AbortController();
 
   try {
     const resp = await fetch('/api/search', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ keywords, countries, sources, hours_old: hoursOld, title_only: titleOnly, work_models: workModels }),
+      signal: _searchAbortController.signal,
     });
 
     if (!resp.ok) {
@@ -3560,7 +3576,15 @@ async function runSearch() {
 
     showResults(data);
   } catch (e) {
-    showError('Network error – is the server running?');
+    if (e.name === 'AbortError') {
+      hideAll();
+      document.getElementById('search-btn').textContent = 'Search';
+      document.getElementById('empty-state').classList.remove('hidden');
+    } else {
+      showError('Network error – is the server running?');
+    }
+  } finally {
+    _searchAbortController = null;
   }
 }
 
@@ -4239,8 +4263,8 @@ function hideAll() {
 function showLoading() {
   hideAll();
   document.getElementById('loading-state').classList.remove('hidden');
-  document.getElementById('search-btn').disabled = true;
-  document.getElementById('search-btn').textContent = 'Searching…';
+  document.getElementById('search-btn').disabled = false;
+  document.getElementById('search-btn').textContent = 'Cancel Search';
 }
 
 function showResults(data) {

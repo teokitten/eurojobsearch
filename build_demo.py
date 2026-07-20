@@ -277,6 +277,7 @@ old = """    const resp = await fetch('/api/search', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ keywords, countries, sources, hours_old: hoursOld, title_only: titleOnly, work_models: workModels }),
+      signal: _searchAbortController.signal,
     });
 
     if (!resp.ok) {
