@@ -4495,6 +4495,7 @@ const TR_STALE_SAVED_DAYS = 7;
 let trJobs = [];
 let trFilter = 'all';
 let trPage = 1;
+let trFilteredJobs = [];
 const TR_PAGE_SIZE = 25;
 let trEditId = null;
 let trToastTimer;
@@ -4544,6 +4545,8 @@ function trRender() {
     if (!da && !db) return 0; if (!da) return 1; if (!db) return -1;
     return srt === 'dateAsc' ? da - db : db - da;
   });
+
+  trFilteredJobs = list;
 
   const totalPages = Math.max(1, Math.ceil(list.length / TR_PAGE_SIZE));
   if (trPage > totalPages) trPage = totalPages;
@@ -5239,9 +5242,9 @@ function trToast(msg) {
 }
 
 function trExportCSV() {
-  if (!trJobs.length) { trToast('Nothing to export.'); return; }
+  if (!trFilteredJobs.length) { trToast('Nothing to export.'); return; }
   const headers = ['Company','Role','Location','Work Model','Platform','Status','URL','Date Added','Last Modified','Notes'];
-  const rows = trJobs.map(j => [
+  const rows = trFilteredJobs.map(j => [
     j.company, j.title, j.location||'', j.workModel||'', j.platform||'',
     j.status||'', j.url||'', j.dateAdded||'',
     j.lastModified ? j.lastModified.slice(0,10) : '',
