@@ -415,7 +415,36 @@ if content.count(old7c) != 1:
     sys.exit(f"ERROR: expected exactly 1 occurrence of trSetFilter(), found {content.count(old7c)}")
 content = content.replace(old7c, new7c, 1)
 
+# ------------------------------------------------------------------
+# 8. Demo-only: always default to the Search tab on load, ignoring any
+#    stale ejs_active_tab in localStorage. The real app should remember
+#    a user's last tab; the public demo should not, since a stale value
+#    from anyone's past testing on this origin would silently redirect
+#    every subsequent visitor who hasn't set a URL hash.
+# ------------------------------------------------------------------
+old8 = """  const _validTabs = ['search', 'sites', 'tracker', 'activity'];
+  const _hashTab = window.location.hash.replace('#', '');
+  if (_validTabs.includes(_hashTab)) {
+    switchTab(_hashTab);
+  } else {
+    const _savedTab = localStorage.getItem('ejs_active_tab');
+    if (_savedTab === 'tracker') switchTab('tracker');
+    else if (_savedTab === 'activity') switchTab('activity');
+  }
+"""
+new8 = """  const _validTabs = ['search', 'sites', 'tracker', 'activity'];
+  const _hashTab = window.location.hash.replace('#', '');
+  if (_validTabs.includes(_hashTab)) {
+    switchTab(_hashTab);
+  }
+  // Demo build: no localStorage-based tab restore. Always defaults to
+  // Search unless the URL hash says otherwise.
+"""
+if content.count(old8) != 1:
+    sys.exit(f"ERROR: expected exactly 1 occurrence of the tab-restore block, found {content.count(old8)}")
+content = content.replace(old8, new8, 1)
+
 with open(DST, "w", encoding="utf-8") as f:
     f.write(content)
 
-print(f"Done. {DST} regenerated from {SRC} with demo changes applied (search mock data + tracker sample jobs + clear-samples button).")
+print(f"Done. {DST} regenerated from {SRC} with demo changes applied (search mock data + tracker sample jobs + clear-samples button + no stale-tab redirect).")

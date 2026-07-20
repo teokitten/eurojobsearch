@@ -5829,11 +5829,9 @@ document.addEventListener('DOMContentLoaded', function() {
   const _hashTab = window.location.hash.replace('#', '');
   if (_validTabs.includes(_hashTab)) {
     switchTab(_hashTab);
-  } else {
-    const _savedTab = localStorage.getItem('ejs_active_tab');
-    if (_savedTab === 'tracker') switchTab('tracker');
-    else if (_savedTab === 'activity') switchTab('activity');
   }
+  // Demo build: no localStorage-based tab restore. Always defaults to
+  // Search unless the URL hash says otherwise.
   renderMuteControl();
   const _muteAddBtn = document.getElementById('mute-kw-add');
   const _muteInput  = document.getElementById('mute-kw-input');
