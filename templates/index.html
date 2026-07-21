@@ -5703,11 +5703,14 @@ function trRenderBackupStatus() {
   let meta = {};
   try { meta = JSON.parse(localStorage.getItem(TR_BACKUP_META_KEY)) || {}; } catch (_) {}
   const fileOn = !!localStorage.getItem(TR_FILE_BACKUP_ON);
-  const lsTime = _relTime(meta.lastBackupAt);
-  const fileTime = fileOn ? _relTime(meta.lastFileBackupAt) : null;
-  const parts = [lsTime ? `Last backed up: ${lsTime}` : 'Last backed up: not run yet'];
-  if (fileOn) parts.push(fileTime ? `File: ${fileTime}` : 'File: not run yet');
-  el.textContent = parts.join(' · ');
+  const lsAt = meta.lastBackupAt ? new Date(meta.lastBackupAt) : null;
+  const fileAt = (fileOn && meta.lastFileBackupAt) ? new Date(meta.lastFileBackupAt) : null;
+  let mostRecent = null;
+  if (lsAt && fileAt) mostRecent = lsAt > fileAt ? lsAt : fileAt;
+  else mostRecent = lsAt || fileAt;
+  el.textContent = mostRecent
+    ? `Last backed up: ${_relTime(mostRecent.toISOString())}`
+    : 'Last backed up: not run yet';
 }
 
 function trInitFileBackupSetting() {
