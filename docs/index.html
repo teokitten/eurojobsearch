@@ -5954,7 +5954,7 @@ function trRenderBackupStatus() {
   const fileOn = !!localStorage.getItem(TR_FILE_BACKUP_ON);
   const lsTime = _relTime(meta.lastBackupAt);
   const fileTime = fileOn ? _relTime(meta.lastFileBackupAt) : null;
-  const parts = [lsTime ? `Auto-backed up ${lsTime}` : 'Auto-backup: not run yet'];
+  const parts = [lsTime ? `Last backed up: ${lsTime}` : 'Last backed up: not run yet'];
   if (fileOn) parts.push(fileTime ? `File: ${fileTime}` : 'File: not run yet');
   el.textContent = parts.join(' · ');
 }
