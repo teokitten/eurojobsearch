@@ -1233,6 +1233,7 @@
 .tr-badge-Rejected { background: #311c1c; color: #e5534b; }
 .tr-badge-Saved { background: #3a2e0e; color: #d29922; }
 .tr-badge-Offer { background: #3a1d5c; color: #a371f7; }
+.tr-badge-Dropped { background: #3a1c2e; color: #f778ba; }
 .tr-stat-btn.active-Offer { border-color: #a371f7; color: #a371f7; }
 .tr-plat-link {
   color: var(--accent, #5b6ef5);
@@ -1542,6 +1543,7 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator{filter:invert(1)
   #tr-overlay,
   #tr-dup-overlay,
   #tr-rejreason-overlay,
+  #tr-dropreason-overlay,
   #tr-stale-notice,
   #tr-restore-notice,
   #tr-toast,
@@ -2817,7 +2819,7 @@ function arComputeActivity(from, to) {
     return true;
   };
   const allRangeJobs = trJobs.filter(inRange);
-  const statusCounts = { Applied: 0, Interviewing: 0, Offer: 0, Rejected: 0, Saved: 0 };
+  const statusCounts = { Applied: 0, Interviewing: 0, Offer: 0, Rejected: 0, Saved: 0, Dropped: 0 };
   allRangeJobs.forEach(j => { if (j.status in statusCounts) statusCounts[j.status]++; });
 
   const activeStatuses = new Set(['Applied','Interviewing','Offer','Rejected']);
@@ -3054,8 +3056,8 @@ function _aarRenderDonut(statusCounts, total) {
   if (_aarDonutChart) { _aarDonutChart.destroy(); _aarDonutChart = null; }
   const canvas = document.getElementById('aar-donut-canvas');
   if (!canvas || typeof Chart === 'undefined') return;
-  const SC = { Applied: '#388bfd', Interviewing: '#3fb950', Offer: '#a371f7', Rejected: '#e5534b', Saved: '#d29922' };
-  const labels = ['Applied','Interviewing','Offer','Rejected','Saved'].filter(s => statusCounts[s] > 0);
+  const SC = { Applied: '#388bfd', Interviewing: '#3fb950', Offer: '#a371f7', Rejected: '#e5534b', Saved: '#d29922', Dropped: '#f778ba' };
+  const labels = ['Applied','Interviewing','Offer','Rejected','Saved','Dropped'].filter(s => statusCounts[s] > 0);
   _aarDonutChart = new Chart(canvas, {
     type: 'doughnut',
     data: {
@@ -3162,8 +3164,8 @@ function _aarRenderCountries(data) {
   if (_aarCountriesChart) { _aarCountriesChart.destroy(); _aarCountriesChart = null; }
   const canvas = document.getElementById('aar-countries-canvas');
   if (!canvas || typeof Chart === 'undefined') return;
-  const SC = { Applied: '#388bfd', Interviewing: '#3fb950', Offer: '#a371f7', Rejected: '#e5534b', Saved: '#d29922' };
-  const STATUS_ORDER = ['Saved', 'Applied', 'Interviewing', 'Offer', 'Rejected'];
+  const SC = { Applied: '#388bfd', Interviewing: '#3fb950', Offer: '#a371f7', Rejected: '#e5534b', Saved: '#d29922', Dropped: '#f778ba' };
+  const STATUS_ORDER = ['Saved', 'Applied', 'Interviewing', 'Offer', 'Rejected', 'Dropped'];
   const activeStatuses = STATUS_ORDER.filter(s => data.some(c => (c.statuses[s] || 0) > 0));
   _aarCountriesChart = new Chart(canvas, {
     type: 'bar',
@@ -4490,7 +4492,7 @@ if (_didRestore) showRestoreNotice();
 
 // ── Tracker ──────────────────────────────────────────────────────────────
 const TR_KEY = 'ejs_tracker_v1';
-const TR_STATUSES = ['Saved', 'Applied', 'Interviewing', 'Offer', 'Rejected'];
+const TR_STATUSES = ['Saved', 'Applied', 'Interviewing', 'Offer', 'Rejected', 'Dropped'];
 const TR_STALE_SAVED_DAYS = 7;
 let trJobs = [];
 let trFilter = 'all';
@@ -4516,7 +4518,7 @@ function trPersist() { localStorage.setItem(TR_KEY, JSON.stringify(trJobs)); }
 function trRender() {
   const q = (document.getElementById('tr-search').value || '').toLowerCase();
   const srt = document.getElementById('tr-sort').value;
-  const ORDER = { Applied: 0, Interviewing: 1, Saved: 2, Rejected: 3, Offer: 4 };
+  const ORDER = { Applied: 0, Interviewing: 1, Saved: 2, Rejected: 3, Offer: 4, Dropped: 5 };
   const staleCutoff = new Date(Date.now() - TR_STALE_SAVED_DAYS * 86400000);
 
   let list = trJobs.filter(j => {
@@ -4552,7 +4554,7 @@ function trRender() {
   if (trPage > totalPages) trPage = totalPages;
   const pageList = list.slice((trPage - 1) * TR_PAGE_SIZE, trPage * TR_PAGE_SIZE);
 
-  const counts = { Saved: 0, Applied: 0, Interviewing: 0, Offer: 0, Rejected: 0 };
+  const counts = { Saved: 0, Applied: 0, Interviewing: 0, Offer: 0, Rejected: 0, Dropped: 0 };
   trJobs.forEach(j => { if (counts[j.status] !== undefined) counts[j.status]++; });
   const allAppliedCount = counts.Applied + counts.Interviewing + counts.Offer + counts.Rejected;
   const statDefs = [
@@ -4562,6 +4564,7 @@ function trRender() {
     { key: 'Interviewing', label: 'Interviewing',     count: counts.Interviewing },
     { key: 'Offer',        label: 'Offer',            count: counts.Offer },
     { key: 'Rejected',     label: 'Rejected',         count: counts.Rejected },
+    { key: 'Dropped',      label: 'Dropped',          count: counts.Dropped },
     { key: 'allApplied',   label: 'All Applications', count: allAppliedCount },
   ];
 
@@ -4677,6 +4680,41 @@ function trRejReasonPick(type) {
   trPersist();
   trRender();
   trToast('Marked Rejected.');
+}
+
+let _trDropReasonJobId = null;
+
+function trOpenDropReasonModal(jobId) {
+  _trDropReasonJobId = jobId;
+  _trInlineEditJobId = jobId; // reuse existing attachment plumbing, which
+                              // resolves its target job via this variable
+  const input = document.getElementById('tr-dropreason-input');
+  if (input) input.value = '';
+  document.getElementById('tr-dropreason-overlay').classList.add('open');
+  trAttachRenderGallery();
+}
+function trDropReasonCancel() {
+  document.getElementById('tr-dropreason-overlay').classList.remove('open');
+  _trDropReasonJobId = null;
+  _trInlineEditJobId = null;
+  trRender();
+}
+function trDropReasonSave() {
+  const job = trJobs.find(j => j.id === _trDropReasonJobId);
+  const input = document.getElementById('tr-dropreason-input');
+  const reason = (input ? input.value : '').trim();
+  if (!reason) { trToast('Please enter a reason.'); return; }
+  document.getElementById('tr-dropreason-overlay').classList.remove('open');
+  _trDropReasonJobId = null;
+  _trInlineEditJobId = null;
+  if (!job) return;
+  const stamp = `Dropped: ${reason}`;
+  job.notes = job.notes ? `${stamp}\n\n${job.notes}` : stamp;
+  job.status = 'Dropped';
+  job.lastModified = new Date().toISOString();
+  trPersist();
+  trRender();
+  trToast('Marked Dropped.');
 }
 
 function _trRenderPagination(total, totalPages) {
@@ -5137,6 +5175,11 @@ function trUpdateStatus(id, newStatus) {
     trRender();
     return;
   }
+  if (newStatus === 'Dropped') {
+    trOpenDropReasonModal(id);
+    trRender();
+    return;
+  }
   job.status = newStatus;
   job.lastModified = new Date().toISOString();
   trPersist();
@@ -5483,6 +5526,7 @@ async function trAttachRenderGallery() {
 
   await _renderTo(document.getElementById('tr-attach-gallery'));
   await _renderTo(document.getElementById('tr-attach-gallery-inline'));
+  await _renderTo(document.getElementById('tr-attach-gallery-drop'));
 }
 
 async function _trAttachStore(dataUrl) {
@@ -5830,6 +5874,22 @@ document.addEventListener('DOMContentLoaded', function() {
       break;
     }
   });
+  const _dropReasonInput = document.getElementById('tr-dropreason-input');
+  if (_dropReasonInput) {
+    _dropReasonInput.addEventListener('paste', async function(e) {
+      const items = e.clipboardData?.items;
+      if (!items) return;
+      for (const item of items) {
+        if (!item.type.startsWith('image/')) continue;
+        e.preventDefault();
+        const blob = item.getAsFile();
+        const dataUrl = await new Promise(res => { const fr = new FileReader(); fr.onload = ev => res(ev.target.result); fr.readAsDataURL(blob); });
+        await _trAttachStore(dataUrl);
+        trToast('Screenshot added.');
+        break;
+      }
+    });
+  }
 });
 </script>
 
@@ -6086,6 +6146,29 @@ document.addEventListener('DOMContentLoaded', function() {
       </div>
       <div class="tr-modal-foot">
         <button class="tr-btn" onclick="trRejReasonCancel()">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="tr-dropreason-overlay" class="tr-overlay" onclick="if(event.target===this)trDropReasonCancel()">
+    <div class="tr-modal" style="max-width:420px">
+      <div class="tr-modal-head">
+        <span>Reason for Dropping</span>
+        <button class="tr-modal-x" onclick="trDropReasonCancel()">✕</button>
+      </div>
+      <div class="tr-modal-body">
+        <p style="margin:0 0 12px;line-height:1.6;font-size:0.88rem;color:var(--text-s)">Why are you dropping this application?</p>
+        <div class="tr-notes-wrap">
+          <textarea id="tr-dropreason-input" rows="3" placeholder="Recruiter said the role requires full-time onsite presence in a location I can't relocate to." style="width:100%;resize:vertical;background:var(--surface2,#21262d);border:1px solid var(--border,#30363d);border-radius:6px;color:var(--text,#e6edf3);padding:8px;font:inherit;font-size:0.85rem;box-sizing:border-box"></textarea>
+          <button type="button" class="tr-attach-btn" onclick="trAttachPick()" title="Attach a screenshot">
+            <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l8.57-8.57A4 4 0 1 1 18 8.84l-8.59 8.57a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>
+          </button>
+        </div>
+        <div class="tr-attach-gallery" id="tr-attach-gallery-drop"></div>
+      </div>
+      <div class="tr-modal-foot">
+        <button class="tr-btn" onclick="trDropReasonCancel()">Cancel</button>
+        <button class="tr-btn" onclick="trDropReasonSave()">Save</button>
       </div>
     </div>
   </div>
