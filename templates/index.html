@@ -5482,12 +5482,12 @@ function trSaveJob(force = false) {
     }
   }
   const noteText = document.getElementById('tr-fNotes').value.trim();
+  const chosenStatus = document.getElementById('tr-fStatus').value;
   const data = {
     company, title,
     location:  document.getElementById('tr-fLocation').value.trim(),
     workModel: document.getElementById('tr-fWorkModel').value,
     platform:  document.getElementById('tr-fPlatform').value.trim(),
-    status:    document.getElementById('tr-fStatus').value,
     url:       document.getElementById('tr-fUrl').value.trim(),
     dateAdded: document.getElementById('tr-fDate').value || new Date().toISOString().slice(0, 10),
     lastModified: new Date().toISOString(),
@@ -5495,7 +5495,8 @@ function trSaveJob(force = false) {
   if (trEditId) {
     const i = trJobs.findIndex(j => j.id === trEditId);
     if (i !== -1) {
-      trJobs[i] = { ...trJobs[i], ...data };
+      const prevStatus = trJobs[i].status;
+      trJobs[i] = { ...trJobs[i], ...data, status: prevStatus };
       if (noteText) {
         trJobs[i].notesEntries = trJobs[i].notesEntries || [];
         trJobs[i].notesEntries.unshift({
@@ -5503,6 +5504,13 @@ function trSaveJob(force = false) {
           text: noteText,
           timestamp: new Date().toISOString(),
         });
+      }
+      trPersist();
+      trCloseModal(true);
+      if (chosenStatus !== prevStatus) {
+        trUpdateStatus(trEditId, chosenStatus); // reuses the same reason-requirement logic as the row dropdown, and calls trRender itself
+      } else {
+        trRender();
       }
     }
     trToast('Updated.');
@@ -5516,10 +5524,16 @@ function trSaveJob(force = false) {
       text: noteText,
       timestamp: new Date().toISOString(),
     }] : [];
-    trJobs.unshift({ id: newId, ...data, notesEntries, attachmentIds: pendingIds });
+    trJobs.unshift({ id: newId, ...data, status: 'Saved', notesEntries, attachmentIds: pendingIds });
+    trPersist();
+    trCloseModal(true);
+    if (chosenStatus !== 'Saved') {
+      trUpdateStatus(newId, chosenStatus); // reuses the same reason-requirement logic as the row dropdown, and calls trRender itself
+    } else {
+      trRender();
+    }
     trToast('Added.');
   }
-  trPersist(); trCloseModal(true); trRender();
 }
 
 function trUpdateStatus(id, newStatus) {
@@ -6399,7 +6413,7 @@ document.addEventListener('DOMContentLoaded', function() {
             <input id="tr-fCompany" type="text" placeholder="Anthropic" autocomplete="off">
           </div>
           <div class="tr-field"><label>Status</label>
-            <select id="tr-fStatus"><option>Saved</option><option>Applied</option><option>Interviewing</option><option>Offer</option><option>Rejected</option></select>
+            <select id="tr-fStatus"><option>Saved</option><option>Applied</option><option>Interviewing</option><option>Offer</option><option>Rejected</option><option>Dropped</option></select>
           </div>
         </div>
         <div class="tr-field"><label>Job Title</label><input id="tr-fTitle" type="text" placeholder="Senior Technical Writer" autocomplete="off"></div>

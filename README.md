@@ -89,38 +89,27 @@ Each source shows a live status dot in the search form – hover for fetch detai
 
 A separate tab lists job boards and company career pages that don't have a public API and can't be searched automatically – open them directly to search manually. These complement the ten automated sources rather than replace them.
 
-
 ## Keyword search
 
-Comma-separated terms use AND logic: `technical writer, freelance` requires both. Employment-type terms expand to synonyms automatically (`freelance` also matches contractor, contract, B2B, CDD, Werkvertrag, freiberuflich, etc.). A separate "Exclude from titles" control permanently filters out jobs by title term across all searches.
+Comma-separated terms use AND logic: `technical writer, freelance` requires both. Use `|` for OR: `technical writer | copywriter` matches either. Combine both: `technical writer | copywriter, freelance`. Employment-type terms expand to synonyms automatically (`freelance` also matches contractor, contract, B2B, CDD, Werkvertrag, freiberuflich, etc.). Note: OR only fully broadens results on sources without server-side search (Arbeitnow, Jobicy, Remotive) – on Indeed, LinkedIn, and the company-API sources it refines within what the primary term already returned. A separate "Exclude from titles" control permanently filters out jobs by title term across all searches.
 
 ## Job Application Tracker
 
-![Job Application Tracker screenshot](docs/screenshot2.png)
-
-Save jobs directly from search results or add them manually, track status (Saved → Applied → Interviewing → Offer/Rejected), log interview rounds individually, attach notes and screenshots, and export/import as CSV or PDF. Tracker data lives in your browser's localStorage – enable local file backup (Chrome/Edge only) or export CSV regularly, since clearing browser data erases it.
-
+Save jobs directly from search results or add them manually, track status (Saved → Applied → Interviewing → Offer/Rejected, plus a Dropped status for applications you walk away from yourself), log interview rounds individually, attach notes and screenshots, and export/import as CSV or PDF. Notes are timestamped entries, not a single text block. A date range filter narrows the table and both exports to a specific period. Tracker data lives in your browser's localStorage – enable local file backup (Chrome/Edge only) or export CSV regularly, since clearing browser data erases it.
 
 ## Activity Report
 
-![Activity Report screenshot](docs/screenshot3.png)
-
-Metrics and charts for your tracked job search: application volume, interview/offer/rejection rates, response times, and breakdowns by work model, source, and country. Exportable as CSV or PDF.
-
+Metrics and charts for your tracked job search: application volume, interview/offer/rejection rates, response times, and breakdowns by work model, source, status, and country.
 
 ## Known limitations
 
 - **Indeed EU**: falls back to Germany-remote-only if no countries are selected.
 - **Greenhouse**: multi-country locations like "Germany (Remote); Ireland (Remote)" are detected as remote only.
 - **Arbeitnow**: no search-term API param; keyword-filtered post-fetch, so mostly-German listings return few English-keyword matches.
-- **Workable / Recruitee**: result volume depends on how many companies are in the curated list.
+- **Workable / Recruitee**: result volume depends on how many companies are in each curated list.
 - **LinkedIn**: rate-limits after repeated use; returns different jobs per identical search, so the NEW badge can be inconsistent.
 - **Czech Republic / LinkedIn**: JobSpy internally misreads "Czech Republic" as "Dominican Republic" – results still surface via LinkedIn's Europe-wide call.
 
 ## License
 
 MIT
-
-## Built by
-
-[Teo Moldovanu](https://teokitten.github.io) – Senior Technical Writer
