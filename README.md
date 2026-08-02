@@ -95,7 +95,7 @@ Comma-separated terms use AND logic: `technical writer, freelance` requires both
 
 ## Job Application Tracker
 
-Save jobs directly from search results or add them manually, track status (Saved → Applied → Interviewing → Offer/Rejected, plus a Dropped status for applications you walk away from yourself), log interview rounds individually, attach notes and screenshots, and export/import as CSV or PDF. Notes are timestamped entries, not a single text block. A date range filter narrows the table and both exports to a specific period. Tracker data lives in your browser's localStorage – enable local file backup (Chrome/Edge only) or export CSV regularly, since clearing browser data erases it.
+Save jobs directly from search results or add them manually, track status (Saved → Applied → Interviewing → Offer/Rejected, plus a Dropped status for applications you walk away from yourself), log interview rounds individually, attach notes and screenshots, and export/import as CSV or PDF. Notes are timestamped entries. A small marker next to each job's link lets you flag postings that are no longer accepting applications. A date range filter narrows the table and both exports to a specific period. Tracker data lives in your browser's localStorage – enable local file backup (Chrome/Edge only) or export CSV regularly, since clearing browser data erases it.
 
 ## Activity Report
 
