@@ -335,41 +335,68 @@ content = content.replace(old5, new5, 1)
 # ------------------------------------------------------------------
 TRACKER_DEMO_BLOCK = '''
 const TRACKER_DEMO_JOBS = [
-  { id: 'demo-tr1', company: 'Bramblewood Tech', title: 'Senior Content Strategist', location: 'Berlin, Germany', workModel: 'Remote', platform: 'Greenhouse', url: '', status: 'Saved', notes: 'Strong match on docs-as-code and API documentation experience.', dateAdded: '2026-06-14', lastModified: '2026-06-14T09:00:00.000Z', interviewRounds: [] },
-  { id: 'demo-tr2', company: 'Solvix Technologies', title: 'Senior Technical Writer', location: 'Vienna, Austria', workModel: 'On-site', platform: 'Karriere.at', url: '', status: 'Applied', notes: 'Applied via the company careers page. Recruiter confirmed receipt.', dateAdded: '2026-06-07', lastModified: '2026-06-07T09:00:00.000Z', interviewRounds: [] },
-  { id: 'demo-tr3', company: 'Pinegrove Cloud', title: 'Documentation Engineer', location: 'Amsterdam, Netherlands', workModel: 'Hybrid', platform: 'Indeed EU', url: '', status: 'Interviewing', notes: 'First round done, technical round scheduled next.', dateAdded: '2026-06-03', lastModified: '2026-07-15T09:00:00.000Z',
+  { id: 'demo-tr1', company: 'Bramblewood Tech', title: 'Senior Content Strategist', location: 'Berlin, Germany', workModel: 'Remote', platform: 'Greenhouse', url: 'https://boards.greenhouse.io/bramblewoodtech/jobs/4821093', status: 'Saved', notes: 'Strong match on docs-as-code and API documentation experience.', dateAdded: '2026-06-14', lastModified: '2026-06-14T09:00:00.000Z', interviewRounds: [] },
+  { id: 'demo-tr2', company: 'Solvix Technologies', title: 'Senior Technical Writer', location: 'Vienna, Austria', workModel: 'On-site', platform: 'Karriere.at', url: 'https://www.karriere.at/jobs/8123456', status: 'Applied', notes: 'Applied via the company careers page. Recruiter confirmed receipt.', dateAdded: '2026-06-07', lastModified: '2026-06-07T09:00:00.000Z', interviewRounds: [] },
+  { id: 'demo-tr3', company: 'Pinegrove Cloud', title: 'Documentation Engineer', location: 'Amsterdam, Netherlands', workModel: 'Hybrid', platform: 'Indeed EU', url: 'https://nl.indeed.com/viewjob?jk=3f8a2c9d1e0b4a7f', status: 'Interviewing', notes: 'First round done, technical round scheduled next.', dateAdded: '2026-06-03', lastModified: '2026-07-15T09:00:00.000Z',
     interviewRounds: [
       { id: 'demo-r1', datetime: '2026-06-20T10:00', type: 'Online', link: 'https://meet.google.com/pinegrove-r1', attendees: 'Marc de Groot (Hiring Manager)', notes: 'Phone/video screen. Discussed content strategy background.', outcome: 'passed', done: true },
       { id: 'demo-r2', datetime: '2026-07-15T11:00', type: 'Technical', link: '', attendees: 'Marc de Groot (Hiring Manager), Els Bakker (Content Lead)', notes: 'Prep: review portfolio pieces on docs-as-code migration.', done: false },
     ]
   },
-  { id: 'demo-tr4', company: 'Quill Software', title: 'UX Writer', location: 'Berlin, Germany', workModel: 'Remote', platform: 'LinkedIn', url: '', status: 'Offer', notes: 'Offer received - reviewing compensation details.', dateAdded: '2026-05-20', lastModified: '2026-06-25T09:00:00.000Z',
+  { id: 'demo-tr4', company: 'Quill Software', title: 'UX Writer', location: 'Berlin, Germany', workModel: 'Remote', platform: 'LinkedIn', url: 'https://www.linkedin.com/jobs/view/3912847563', status: 'Offer', notes: 'Offer received - reviewing compensation details.', dateAdded: '2026-05-20', lastModified: '2026-06-25T09:00:00.000Z',
     interviewRounds: [
       { id: 'demo-r3', datetime: '2026-06-01T10:00', type: 'Online', link: 'https://meet.google.com/quill-r1', attendees: 'Priya Shah (Recruiter)', notes: 'Recruiter screen. Discussed role scope and salary band.', outcome: 'passed', done: true },
       { id: 'demo-r4', datetime: '2026-06-10T14:00', type: 'Online', link: 'https://meet.google.com/quill-r2', attendees: 'Priya Shah (Recruiter), Daniel Weiss (Design Lead)', notes: 'Portfolio review and a writing exercise walkthrough.', outcome: 'passed', done: true },
-    ]
+    ], attachmentIds: ['demo-att-interview']
   },
-  { id: 'demo-tr5', company: 'Maplewood Digital', title: 'Customer Support Specialist', location: 'Linz, Austria', workModel: 'On-site', platform: 'Karriere.at', url: '', status: 'Rejected', notes: 'Rejected after the phone screening - turned out to be a mismatch in expectations on both sides (compensation and scope).', dateAdded: '2026-05-29', lastModified: '2026-06-05T14:00:00.000Z',
+  { id: 'demo-tr5', company: 'Maplewood Digital', title: 'Customer Support Specialist', location: 'Linz, Austria', workModel: 'On-site', platform: 'Karriere.at', url: 'https://www.karriere.at/jobs/6647210', status: 'Rejected', notes: 'Rejected after the phone screening - turned out to be a mismatch in expectations on both sides (compensation and scope).', dateAdded: '2026-05-29', lastModified: '2026-06-05T14:00:00.000Z',
     interviewRounds: [
       { id: 'demo-r5', datetime: '2026-06-05T14:00', type: 'Online', link: 'https://meet.google.com/maplewood-r1', attendees: 'Sandra Huber (HR)', notes: 'Phone screening with HR. Discussed role scope, salary expectations and availability.', outcome: 'failed', done: true },
-    ]
+    ], attachmentIds: ['demo-att-rejection']
   },
-  { id: 'demo-tr6', company: 'Cedarhill Software', title: 'Technical Writer', location: 'Remote – EU', workModel: 'Remote', platform: 'Remotive', url: '', status: 'Applied', notes: 'Applied via careers page. Good match on API docs and structured authoring.', dateAdded: '2026-07-08', lastModified: '2026-07-08T10:00:00.000Z', interviewRounds: [] },
+  { id: 'demo-tr6', company: 'Cedarhill Software', title: 'Technical Writer', location: 'Remote – EU', workModel: 'Remote', platform: 'Remotive', url: 'https://remotive.com/remote-jobs/writing/technical-writer-198234', status: 'Applied', notes: 'Applied via careers page. Good match on API docs and structured authoring.', dateAdded: '2026-07-08', lastModified: '2026-07-08T10:00:00.000Z', interviewRounds: [] },
   { id: 'demo-tr7', company: 'Ashford Analytics', title: 'Product Manager', location: 'Warsaw, Poland', workModel: 'Hybrid', platform: 'Indeed EU', url: '', status: 'Applied', notes: 'Referral from a contact at the company. Role aligns well with past experience.', dateAdded: '2026-07-15', lastModified: '2026-07-15T14:00:00.000Z', interviewRounds: [] },
 ];
-'''
 
-old6 = "function trLoad() {\n  try { const raw = localStorage.getItem(TR_KEY); trJobs = raw ? JSON.parse(raw) : []; }\n  catch { trJobs = []; }\n}\n"
-if content.count(old6) != 1:
-    sys.exit(f"ERROR: expected exactly 1 occurrence of trLoad(), found {content.count(old6)}")
-new6 = TRACKER_DEMO_BLOCK + '''
-function trLoad() {
+const DEMO_ATTACHMENTS = [
+  { id: 'demo-att-interview', jobId: 'demo-tr4', dataUrl: 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMjAiIGhlaWdodD0iMjAwIiB2aWV3Qm94PSIwIDAgMzIwIDIwMCI+CiAgPHJlY3Qgd2lkdGg9IjMyMCIgaGVpZ2h0PSIyMDAiIGZpbGw9IiMxYTFmMmUiLz4KICA8cmVjdCB4PSI4IiB5PSIzMCIgd2lkdGg9IjIwMCIgaGVpZ2h0PSIxNDUiIHJ4PSI0IiBmaWxsPSIjMGQxMTE3Ii8+CiAgPHRleHQgeD0iMTYwIiB5PSIyMCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZmlsbD0iIzhiOTQ5ZSIgZm9udC1mYW1pbHk9InNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTAiPkludGVydmlldyDigJMgUXVpbGwgU29mdHdhcmUg4oCTIFVYIFdyaXRlcjwvdGV4dD4KICA8Y2lyY2xlIGN4PSIxMDgiIGN5PSI5NSIgcj0iMjgiIGZpbGw9IiMzMDM2M2QiLz4KICA8ZWxsaXBzZSBjeD0iMTA4IiBjeT0iMTQ4IiByeD0iNDIiIHJ5PSIyMiIgZmlsbD0iIzMwMzYzZCIvPgogIDx0ZXh0IHg9IjEwOCIgeT0iMTcwIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSIjNmU3NjgxIiBmb250LWZhbWlseT0ic2Fucy1zZXJpZiIgZm9udC1zaXplPSI5Ij5EYW5pZWwgV2Vpc3MgwrcgRGVzaWduIExlYWQ8L3RleHQ+CiAgPHJlY3QgeD0iMjE4IiB5PSIzMCIgd2lkdGg9Ijk0IiBoZWlnaHQ9IjcwIiByeD0iNCIgZmlsbD0iIzE2MWIyMiIvPgogIDxjaXJjbGUgY3g9IjI2NSIgY3k9IjU4IiByPSIxNiIgZmlsbD0iIzMwMzYzZCIvPgogIDxlbGxpcHNlIGN4PSIyNjUiIGN5PSI4OCIgcng9IjI0IiByeT0iMTQiIGZpbGw9IiMzMDM2M2QiLz4KICA8dGV4dCB4PSIyNjUiIHk9IjEwMCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZmlsbD0iIzZlNzY4MSIgZm9udC1mYW1pbHk9InNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iOCI+WW91PC90ZXh0PgogIDxyZWN0IHg9IjEyNSIgeT0iMTc4IiB3aWR0aD0iMzIiIGhlaWdodD0iMTYiIHJ4PSI4IiBmaWxsPSIjMjEyNjJkIi8+CiAgPHJlY3QgeD0iMTYyIiB5PSIxNzgiIHdpZHRoPSIzMiIgaGVpZ2h0PSIxNiIgcng9IjgiIGZpbGw9IiMyMTI2MmQiLz4KICA8cmVjdCB4PSIxOTkiIHk9IjE3OCIgd2lkdGg9IjMyIiBoZWlnaHQ9IjE2IiByeD0iOCIgZmlsbD0iI2RhMzYzMyIvPgogIDx0ZXh0IHg9IjIxNSIgeT0iMTg5IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSIjZmZmIiBmb250LWZhbWlseT0ic2Fucy1zZXJpZiIgZm9udC1zaXplPSI3Ij5FbmQ8L3RleHQ+Cjwvc3ZnPg==' },
+  { id: 'demo-att-rejection', jobId: 'demo-tr5', dataUrl: 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMjAiIGhlaWdodD0iMjAwIiB2aWV3Qm94PSIwIDAgMzIwIDIwMCI+CiAgPHJlY3Qgd2lkdGg9IjMyMCIgaGVpZ2h0PSIyMDAiIGZpbGw9IiMxNjFiMjIiLz4KICA8cmVjdCB4PSIwIiB5PSIwIiB3aWR0aD0iMzIwIiBoZWlnaHQ9IjMyIiBmaWxsPSIjMGQxMTE3Ii8+CiAgPHRleHQgeD0iMTYiIHk9IjIxIiBmaWxsPSIjZTZlZGYzIiBmb250LWZhbWlseT0ic2Fucy1zZXJpZiIgZm9udC1zaXplPSIxMiIgZm9udC13ZWlnaHQ9ImJvbGQiPkluYm94ICgxIHVucmVhZCk8L3RleHQ+CiAgPHJlY3QgeD0iMCIgeT0iMzIiIHdpZHRoPSIzMjAiIGhlaWdodD0iNTAiIGZpbGw9IiMyMTI2MmQiLz4KICA8cmVjdCB4PSIwIiB5PSIzMiIgd2lkdGg9IjMiIGhlaWdodD0iNTAiIGZpbGw9IiMzODhiZmQiLz4KICA8Y2lyY2xlIGN4PSIyOCIgY3k9IjU3IiByPSIxNCIgZmlsbD0iI2U1NTM0YiIgb3BhY2l0eT0iMC43Ii8+CiAgPHRleHQgeD0iMjgiIHk9IjYxIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSIjZmZmIiBmb250LWZhbWlseT0ic2Fucy1zZXJpZiIgZm9udC1zaXplPSIxMCIgZm9udC13ZWlnaHQ9ImJvbGQiPk08L3RleHQ+CiAgPHRleHQgeD0iNTAiIHk9IjUwIiBmaWxsPSIjZTZlZGYzIiBmb250LWZhbWlseT0ic2Fucy1zZXJpZiIgZm9udC1zaXplPSIxMSIgZm9udC13ZWlnaHQ9ImJvbGQiPk1hcGxld29vZCBEaWdpdGFsIEhSPC90ZXh0PgogIDx0ZXh0IHg9IjUwIiB5PSI2NSIgZmlsbD0iIzhiOTQ5ZSIgZm9udC1mYW1pbHk9InNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTAiPlJlOiBZb3VyIEFwcGxpY2F0aW9uIOKAkyBDdXN0b21lciBTdXBwb3J0PC90ZXh0PgogIDx0ZXh0IHg9IjUwIiB5PSI3NyIgZmlsbD0iIzZlNzY4MSIgZm9udC1mYW1pbHk9InNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iOSI+VGhhbmsgeW91IGZvciB5b3VyIHRpbWUuIEFmdGVyIGNhcmVmdWwgY29uc2lkZXJhdGlvbi4uLjwvdGV4dD4KICA8dGV4dCB4PSIyODUiIHk9IjUwIiBmaWxsPSIjNmU3NjgxIiBmb250LWZhbWlseT0ic2Fucy1zZXJpZiIgZm9udC1zaXplPSI5Ij4wNiBKdW48L3RleHQ+CiAgPHJlY3QgeD0iMCIgeT0iODIiIHdpZHRoPSIzMjAiIGhlaWdodD0iMTE4IiBmaWxsPSIjMTYxYjIyIi8+CiAgPHRleHQgeD0iMTYiIHk9IjEwNCIgZmlsbD0iI2U2ZWRmMyIgZm9udC1mYW1pbHk9InNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTEiIGZvbnQtd2VpZ2h0PSJib2xkIj5SZTogWW91ciBBcHBsaWNhdGlvbiDigJMgQ3VzdG9tZXIgU3VwcG9ydCBTcGVjaWFsaXN0PC90ZXh0PgogIDx0ZXh0IHg9IjE2IiB5PSIxMjAiIGZpbGw9IiM2ZTc2ODEiIGZvbnQtZmFtaWx5PSJzYW5zLXNlcmlmIiBmb250LXNpemU9IjkiPkZyb206IHNhbmRyYS5odWJlckBtYXBsZXdvb2RkaWdpdGFsLmF0PC90ZXh0PgogIDxsaW5lIHgxPSIxNiIgeTE9IjEzMCIgeDI9IjMwNCIgeTI9IjEzMCIgc3Ryb2tlPSIjMzAzNjNkIiBzdHJva2Utd2lkdGg9IjEiLz4KICA8dGV4dCB4PSIxNiIgeT0iMTQ2IiBmaWxsPSIjOGI5NDllIiBmb250LWZhbWlseT0ic2Fucy1zZXJpZiIgZm9udC1zaXplPSIxMCI+RGVhciBBcHBsaWNhbnQsPC90ZXh0PgogIDx0ZXh0IHg9IjE2IiB5PSIxNjIiIGZpbGw9IiM4Yjk0OWUiIGZvbnQtZmFtaWx5PSJzYW5zLXNlcmlmIiBmb250LXNpemU9IjEwIj5UaGFuayB5b3UgZm9yIHRha2luZyB0aGUgdGltZSB0byBzcGVhayB3aXRoIHVzLiBBZnRlcjwvdGV4dD4KICA8dGV4dCB4PSIxNiIgeT0iMTc3IiBmaWxsPSIjOGI5NDllIiBmb250LWZhbWlseT0ic2Fucy1zZXJpZiIgZm9udC1zaXplPSIxMCI+Y2FyZWZ1bCBjb25zaWRlcmF0aW9uLCB3ZSBoYXZlIGRlY2lkZWQgdG8gbW92ZSBmb3J3YXJkPC90ZXh0PgogIDx0ZXh0IHg9IjE2IiB5PSIxOTIiIGZpbGw9IiM2ZTc2ODEiIGZvbnQtZmFtaWx5PSJzYW5zLXNlcmlmIiBmb250LXNpemU9IjkiPndpdGggb3RoZXIgY2FuZGlkYXRlcy4g4oCTIFNhbmRyYSBIdWJlciwgSFIgTWFuYWdlcjwvdGV4dD4KPC9zdmc+' },
+];
+
+async function _demoSeedAttachments() {
   try {
-    const raw = localStorage.getItem(TR_KEY);
-    trJobs = raw ? JSON.parse(raw) : JSON.parse(JSON.stringify(TRACKER_DEMO_JOBS));
-  } catch { trJobs = []; }
+    for (const att of DEMO_ATTACHMENTS) {
+      const existing = await _attDbGet(att.id).catch(() => null);
+      if (existing) continue;
+      await _attDbPut({ id: att.id, jobId: att.jobId, dataUrl: att.dataUrl, addedAt: new Date().toISOString() });
+    }
+  } catch (_) {}
 }
 '''
+
+old6 = """function trLoad() {
+  try {
+    const raw = localStorage.getItem(TR_KEY);
+    trJobs = raw ? JSON.parse(raw) : [];
+  } catch { trJobs = []; }
+  trJobs.forEach(_trMigrateNotesEntry);
+}
+"""
+if content.count(old6) != 1:
+    sys.exit(f"ERROR: expected exactly 1 occurrence of trLoad(), found {content.count(old6)}")
+new6 = TRACKER_DEMO_BLOCK + """function trLoad() {
+  try {
+    const raw = localStorage.getItem(TR_KEY);
+    if (!raw) {
+      trJobs = JSON.parse(JSON.stringify(TRACKER_DEMO_JOBS));
+      _demoSeedAttachments();
+    } else {
+      trJobs = JSON.parse(raw);
+    }
+  } catch { trJobs = []; }
+  trJobs.forEach(_trMigrateNotesEntry);
+}
+"""
 content = content.replace(old6, new6, 1)
 
 # ------------------------------------------------------------------
@@ -377,11 +404,17 @@ content = content.replace(old6, new6, 1)
 #    demo-tr-prefixed entries, leaves anything the visitor added
 #    themselves untouched, and hides itself once none remain.
 # ------------------------------------------------------------------
-old7a = '''      <button class="tr-btn" onclick="document.getElementById('tr-import-input').click()">Import List</button>
+old7a = '''      <button type="button" class="tr-btn" onclick="document.getElementById('tr-import-input').click()">Import List</button>
       <input type="file" id="tr-import-input" accept=".csv" style="display:none" onchange="trImportCSV(event)">
+      <button type="button" class="tr-btn" onclick="trRefreshFromStorage()" title="Reload tracker data from this browser, without reloading the page">
+        <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="margin-right:4px;vertical-align:-2px"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><polyline points="21 3 21 9 15 9"/></svg>Refresh
+      </button>
     </div>'''
-new7a = '''      <button class="tr-btn" onclick="document.getElementById('tr-import-input').click()">Import List</button>
+new7a = '''      <button type="button" class="tr-btn" onclick="document.getElementById('tr-import-input').click()">Import List</button>
       <input type="file" id="tr-import-input" accept=".csv" style="display:none" onchange="trImportCSV(event)">
+      <button type="button" class="tr-btn" onclick="trRefreshFromStorage()" title="Reload tracker data from this browser, without reloading the page">
+        <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="margin-right:4px;vertical-align:-2px"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><polyline points="21 3 21 9 15 9"/></svg>Refresh
+      </button>
       <button class="tr-btn" id="tr-clearSampleBtn" onclick="trClearSampleJobs()" style="display:none">Clear sample jobs</button>
     </div>'''
 if content.count(old7a) != 1:
