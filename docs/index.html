@@ -1168,6 +1168,51 @@
   background: var(--border, #2e3248);
   flex-shrink: 0; margin: 0 2px;
 }
+
+.tr-date-range-group {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border: 1px solid var(--border, #30363d);
+  border-radius: 6px;
+  background: var(--surface2, #21262d);
+}
+
+.tr-date-range-label {
+  font-size: 0.78rem;
+  color: var(--text-s, #9098b1);
+  white-space: nowrap;
+}
+
+.tr-date-range-group input[type="date"] {
+  background: transparent;
+  border: none;
+  color: var(--text, #e6edf3);
+  font: inherit;
+  font-size: 0.82rem;
+  padding: 2px 0;
+  max-width: 125px;
+}
+
+.tr-date-range-group input[type="date"]::-webkit-calendar-picker-indicator {
+  filter: invert(0.7);
+  cursor: pointer;
+}
+
+.tr-date-range-clear {
+  background: none;
+  border: none;
+  color: var(--text-s, #9098b1);
+  cursor: pointer;
+  font-size: 0.8rem;
+  padding: 0 2px;
+  line-height: 1;
+}
+
+.tr-date-range-clear:hover {
+  color: var(--text, #e6edf3);
+}
 .tr-search {
   flex: 1; min-width: 200px; padding: 7px 10px;
   background: var(--surface, #161b22);
@@ -1242,6 +1287,25 @@
   font-weight: 500;
 }
 .tr-plat-link:hover { text-decoration: underline; }
+
+.tr-listing-closed {
+  display: inline-block;
+  margin-left: 4px;
+  font-size: 10px;
+  color: var(--text-s, #9098b1);
+  opacity: 0.35;
+  cursor: pointer;
+  vertical-align: middle;
+}
+
+.tr-listing-closed:hover {
+  opacity: 0.85;
+}
+
+.tr-listing-closed.active {
+  opacity: 1;
+  color: #e5534b;
+}
 .tr-btn-icon { padding: 4px 8px; background: transparent; border: 1px solid transparent; border-radius: 4px; color: var(--text-s, #9098b1); cursor: pointer; font-size: 12px; }
 .tr-btn-icon:hover { background: var(--surface2, #21262d); color: var(--text, #e6edf3); }
 .tr-btn-icon.del:hover { border-color: #e5534b; color: #e5534b; }
@@ -1531,6 +1595,10 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator{filter:invert(1)
 .tr-save-menu-item:last-child  { border-radius: 0 0 8px 8px; }
 .tr-save-menu-item:hover { background: var(--surface2, #21262d); }
 
+.tr-print-num-col {
+  display: none;
+}
+
 @media print {
   #main-tabs,
   #panel-search,
@@ -1553,14 +1621,19 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator{filter:invert(1)
   #tr-roundOverlay,
   .tr-attach-gallery,
   .tr-attach-btn,
+  .tr-listing-closed,
   .tr-lightbox,
   #tr-pagination,
   #tr-pagination-top,
   #panel-tracker .tr-table thead th:last-child,
   #panel-tracker .tr-table tbody td:last-child,
-  #panel-tracker .tr-table thead th:nth-child(7),
-  #panel-tracker .tr-table tbody td:nth-child(7) {
+  #panel-tracker .tr-table thead th:nth-child(8),
+  #panel-tracker .tr-table tbody td:nth-child(8) {
     display: none !important;
+  }
+
+  .tr-print-num-col {
+    display: table-cell !important;
   }
 
   #panel-tracker {
@@ -1709,6 +1782,116 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator{filter:invert(1)
 /* Attachment gallery in job edit modal */
 .tr-notes-wrap { position: relative; }
 #tr-fNotes { padding-bottom: 28px; }
+
+.tr-notes-entries-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 260px;
+  max-width: 360px;
+}
+
+.tr-note-add-box {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.tr-note-add-textarea {
+  width: 100%;
+  box-sizing: border-box;
+  resize: vertical;
+  font-size: 13px;
+  font-family: inherit;
+  line-height: 1.4;
+  background: var(--surface, #161b22);
+  color: var(--text, #e6edf3);
+  border: 1px solid var(--accent, #5b6ef5);
+  border-radius: 4px;
+  padding: 6px 8px;
+  outline: none;
+}
+
+.tr-note-add-row {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.tr-notes-entry-list {
+  display: flex;
+  flex-direction: column;
+  max-height: 220px;
+  overflow-y: auto;
+  border-top: 1px solid var(--border, #30363d);
+}
+
+.tr-note-entry {
+  padding: 6px 0;
+  border-bottom: 1px solid var(--border, #30363d);
+}
+
+.tr-note-entry:last-child {
+  border-bottom: none;
+}
+
+.tr-note-entry-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 2px;
+}
+
+.tr-note-entry-ts {
+  font-size: 11px;
+  color: var(--text-s, #9098b1);
+}
+
+.tr-note-entry-del {
+  background: none;
+  border: none;
+  color: var(--text-s, #9098b1);
+  cursor: pointer;
+  font-size: 11px;
+  padding: 0 4px;
+  opacity: 0.6;
+}
+
+.tr-note-entry-del:hover {
+  opacity: 1;
+  color: #e5534b;
+}
+
+.tr-note-entry-text {
+  font-size: 13px;
+  line-height: 1.4;
+  white-space: pre-wrap;
+  cursor: text;
+}
+
+.tr-note-entry-text:hover {
+  background: var(--surface2, #21262d);
+  border-radius: 4px;
+}
+
+.tr-note-entry-edit-textarea {
+  width: 100%;
+  box-sizing: border-box;
+  resize: vertical;
+  font-size: 13px;
+  font-family: inherit;
+  line-height: 1.4;
+  background: var(--surface, #161b22);
+  color: var(--text, #e6edf3);
+  border: 1px solid var(--accent, #5b6ef5);
+  border-radius: 4px;
+  padding: 4px 6px;
+  outline: none;
+}
+
+.tr-note-done-btn {
+  align-self: flex-end;
+}
 .tr-attach-btn {
   position: absolute; bottom: 8px; left: 8px;
   background: none; border: none; cursor: pointer;
@@ -4707,6 +4890,7 @@ let trJobs = [];
 let trFilter = 'all';
 let trPage = 1;
 let trFilteredJobs = [];
+let _trPrintMode = false;
 const TR_PAGE_SIZE = 25;
 let trEditId = null;
 let trToastTimer;
@@ -4716,6 +4900,21 @@ let trExpandedInterviews = new Set();
 let trExpandedRejections = new Set();
 let trRoundEditJobId = null;
 let trRoundEditId = null;
+
+function _trMigrateNotesEntry(job) {
+  if (!Array.isArray(job.notesEntries)) {
+    job.notesEntries = [];
+    if (job.notes && String(job.notes).trim()) {
+      job.notesEntries.push({
+        id: 'ne' + Date.now() + Math.random().toString(36).slice(2, 6),
+        text: String(job.notes),
+        timestamp: job.lastModified || null,
+      });
+    }
+  }
+  delete job.notes;
+  return job;
+}
 
 
 const TRACKER_DEMO_JOBS = [
@@ -4741,21 +4940,51 @@ const TRACKER_DEMO_JOBS = [
   { id: 'demo-tr6', company: 'Cedarhill Software', title: 'Technical Writer', location: 'Remote – EU', workModel: 'Remote', platform: 'Remotive', url: '', status: 'Applied', notes: 'Applied via careers page. Good match on API docs and structured authoring.', dateAdded: '2026-07-08', lastModified: '2026-07-08T10:00:00.000Z', interviewRounds: [] },
   { id: 'demo-tr7', company: 'Ashford Analytics', title: 'Product Manager', location: 'Warsaw, Poland', workModel: 'Hybrid', platform: 'Indeed EU', url: '', status: 'Applied', notes: 'Referral from a contact at the company. Role aligns well with past experience.', dateAdded: '2026-07-15', lastModified: '2026-07-15T14:00:00.000Z', interviewRounds: [] },
 ];
-
 function trLoad() {
   try {
     const raw = localStorage.getItem(TR_KEY);
     trJobs = raw ? JSON.parse(raw) : JSON.parse(JSON.stringify(TRACKER_DEMO_JOBS));
   } catch { trJobs = []; }
+  trJobs.forEach(_trMigrateNotesEntry);
+}
+
+function trFmtNoteTimestamp(iso) {
+  if (!iso) return 'Earlier';
+  const d = new Date(iso);
+  if (isNaN(d.getTime())) return 'Earlier';
+  return d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })
+    + ' · ' + d.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+}
+
+function _trNotesSearchText(job) {
+  return (job.notesEntries || []).map(e => e.text).join(' ');
+}
+
+function trToggleListingClosed(id) {
+  const job = trJobs.find(j => j.id === id);
+  if (!job) return;
+  job.listingClosed = !job.listingClosed;
+  job.lastModified = new Date().toISOString();
+  trPersist();
+  trRender();
 }
 
 function trPersist() { localStorage.setItem(TR_KEY, JSON.stringify(trJobs)); }
+function trRefreshFromStorage() {
+  trLoad();
+  trPage = 1;
+  trRender();
+  trToast('Tracker refreshed.');
+}
 
 function trRender() {
   const q = (document.getElementById('tr-search').value || '').toLowerCase();
   const srt = document.getElementById('tr-sort').value;
   const ORDER = { Applied: 0, Interviewing: 1, Saved: 2, Rejected: 3, Offer: 4, Dropped: 5 };
   const staleCutoff = new Date(Date.now() - TR_STALE_SAVED_DAYS * 86400000);
+
+  const dateFrom = document.getElementById('tr-date-from')?.value || '';
+  const dateTo = document.getElementById('tr-date-to')?.value || '';
 
   let list = trJobs.filter(j => {
     if (trFilter === 'allApplied') return ['Applied', 'Interviewing', 'Offer', 'Rejected'].includes(j.status);
@@ -4764,9 +4993,11 @@ function trRender() {
       if (!j.dateAdded || new Date(j.dateAdded + 'T00:00:00') > staleCutoff) return false;
     } else if (trFilter !== 'all' && j.status !== trFilter) return false;
     if (q) {
-      const hay = [j.company, j.title, j.platform, j.location, j.notes].join(' ').toLowerCase();
+      const hay = [j.company, j.title, j.platform, j.location, _trNotesSearchText(j)].join(' ').toLowerCase();
       if (!hay.includes(q)) return false;
     }
+    if (dateFrom && (!j.dateAdded || j.dateAdded < dateFrom)) return false;
+    if (dateTo && (!j.dateAdded || j.dateAdded > dateTo)) return false;
     return true;
   });
 
@@ -4788,13 +5019,18 @@ function trRender() {
 
   const totalPages = Math.max(1, Math.ceil(list.length / TR_PAGE_SIZE));
   if (trPage > totalPages) trPage = totalPages;
-  const pageList = list.slice((trPage - 1) * TR_PAGE_SIZE, trPage * TR_PAGE_SIZE);
+  const pageList = _trPrintMode ? list : list.slice((trPage - 1) * TR_PAGE_SIZE, trPage * TR_PAGE_SIZE);
 
+  const dateFilteredJobs = trJobs.filter(j => {
+    if (dateFrom && (!j.dateAdded || j.dateAdded < dateFrom)) return false;
+    if (dateTo && (!j.dateAdded || j.dateAdded > dateTo)) return false;
+    return true;
+  });
   const counts = { Saved: 0, Applied: 0, Interviewing: 0, Offer: 0, Rejected: 0, Dropped: 0 };
-  trJobs.forEach(j => { if (counts[j.status] !== undefined) counts[j.status]++; });
+  dateFilteredJobs.forEach(j => { if (counts[j.status] !== undefined) counts[j.status]++; });
   const allAppliedCount = counts.Applied + counts.Interviewing + counts.Offer + counts.Rejected;
   const statDefs = [
-    { key: 'all',          label: 'All',              count: trJobs.length },
+    { key: 'all',          label: 'All',              count: dateFilteredJobs.length },
     { key: 'Saved',        label: 'Saved',            count: counts.Saved },
     { key: 'Applied',      label: 'Applied',          count: counts.Applied },
     { key: 'Interviewing', label: 'Interviewing',     count: counts.Interviewing },
@@ -4816,16 +5052,20 @@ function trRender() {
   if (!list.length) { tbody.innerHTML = ''; empty.style.display = 'block'; _trRenderPagination(0, 1); return; }
   empty.style.display = 'none';
 
-  tbody.innerHTML = pageList.map(j => {
+  tbody.innerHTML = pageList.map((j, _trRowIdx) => {
     const co = trX(j.company || '—');
+    const listingClosedTag = j.url
+      ? `<span class="tr-listing-closed${j.listingClosed ? ' active' : ''}" onclick="trToggleListingClosed('${j.id}')" title="${j.listingClosed ? 'No longer open' : 'Mark as no longer open'}">&#8856;</span>`
+      : '';
     const platCell = j.url
-      ? `<a href="${trX(j.url)}" target="_blank" rel="noopener" class="tr-plat-link">${trX(j.platform || 'Link')} ↗</a>`
+      ? `<a href="${trX(j.url)}" target="_blank" rel="noopener" class="tr-plat-link">${trX(j.platform || 'Link')} ↗</a>${listingClosedTag}`
       : `<span style="color:var(--text-s,#9098b1);font-size:12px">${trX(j.platform || '')}</span>`;
     const loc = [j.location, j.workModel].filter(Boolean).join(' · ');
     const dateStr = j.dateAdded
       ? new Date(j.dateAdded + 'T00:00:00').toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
       : '—';
     return `<tr>
+      <td class="tr-print-num-col">${_trRowIdx + 1}</td>
       <td style="font-weight:600">${co}</td>
       <td class="tr-td-role" title="${trX(j.title)}">${trX(j.title)}</td>
       <td style="color:var(--text-s);font-size:12px">${trX(loc)}</td>
@@ -4839,7 +5079,7 @@ function trRender() {
         </div>
       </td>
       <td style="color:var(--text-s);font-size:12px;white-space:nowrap">${dateStr}</td>
-      <td class="tr-td-notes" onclick="trEditNote(event,this,'${j.id}')">${j.notes ? trX(j.notes) : ''}</td>
+      <td class="tr-td-notes" onclick="trEditNote(event,this,'${j.id}')">${(j.notesEntries && j.notesEntries[0]) ? trX(j.notesEntries[0].text) : ''}</td>
       <td style="white-space:nowrap">
         <button class="tr-btn-icon" title="Edit" onclick="trOpenModal('${j.id}')">✎</button>
         <button class="tr-btn-icon del" title="Delete" onclick="trDelJob('${j.id}')">✕</button>
@@ -4862,6 +5102,14 @@ function trClearSampleJobs() {
   trPersist();
   trRender();
   trToast('Sample jobs removed.');
+}
+function trClearDateRange() {
+  const from = document.getElementById('tr-date-from');
+  const to = document.getElementById('tr-date-to');
+  if (from) from.value = '';
+  if (to) to.value = '';
+  trPage = 1;
+  trRender();
 }
 
 function trRenderStaleSavedNotice() {
@@ -4957,8 +5205,12 @@ function trDropReasonSave() {
   _trDropReasonJobId = null;
   _trInlineEditJobId = null;
   if (!job) return;
-  const stamp = `Dropped: ${reason}`;
-  job.notes = job.notes ? `${stamp}\n\n${job.notes}` : stamp;
+  job.notesEntries = job.notesEntries || [];
+  job.notesEntries.unshift({
+    id: 'ne' + Date.now() + Math.random().toString(36).slice(2, 6),
+    text: `Dropped: ${reason}`,
+    timestamp: new Date().toISOString(),
+  });
   job.status = 'Dropped';
   job.lastModified = new Date().toISOString();
   trPersist();
@@ -5000,49 +5252,43 @@ function _trRenderPagination(total, totalPages) {
 }
 
 function trEditNote(event, td, jobId) {
-  if (event.target.tagName === 'TEXTAREA') return;
+  if (td.classList.contains('editing')) return;
   const job = trJobs.find(j => j.id === jobId);
   if (!job) return;
-  const original = job.notes || '';
-
   _trInlineEditJobId = jobId;
-
-  const revert = (value) => {
-    _trInlineEditJobId = null;
-    td.classList.remove('editing');
-    td.innerHTML = trX(value);
-  };
-
   td.classList.add('editing');
+  _trRenderNotesEditor(td, job);
+}
 
+function _trRenderNotesCollapsed(td, job) {
+  const latest = (job.notesEntries || [])[0];
+  td.innerHTML = latest ? trX(latest.text) : '';
+}
+
+function _trRenderNotesEditor(td, job) {
+  const entries = (job.notesEntries || []).slice()
+    .sort((a, b) => new Date(b.timestamp || 0) - new Date(a.timestamp || 0));
+
+  td.innerHTML = '';
   const wrap = document.createElement('div');
-  wrap.className = 'tr-notes-wrap';
+  wrap.className = 'tr-notes-entries-wrap';
+  wrap.addEventListener('mousedown', e => {
+    // Prevent any click inside this editor (buttons, entries, gallery)
+    // from blurring focus in a way that would tear down the editor
+    // mid-interaction - same fix as the attachment gallery needed.
+    if (e.target.tagName !== 'TEXTAREA') e.preventDefault();
+  });
 
+  // .tr-notes-wrap is scoped to JUST this small box (textarea + attach
+  // button), not the whole editor - .tr-attach-btn positions itself
+  // relative to its nearest .tr-notes-wrap ancestor, so this must stay
+  // tight around only the two elements it's meant to sit next to.
+  const addBox = document.createElement('div');
+  addBox.className = 'tr-note-add-box tr-notes-wrap';
   const ta = document.createElement('textarea');
-  ta.value = original;
-  ta.rows = 4;
-  ta.style.cssText = [
-    'width:100%', 'box-sizing:border-box', 'resize:both',
-    'font-size:13px', 'font-family:inherit', 'line-height:1.4',
-    'background:var(--surface,#161b22)', 'color:var(--text,#e6edf3)',
-    'border:1px solid var(--accent,#5b6ef5)', 'border-radius:4px',
-    'padding:6px 8px 28px 8px', 'outline:none', 'white-space:pre-wrap',
-  ].join(';');
-
-  let cancelled = false;
-
-  ta.addEventListener('keydown', e => {
-    if (e.key === 'Escape') { cancelled = true; ta.blur(); }
-    else if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); ta.blur(); }
-  });
-
-  ta.addEventListener('blur', () => {
-    if (cancelled) { revert(original); return; }
-    const newVal = ta.value;
-    job.notes = newVal;
-    trPersist();
-    revert(newVal);
-  });
+  ta.className = 'tr-note-add-textarea';
+  ta.rows = 2;
+  ta.placeholder = 'Add a note…';
 
   ta.addEventListener('paste', async function(e) {
     const items = e.clipboardData?.items;
@@ -5063,29 +5309,119 @@ function trEditNote(event, td, jobId) {
   attachBtn.className = 'tr-attach-btn';
   attachBtn.title = 'Attach a screenshot';
   attachBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l8.57-8.57A4 4 0 1 1 18 8.84l-8.59 8.57a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>';
-  attachBtn.addEventListener('mousedown', e => {
-    e.preventDefault(); // keep focus on textarea so blur/revert doesn't fire
-    trAttachPick();
-  });
+  attachBtn.addEventListener('click', (e) => { e.stopPropagation(); trAttachPick(); });
 
-  wrap.appendChild(ta);
-  wrap.appendChild(attachBtn);
+  addBox.appendChild(ta);
+  addBox.appendChild(attachBtn);
+  wrap.appendChild(addBox);
+
+  const addBtnRow = document.createElement('div');
+  addBtnRow.className = 'tr-note-add-row';
+  const addBtn = document.createElement('button');
+  addBtn.type = 'button';
+  addBtn.className = 'tr-btn tr-btn-primary';
+  addBtn.textContent = 'Add note';
+  addBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    const text = ta.value.trim();
+    if (!text) return;
+    job.notesEntries = job.notesEntries || [];
+    job.notesEntries.unshift({
+      id: 'ne' + Date.now() + Math.random().toString(36).slice(2, 6),
+      text,
+      timestamp: new Date().toISOString(),
+    });
+    job.lastModified = new Date().toISOString();
+    trPersist();
+    _trRenderNotesEditor(td, job);
+  });
+  addBtnRow.appendChild(addBtn);
+  wrap.appendChild(addBtnRow);
 
   const gallery = document.createElement('div');
   gallery.id = 'tr-attach-gallery-inline';
   gallery.className = 'tr-attach-gallery';
+  wrap.appendChild(gallery);
 
-  const hint = document.createElement('div');
-  hint.style.cssText = 'font-size:11px;color:var(--text-s,#9098b1);margin-top:3px;white-space:normal;overflow:visible;';
-  hint.textContent = 'Enter to save · Shift+Enter for a new line · Esc to cancel';
+  const list = document.createElement('div');
+  list.className = 'tr-notes-entry-list';
 
-  td.innerHTML = '';
+  entries.forEach(entry => {
+    const item = document.createElement('div');
+    item.className = 'tr-note-entry';
+
+    const head = document.createElement('div');
+    head.className = 'tr-note-entry-head';
+    const ts = document.createElement('span');
+    ts.className = 'tr-note-entry-ts';
+    ts.textContent = trFmtNoteTimestamp(entry.timestamp);
+    const delBtn = document.createElement('button');
+    delBtn.type = 'button';
+    delBtn.className = 'tr-note-entry-del';
+    delBtn.title = 'Delete this note';
+    delBtn.textContent = '✕';
+    delBtn.addEventListener('click', (ev) => {
+      ev.stopPropagation();
+      job.notesEntries = (job.notesEntries || []).filter(e => e.id !== entry.id);
+      trPersist();
+      _trRenderNotesEditor(td, job);
+    });
+    head.appendChild(ts);
+    head.appendChild(delBtn);
+
+    const textEl = document.createElement('div');
+    textEl.className = 'tr-note-entry-text';
+    textEl.textContent = entry.text;
+    textEl.title = 'Click to edit';
+    textEl.addEventListener('click', (e) => { e.stopPropagation(); _trEditNoteEntryText(td, job, entry.id, textEl); });
+
+    item.appendChild(head);
+    item.appendChild(textEl);
+    list.appendChild(item);
+  });
+
+  wrap.appendChild(list);
+
+  const closeBtn = document.createElement('button');
+  closeBtn.type = 'button';
+  closeBtn.className = 'tr-btn tr-note-done-btn';
+  closeBtn.textContent = 'Done';
+  closeBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    _trInlineEditJobId = null;
+    td.classList.remove('editing');
+    _trRenderNotesCollapsed(td, job);
+    _updateStickyOffsets();
+  });
+  wrap.appendChild(closeBtn);
+
   td.appendChild(wrap);
-  td.appendChild(gallery);
-  td.appendChild(hint);
-  ta.focus();
-
   trAttachRenderGallery();
+  ta.focus();
+}
+
+function _trEditNoteEntryText(td, job, entryId, textEl) {
+  const entry = (job.notesEntries || []).find(e => e.id === entryId);
+  if (!entry) return;
+  const editTa = document.createElement('textarea');
+  editTa.className = 'tr-note-entry-edit-textarea';
+  editTa.value = entry.text;
+  editTa.rows = 2;
+  textEl.replaceWith(editTa);
+  editTa.focus();
+  const commit = () => {
+    const newText = editTa.value.trim();
+    if (newText) {
+      entry.text = newText; // timestamp intentionally unchanged - editing isn't adding
+      trPersist();
+    }
+    _trRenderNotesEditor(td, job);
+  };
+  editTa.addEventListener('keydown', e => {
+    if (e.key === 'Escape') { _trRenderNotesEditor(td, job); }
+    else if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); commit(); }
+  });
+  editTa.addEventListener('blur', commit);
 }
 
 function trToggleSaveMenu(id) {
@@ -5258,6 +5594,8 @@ function trUpdateRoundLinkVisibility() {
 function trOpenRoundModal(jobId, roundId) {
   trRoundEditJobId = jobId;
   trRoundEditId = roundId || null;
+  _trInlineEditJobId = jobId; // reuse existing attachment plumbing, which
+                             // resolves its target job via this variable
   document.getElementById('tr-roundModalTitle').textContent = roundId ? 'Edit Round' : 'Add Round';
   const job = trJobs.find(j => j.id === jobId);
   const r = (roundId && job) ? (job.interviewRounds || []).find(rr => rr.id === roundId) : null;
@@ -5286,12 +5624,14 @@ function trOpenRoundModal(jobId, roundId) {
   }
   document.getElementById('tr-roundDeleteBtn').style.display = roundId ? '' : 'none';
   document.getElementById('tr-roundOverlay').classList.add('open');
+  trAttachRenderGallery();
 }
 
 function trCloseRoundModal() {
   document.getElementById('tr-roundOverlay').classList.remove('open');
   trRoundEditJobId = null;
   trRoundEditId = null;
+  _trInlineEditJobId = null;
 }
 
 function trDeleteRoundFromModal() {
@@ -5347,7 +5687,7 @@ function trOpenModal(id) {
     trSetF('tr-fCompany', j.company); trSetF('tr-fTitle', j.title);
     trSetF('tr-fLocation', j.location || ''); trSetF('tr-fWorkModel', j.workModel || '');
     trSetF('tr-fPlatform', j.platform || ''); trSetF('tr-fStatus', j.status);
-    trSetF('tr-fUrl', j.url || ''); trSetF('tr-fNotes', j.notes || '');
+    trSetF('tr-fUrl', j.url || ''); trSetF('tr-fNotes', '');
     trSetF('tr-fDate', j.dateAdded || '');
   } else {
     ['tr-fCompany','tr-fTitle','tr-fLocation','tr-fPlatform','tr-fUrl','tr-fNotes'].forEach(id => trSetF(id, ''));
@@ -5387,6 +5727,7 @@ function trSaveJob(force = false) {
       return;
     }
   }
+  const noteText = document.getElementById('tr-fNotes').value.trim();
   const data = {
     company, title,
     location:  document.getElementById('tr-fLocation').value.trim(),
@@ -5394,20 +5735,34 @@ function trSaveJob(force = false) {
     platform:  document.getElementById('tr-fPlatform').value.trim(),
     status:    document.getElementById('tr-fStatus').value,
     url:       document.getElementById('tr-fUrl').value.trim(),
-    notes:     document.getElementById('tr-fNotes').value.trim(),
     dateAdded: document.getElementById('tr-fDate').value || new Date().toISOString().slice(0, 10),
     lastModified: new Date().toISOString(),
   };
   if (trEditId) {
     const i = trJobs.findIndex(j => j.id === trEditId);
-    if (i !== -1) trJobs[i] = { ...trJobs[i], ...data };
+    if (i !== -1) {
+      trJobs[i] = { ...trJobs[i], ...data };
+      if (noteText) {
+        trJobs[i].notesEntries = trJobs[i].notesEntries || [];
+        trJobs[i].notesEntries.unshift({
+          id: 'ne' + Date.now() + Math.random().toString(36).slice(2, 6),
+          text: noteText,
+          timestamp: new Date().toISOString(),
+        });
+      }
+    }
     trToast('Updated.');
   } else {
     const newId = 'tr' + Date.now();
     const pendingIds = _trAttachPending.map(p => p.id);
     _trAttachPending.forEach(p => _attDbPut({ id: p.id, jobId: newId, dataUrl: p.dataUrl, addedAt: new Date().toISOString() }).catch(() => {}));
     _trAttachPending = [];
-    trJobs.unshift({ id: newId, ...data, attachmentIds: pendingIds });
+    const notesEntries = noteText ? [{
+      id: 'ne' + Date.now() + Math.random().toString(36).slice(2, 6),
+      text: noteText,
+      timestamp: new Date().toISOString(),
+    }] : [];
+    trJobs.unshift({ id: newId, ...data, notesEntries, attachmentIds: pendingIds });
     trToast('Added.');
   }
   trPersist(); trCloseModal(true); trRender();
@@ -5443,6 +5798,7 @@ function trDelJob(id) {
   trJobs = trJobs.filter(j => j.id !== id);
   trPersist(); trRender(); trToast('Deleted.');
   trRefreshCardStates();
+  trAcknowledgeCurrentState();
 }
 
 function trRefreshCardStates() {
@@ -5536,12 +5892,17 @@ function trToast(msg) {
 function trExportCSV() {
   if (!trFilteredJobs.length) { trToast('Nothing to export.'); return; }
   const headers = ['Company','Role','Location','Work Model','Platform','Status','URL','Date Added','Last Modified','Notes'];
-  const rows = trFilteredJobs.map(j => [
-    j.company, j.title, j.location||'', j.workModel||'', j.platform||'',
-    j.status||'', j.url||'', j.dateAdded||'',
-    j.lastModified ? j.lastModified.slice(0,10) : '',
-    (j.notes||'').replace(/\n/g,' ')
-  ].map(v => `"${String(v).replace(/"/g,'""')}"`).join(','));
+  const rows = trFilteredJobs.map(j => {
+    const entries = (j.notesEntries || []).slice()
+      .sort((a, b) => new Date(b.timestamp || 0) - new Date(a.timestamp || 0));
+    const notesText = entries.map(e => `[${trFmtNoteTimestamp(e.timestamp)}] ${e.text}`).join('\n');
+    return [
+      j.company, j.title, j.location||'', j.workModel||'', j.platform||'',
+      j.status||'', j.url||'', j.dateAdded||'',
+      j.lastModified ? j.lastModified.slice(0,10) : '',
+      notesText
+    ].map(v => `"${String(v).replace(/"/g,'""')}"`).join(',');
+  });
   const csv = [headers.join(','), ...rows].join('\r\n');
   const a = document.createElement('a');
   a.href = URL.createObjectURL(new Blob([csv], {type:'text/csv'}));
@@ -5552,7 +5913,11 @@ function trExportCSV() {
 function trExportPDF() {
   const _title = document.title;
   document.title = `eurojobsearch-application-list-${new Date().toISOString().slice(0, 10)}`;
+  _trPrintMode = true;
+  trRender();
   window.print();
+  _trPrintMode = false;
+  trRender();
   document.title = _title;
 }
 
@@ -5593,6 +5958,7 @@ function trImportCSV(event) {
       if (!company && !title) continue;
       const statusRaw = idx.status >= 0 ? cols[idx.status] : '';
       const status = TR_STATUSES.includes(statusRaw) ? statusRaw : 'Saved';
+      const importedNoteText = idx.notes >= 0 ? cols[idx.notes] : '';
       trJobs.push({
         id: 'imp' + Date.now() + i,
         company, title,
@@ -5602,7 +5968,11 @@ function trImportCSV(event) {
         status,
         url:       idx.url       >= 0 ? cols[idx.url]       : '',
         dateAdded: idx.dateAdded >= 0 ? cols[idx.dateAdded] : '',
-        notes:     idx.notes     >= 0 ? cols[idx.notes]     : '',
+        notesEntries: importedNoteText ? [{
+          id: 'ne' + Date.now() + Math.random().toString(36).slice(2, 6),
+          text: importedNoteText,
+          timestamp: null,
+        }] : [],
         lastModified: new Date().toISOString(),
       });
       added++;
@@ -5776,6 +6146,7 @@ async function trAttachRenderGallery() {
   await _renderTo(document.getElementById('tr-attach-gallery'));
   await _renderTo(document.getElementById('tr-attach-gallery-inline'));
   await _renderTo(document.getElementById('tr-attach-gallery-drop'));
+  await _renderTo(document.getElementById('tr-attach-gallery-round'));
 }
 
 async function _trAttachStore(dataUrl) {
@@ -5877,6 +6248,25 @@ function trCheckRestoreAvailable() {
   document.getElementById('tr-restore-text').textContent =
     `localStorage backup: ${backup.length} entr${backup.length === 1 ? 'y' : 'ies'} saved on ${dateStr}.`;
   notice.style.display = 'flex';
+}
+
+// Forces the backup to immediately match current trJobs, marking the
+// current state as the new known-good baseline. Bypasses the normal
+// 3-day throttle and the data-drop guard deliberately – both exist to
+// protect against *silent, automatic* backups overwriting good data with
+// bad, but this is an explicit, user-confirmed action, not a silent one.
+function trAcknowledgeCurrentState() {
+  try {
+    localStorage.setItem(TR_BACKUP_KEY, JSON.stringify(trJobs));
+    let meta = {};
+    try { meta = JSON.parse(localStorage.getItem(TR_BACKUP_META_KEY)) || {}; } catch (_) {}
+    meta.lastBackupAt = new Date().toISOString();
+    localStorage.setItem(TR_BACKUP_META_KEY, JSON.stringify(meta));
+  } catch (_) {}
+  const notice = document.getElementById('tr-restore-notice');
+  if (notice) notice.style.display = 'none';
+  _updateStickyOffsets();
+  trRenderBackupStatus();
 }
 
 let _bkPendingBackup     = null;
@@ -6179,6 +6569,15 @@ document.addEventListener('DOMContentLoaded', function() {
     </div>
     <div class="tr-toolbar">
       <input class="tr-search" id="tr-search" type="text" placeholder="Search company, role, notes…" oninput="trPage=1;trRender()">
+      <span class="tr-toolbar-sep"></span>
+      <div class="tr-date-range-group">
+        <span class="tr-date-range-label">From</span>
+        <input type="date" id="tr-date-from" title="Only show jobs added on or after this date" onchange="trPage=1;trRender()">
+        <span class="tr-date-range-label">To</span>
+        <input type="date" id="tr-date-to" title="Only show jobs added on or before this date" onchange="trPage=1;trRender()">
+        <button type="button" class="tr-date-range-clear" onclick="trClearDateRange()" title="Clear date range">✕</button>
+      </div>
+      <span class="tr-toolbar-sep"></span>
       <select class="tr-sort" id="tr-sort" onchange="trPage=1;trRender()">
         <option value="dateDesc">Date (newest first)</option>
         <option value="dateAsc">Date (oldest first)</option>
@@ -6186,24 +6585,27 @@ document.addEventListener('DOMContentLoaded', function() {
         <option value="status">Status</option>
         <option value="lastModified">Recently updated</option>
       </select>
-      <button class="tr-btn tr-btn-primary" onclick="trOpenModal(null)">+ Add Job</button>
+      <button type="button" class="tr-btn tr-btn-primary" onclick="trOpenModal(null)">+ Add Job</button>
       <span class="tr-toolbar-sep"></span>
       <div class="tr-save-menu" id="tr-save-menu">
-        <button class="tr-btn" onclick="trToggleSaveMenu('tr-save-menu')">Save List As ▾</button>
+        <button type="button" class="tr-btn" onclick="trToggleSaveMenu('tr-save-menu')">Save List As ▾</button>
         <div class="tr-save-menu-drop">
           <div class="tr-save-menu-item" onclick="trExportCSV();trCloseSaveMenu('tr-save-menu')"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="1"/><path d="M3 9h18M9 3v18"/></svg>CSV</div>
           <div class="tr-save-menu-item" onclick="trExportPDF();trCloseSaveMenu('tr-save-menu')"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="16" y2="17"/></svg>PDF</div>
         </div>
       </div>
       <span class="tr-toolbar-sep"></span>
-      <button class="tr-btn" onclick="document.getElementById('tr-import-input').click()">Import List</button>
+      <button type="button" class="tr-btn" onclick="document.getElementById('tr-import-input').click()">Import List</button>
       <input type="file" id="tr-import-input" accept=".csv" style="display:none" onchange="trImportCSV(event)">
+      <button type="button" class="tr-btn" onclick="trRefreshFromStorage()" title="Reload tracker data from this browser, without reloading the page">
+        <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="margin-right:4px;vertical-align:-2px"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><polyline points="21 3 21 9 15 9"/></svg>Refresh
+      </button>
       <button class="tr-btn" id="tr-clearSampleBtn" onclick="trClearSampleJobs()" style="display:none">Clear sample jobs</button>
     </div>
     <div id="tr-restore-notice" class="tr-restore-notice msg-card msg-card-warning" style="display:none">
       <span id="tr-restore-text"></span>
       <button class="tr-btn" onclick="trRestoreFromBackup()">Restore</button>
-      <button class="tr-restore-dismiss" onclick="document.getElementById('tr-restore-notice').style.display='none';_updateStickyOffsets()" title="Dismiss">✕</button>
+      <button class="tr-restore-dismiss" onclick="trAcknowledgeCurrentState()" title="Dismiss — current data is correct, stop asking">✕</button>
     </div>
     <div id="tr-stale-notice" class="tr-restore-notice msg-card msg-card-warning" style="display:none">
       <span id="tr-stale-msg"></span>
@@ -6216,6 +6618,7 @@ document.addEventListener('DOMContentLoaded', function() {
     <table class="tr-table">
       <thead>
         <tr>
+          <th class="tr-print-num-col">#</th>
           <th>Company</th><th>Role</th><th>Location</th>
           <th>Platform</th><th>Status</th><th>Date</th>
           <th>Notes</th><th></th>
@@ -6263,7 +6666,7 @@ document.addEventListener('DOMContentLoaded', function() {
         <div class="tr-field">
           <label>Notes</label>
           <div class="tr-notes-wrap">
-            <textarea id="tr-fNotes" placeholder="Context, contacts, follow-ups…"></textarea>
+            <textarea id="tr-fNotes" placeholder="Add a note (e.g. context, contacts, follow-ups)…"></textarea>
             <button type="button" class="tr-attach-btn" onclick="trAttachPick()" title="Attach a screenshot">
               <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l8.57-8.57A4 4 0 1 1 18 8.84l-8.59 8.57a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>
             </button>
@@ -6326,6 +6729,14 @@ document.addEventListener('DOMContentLoaded', function() {
         </div>
         <div class="tr-field"><label>Attendees</label><input id="tr-fRoundAttendees" type="text" placeholder="Names or roles"></div>
         <div class="tr-field"><label>Notes</label><textarea id="tr-fRoundNotes" placeholder="Context, prep notes…"></textarea></div>
+        <div class="tr-field">
+          <div class="tr-notes-wrap">
+            <button type="button" class="tr-attach-btn" onclick="trAttachPick()" title="Attach a screenshot">
+              <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l8.57-8.57A4 4 0 1 1 18 8.84l-8.59 8.57a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>
+            </button>
+          </div>
+          <div class="tr-attach-gallery" id="tr-attach-gallery-round"></div>
+        </div>
         <div class="tr-field"><label>Outcome</label>
           <select id="tr-fRoundOutcome">
             <option value="">Not yet decided</option>
