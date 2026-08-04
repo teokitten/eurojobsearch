@@ -3508,8 +3508,8 @@ function arRenderActivity() {
     </div>` : '') +
     ((wmParts.length || m.sourceBreakdown.length || m.topTitles.length) ? `<div class="aar-breakdown-row-3">
       ${wmParts.length ? `<div class="aar-chart-card"><div class="aar-chart-title">Work Model</div><div class="aar-text-list">${wmParts.join('<br>')}</div></div>` : ''}
-      ${m.sourceBreakdown.length ? `<div class="aar-chart-card"><div class="aar-chart-title">Top Sources</div><div class="aar-text-list">${m.sourceBreakdown.map(s => `${s.name}: ${s.count}`).join('<br>')}</div></div>` : ''}
-      ${m.topTitles.length ? `<div class="aar-chart-card"><div class="aar-chart-title">Top Roles Applied To</div><div class="aar-text-list">${m.topTitles.map(t => `${t.name}: ${t.count}`).join('<br>')}</div></div>` : ''}
+      ${m.sourceBreakdown.length ? `<div class="aar-chart-card"><div class="aar-chart-title">Top Sources</div><div class="aar-text-list">${m.sourceBreakdown.map(s => `${trX(s.name)}: ${s.count}`).join('<br>')}</div></div>` : ''}
+      ${m.topTitles.length ? `<div class="aar-chart-card"><div class="aar-chart-title">Top Roles Applied To</div><div class="aar-text-list">${m.topTitles.map(t => `${trX(t.name)}: ${t.count}`).join('<br>')}</div></div>` : ''}
     </div>` : '') +
     '';
 
@@ -3627,7 +3627,7 @@ function arExportPDF(from, to) {
   const wmParts = ['Remote','Hybrid','On-site']
     .filter(k => (wm[k] || 0) > 0).map(k => `${k}: ${wm[k]}`);
   if (wm['Other']) wmParts.push(`Other: ${wm['Other']}`);
-  const srcLine = m.sourceBreakdown.map(s => `${s.name}: ${s.count}`).join(' · ');
+  const srcLine = m.sourceBreakdown.map(s => `${trX(s.name)}: ${s.count}`).join(' · ');
 
   pv.innerHTML =
     `<h2 style="margin:0 0 2px;font-size:15px;font-weight:700;color:#111;">Job Search Activity Report</h2>` +
@@ -3653,7 +3653,7 @@ function arExportPDF(from, to) {
     secHead('Breakdown') +
     (wmParts.length ? `<p style="margin:0 0 5px;font-size:11px;color:#222;"><strong>Work model:</strong> ${wmParts.join(' · ')}</p>` : '') +
     (srcLine        ? `<p style="margin:0 0 5px;font-size:11px;color:#222;"><strong>Sources:</strong> ${srcLine}</p>` : '') +
-    (m.topTitles.length ? `<p style="margin:0;font-size:11px;color:#222;"><strong>Top roles:</strong> ${m.topTitles.map(t => `${t.name}: ${t.count}`).join(' · ')}</p>` : '');
+    (m.topTitles.length ? `<p style="margin:0;font-size:11px;color:#222;"><strong>Top roles:</strong> ${m.topTitles.map(t => `${trX(t.name)}: ${t.count}`).join(' · ')}</p>` : '');
 
   const _title = document.title;
   document.title = `eurojobsearch-activity-report-${new Date().toISOString().slice(0, 10)}`;
@@ -4336,15 +4336,16 @@ function buildJobCard(job) {
   card.className = 'job-card';
   card.title = '';
   card.addEventListener('click', () => {
-    if (job.url) {
-      window.open(job.url, '_blank', 'noopener');
+    const href = safeUrl(job.url);
+    if (href) {
+      window.open(href, '_blank', 'noopener');
       _markViewed(job.id, card);
     }
   });
 
   const dateStr = job.date_posted ? relativeDate(job.date_posted) : '';
   const alsoOnStr = job.also_on && job.also_on.length
-    ? `<span class="also-on">Also on: ${job.also_on.join(', ')}</span>`
+    ? `<span class="also-on">Also on: ${esc(job.also_on.join(', '))}</span>`
     : '';
   const remoteBadge = job.is_remote ? '<span class="remote-badge">Remote</span>' : '';
   const isViewed = _getViewed().has(job.id);
@@ -4356,7 +4357,7 @@ function buildJobCard(job) {
       <div class="job-title-group">
         <span class="job-title">${esc(job.title)}</span>
       </div>
-      <div style="display:flex;align-items:center;gap:4px;flex-shrink:0">${newBadge}<span class="job-source-badge src-${job.source}">${esc(job.source_label)}</span></div>
+      <div style="display:flex;align-items:center;gap:4px;flex-shrink:0">${newBadge}<span class="job-source-badge src-${esc(job.source)}">${esc(job.source_label)}</span></div>
     </div>
     <div class="job-card-mid">
       <span class="job-company">${esc(job.company || '–')}</span>
@@ -4369,7 +4370,7 @@ function buildJobCard(job) {
     </div>
     <button class="card-dismiss-btn" data-remove="true" title="Remove from results">×</button>
     <div class="card-btn-row">
-      <button class="card-track-btn" data-track="true" data-job-url="${job.url || ''}">Add to Tracker</button>
+      <button class="card-track-btn" data-track="true">Add to Tracker</button>
     </div>
   `;
 
@@ -4417,6 +4418,15 @@ function esc(str) {
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;');
+}
+
+// Returns the URL unchanged if it is http(s), otherwise '' — blocks javascript:/data: links.
+function safeUrl(u) {
+  if (typeof u !== 'string' || !u) return '';
+  try {
+    const p = new URL(u, location.href).protocol;
+    return (p === 'http:' || p === 'https:') ? u : '';
+  } catch (_) { return ''; }
 }
 
 function relativeDate(dateStr) {
@@ -4818,11 +4828,13 @@ function trRender() {
 
   tbody.innerHTML = pageList.map((j, _trRowIdx) => {
     const co = trX(j.company || '—');
-    const listingClosedTag = j.url
-      ? `<span class="tr-listing-closed${j.listingClosed ? ' active' : ''}" onclick="trToggleListingClosed('${j.id}')" title="${j.listingClosed ? 'No longer open' : 'Mark as no longer open'}">&#8856;</span>`
+    const jid = trQ(j.id);
+    const jUrl = safeUrl(j.url);
+    const listingClosedTag = jUrl
+      ? `<span class="tr-listing-closed${j.listingClosed ? ' active' : ''}" onclick="trToggleListingClosed('${jid}')" title="${j.listingClosed ? 'No longer open' : 'Mark as no longer open'}">&#8856;</span>`
       : '';
-    const platCell = j.url
-      ? `<a href="${trX(j.url)}" target="_blank" rel="noopener" class="tr-plat-link">${trX(j.platform || 'Link')} ↗</a>${listingClosedTag}`
+    const platCell = jUrl
+      ? `<a href="${trX(jUrl)}" target="_blank" rel="noopener" class="tr-plat-link">${trX(j.platform || 'Link')} ↗</a>${listingClosedTag}`
       : `<span style="color:var(--text-s,#9098b1);font-size:12px">${trX(j.platform || '')}</span>`;
     const loc = [j.location, j.workModel].filter(Boolean).join(' · ');
     const dateStr = j.dateAdded
@@ -4836,17 +4848,17 @@ function trRender() {
       <td>${platCell}</td>
       <td>
         <div style="display:flex;flex-direction:column;align-items:flex-start;gap:4px">
-          <select class="tr-status-select tr-badge tr-badge-${trX(j.status)}" onchange="trUpdateStatus('${j.id}', this.value)">
+          <select class="tr-status-select tr-badge tr-badge-${trX(j.status)}" onchange="trUpdateStatus('${jid}', this.value)">
             ${TR_STATUSES.map(s => `<option value="${s}"${s === j.status ? ' selected' : ''}>${s}</option>`).join('')}
           </select>
           <div style="display:flex;gap:6px;flex-wrap:wrap">${trRejectionSummaryHtml(j)}${trInterviewSummaryHtml(j)}</div>
         </div>
       </td>
       <td style="color:var(--text-s);font-size:12px;white-space:nowrap">${dateStr}</td>
-      <td class="tr-td-notes" onclick="trEditNote(event,this,'${j.id}')">${(j.notesEntries && j.notesEntries[0]) ? trX(j.notesEntries[0].text) : ''}</td>
+      <td class="tr-td-notes" onclick="trEditNote(event,this,'${jid}')">${(j.notesEntries && j.notesEntries[0]) ? trX(j.notesEntries[0].text) : ''}</td>
       <td style="white-space:nowrap">
-        <button class="tr-btn-icon" title="Edit" onclick="trOpenModal('${j.id}')">✎</button>
-        <button class="tr-btn-icon del" title="Delete" onclick="trDelJob('${j.id}')">✕</button>
+        <button class="tr-btn-icon" title="Edit" onclick="trOpenModal('${jid}')">✎</button>
+        <button class="tr-btn-icon del" title="Delete" onclick="trDelJob('${jid}')">✕</button>
       </td>
     </tr>` +
       ((j.interviewRounds && j.interviewRounds.length && trExpandedInterviews.has(j.id)) ? trRenderInterviewExpandRow(j) : '') +
@@ -5215,12 +5227,13 @@ function trSetRoundOutcome(jobId, roundId, outcome) {
 
 function trInterviewSummaryHtml(j) {
   const rounds = j.interviewRounds || [];
+  const jid = trQ(j.id);
   if (!rounds.length) {
     if (j.status === 'Interviewing') {
-      return `<button class="tr-iw-toggle" onclick="trOpenRoundModal('${j.id}', null)">+ interview date</button>`;
+      return `<button class="tr-iw-toggle" onclick="trOpenRoundModal('${jid}', null)">+ interview date</button>`;
     }
     if (j.status === 'Rejected' && j.rejectionType === 'after_interview') {
-      return `<button class="tr-iw-toggle" onclick="trOpenRoundModal('${j.id}', null)">+ add round details</button>`;
+      return `<button class="tr-iw-toggle" onclick="trOpenRoundModal('${jid}', null)">+ add round details</button>`;
     }
     return '';
   }
@@ -5232,7 +5245,7 @@ function trInterviewSummaryHtml(j) {
     ? trFmtRoundDate(nextUpcoming.datetime)
     : (j.status === 'Rejected' ? '\u{1F5E3}️ After interview' : roundCountLabel);
   const open = trExpandedInterviews.has(j.id);
-  return `<button class="tr-iw-toggle" onclick="trToggleInterview('${j.id}')" title="Interview rounds">
+  return `<button class="tr-iw-toggle" onclick="trToggleInterview('${jid}')" title="Interview rounds">
     <span class="tr-iw-chevron${open ? ' open' : ''}">&#9662;</span> ${label}
   </button>`;
 }
@@ -5244,7 +5257,7 @@ function trRejectionSummaryHtml(j) {
   const label = j.rejectionType === 'after_interview'
     ? '\u{1F5E3}️ After interview'
     : '✍️ No interview';
-  return `<button class="tr-iw-toggle" onclick="trOpenRejReasonModal('${j.id}')" title="Change rejection reason">${label}</button>`;
+  return `<button class="tr-iw-toggle" onclick="trOpenRejReasonModal('${trQ(j.id)}')" title="Change rejection reason">${label}</button>`;
 }
 
 function trRenderRejectionExpandRow(j) {
@@ -5254,7 +5267,7 @@ function trRenderRejectionExpandRow(j) {
   ];
   const chips = options.map(o => {
     const active = j.rejectionType === o.key;
-    return `<span class="tr-iw-chip ${active ? 'done' : 'upcoming'}" style="cursor:pointer" onclick="trSetRejectionType('${j.id}','${o.key}')">
+    return `<span class="tr-iw-chip ${active ? 'done' : 'upcoming'}" style="cursor:pointer" onclick="trSetRejectionType('${trQ(j.id)}','${o.key}')">
       <span class="tr-iw-chip-check">${active ? '&#10003;' : ''}</span>
       <span>${o.icon} ${o.label}</span>
     </span>`;
@@ -5289,20 +5302,23 @@ function trRenderInterviewExpandRow(j) {
   const rounds = (j.interviewRounds || []).slice().sort((a, b) => new Date(a.datetime) - new Date(b.datetime));
   const hasFailed = rounds.some(r => r.outcome === 'failed');
   const lockAdd = j.status === 'Offer' || (hasFailed && j.status === 'Rejected');
+  const jid = trQ(j.id);
   const chips = rounds.map((r, i) => {
     const failed = r.outcome === 'failed';
     const done = trIsRoundDone(r);
+    const rid = trQ(r.id);
+    const rLink = safeUrl(r.link);
     const outcomeClass = failed ? 'failed' : (done ? 'done' : 'upcoming');
     const leadIcon = failed
       ? `<span class="tr-iw-chip-icon-fail" title="Failed">&#10007;</span>`
-      : `<span class="tr-iw-chip-check" onclick="trSetRoundOutcome('${j.id}','${r.id}','passed')" title="${done ? 'Clear passed status' : 'Mark as Passed'}">${done ? '&#10003;' : ''}</span>`;
+      : `<span class="tr-iw-chip-check" onclick="trSetRoundOutcome('${jid}','${rid}','passed')" title="${done ? 'Clear passed status' : 'Mark as Passed'}">${done ? '&#10003;' : ''}</span>`;
     const parts = [`Round ${i + 1} &middot; ${trFmtRoundDate(r.datetime)}`];
     if (r.type) parts.push(trX(r.type));
     return `<span class="tr-iw-chip ${outcomeClass}">
       ${leadIcon}
       <span${done ? ' style="text-decoration:line-through"' : ''}>${parts.join(' &middot; ')}</span>
-      ${r.link ? `<a href="${trX(r.link)}" target="_blank" rel="noopener" class="tr-iw-chip-link" title="Meeting link">&#128279;</a>` : ''}
-      <span class="tr-iw-chip-edit" onclick="trOpenRoundModal('${j.id}','${r.id}')" title="Edit">&#9998;</span>
+      ${rLink ? `<a href="${trX(rLink)}" target="_blank" rel="noopener" class="tr-iw-chip-link" title="Meeting link">&#128279;</a>` : ''}
+      <span class="tr-iw-chip-edit" onclick="trOpenRoundModal('${jid}','${rid}')" title="Edit">&#9998;</span>
     </span>`;
   }).join('');
   return `<tr class="tr-iw-expand-row">
@@ -5310,7 +5326,7 @@ function trRenderInterviewExpandRow(j) {
     <td colspan="4">
       <div class="tr-iw-rounds-wrap">
         ${chips}
-        ${lockAdd ? '' : `<button class="tr-iw-add-btn" onclick="trOpenRoundModal('${j.id}', null)">+ Add round</button>`}
+        ${lockAdd ? '' : `<button class="tr-iw-add-btn" onclick="trOpenRoundModal('${jid}', null)">+ Add round</button>`}
       </div>
     </td>
   </tr>`;
@@ -5430,6 +5446,22 @@ function trSaveRound() {
 
 function trX(s) {
   return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// For values interpolated into a single-quoted JS string inside an inline handler attribute.
+// JS-escape first, then HTML-escape: the backslash survives the HTML parser's entity decoding.
+function trQ(s) {
+  return trX(String(s == null ? '' : s)
+    .replace(/\\/g, '\\\\')
+    .replace(/'/g, "\\'")
+    .replace(/[\r\n]/g, '\\n'));
+}
+
+// Tracker ids only ever come from the app's own generators; anything else is replaced.
+function trCleanId(v, prefix) {
+  return /^[A-Za-z0-9_-]{1,64}$/.test(String(v || ''))
+    ? String(v)
+    : prefix + Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
 }
 
 function trOpenModal(id) {
@@ -5657,6 +5689,14 @@ function trToast(msg) {
   trToastTimer = setTimeout(() => el.classList.remove('show'), 2400);
 }
 
+// Leading = + - @ makes a spreadsheet treat the cell as a formula; the apostrophe forces text.
+// trImportCSV strips it back off, so this adds no round-trip loss of its own.
+function trCsvCell(v) {
+  let s = String(v == null ? '' : v);
+  if (/^[=+\-@]/.test(s)) s = "'" + s;
+  return `"${s.replace(/"/g,'""')}"`;
+}
+
 function trExportCSV() {
   if (!trFilteredJobs.length) { trToast('Nothing to export.'); return; }
   const headers = ['Company','Role','Location','Work Model','Platform','Status','URL','Date Added','Last Modified','Notes'];
@@ -5669,7 +5709,7 @@ function trExportCSV() {
       j.status||'', j.url||'', j.dateAdded||'',
       j.lastModified ? j.lastModified.slice(0,10) : '',
       notesText
-    ].map(v => `"${String(v).replace(/"/g,'""')}"`).join(',');
+    ].map(trCsvCell).join(',');
   });
   const csv = [headers.join(','), ...rows].join('\r\n');
   const a = document.createElement('a');
@@ -5716,7 +5756,7 @@ function trImportCSV(event) {
         else { cur += ch; }
       }
       cols.push(cur);
-      return cols.map(c => c.trim());
+      return cols.map(c => c.trim().replace(/^'(?=[=+\-@])/, ''));
     };
     let added = 0;
     for (let i = 1; i < lines.length; i++) {
@@ -5772,6 +5812,13 @@ function trImportJSON(event) {
       trToast("This doesn't look like a valid backup file.");
       return;
     }
+    trackerEntries.forEach(j => {
+      if (!j || typeof j !== 'object') return;
+      j.id = trCleanId(j.id, 'imp');
+      (Array.isArray(j.interviewRounds) ? j.interviewRounds : []).forEach(r => {
+        if (r && typeof r === 'object') r.id = trCleanId(r.id, 'rnd');
+      });
+    });
     const existingIds = new Set(trJobs.map(j => j.id));
     const newEntries = trackerEntries.filter(j => j.id && !existingIds.has(j.id));
     if (newEntries.length === 0) {
@@ -6640,6 +6687,8 @@ document.addEventListener('DOMContentLoaded', function() {
   Built by <a href="https://teokitten.github.io" target="_blank" rel="noopener noreferrer" class="footer-link">Teo Moldovanu</a>
 </footer>
 
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.js"
+        integrity="sha384-G436+Z2nlA8+PNoeRvWdxKbvOf8E/y+lYxqht2iBwNHTQDV5CJr3+AGVj8fGZi5t"
+        crossorigin="anonymous"></script>
 </body>
 </html>
