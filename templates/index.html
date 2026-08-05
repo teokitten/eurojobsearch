@@ -1815,7 +1815,7 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator{filter:invert(1)
 .tr-note-add-row {
   display: flex;
   align-items: center;
-  justify-content: flex-end;
+  justify-content: space-between;
 }
 
 .tr-notes-entry-list {
@@ -1893,12 +1893,14 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator{filter:invert(1)
   align-self: flex-end;
 }
 .tr-attach-btn {
-  position: absolute; bottom: 8px; left: 8px;
-  background: none; border: none; cursor: pointer;
-  padding: 3px; line-height: 0; border-radius: 3px;
-  color: var(--text-s, #9098b1); transition: color .15s;
+  background: var(--surface, #161b22);
+  border: 1px solid var(--border, #2e3248);
+  cursor: pointer;
+  padding: 4px 10px; line-height: 1.2; border-radius: 6px;
+  color: var(--text-s, #9098b1); transition: background .15s, color .15s;
+  font-size: 0.8rem;
 }
-.tr-attach-btn:hover { color: var(--text, #e6edf3); }
+.tr-attach-btn:hover { background: var(--surface2, #21262d); color: var(--text, #e6edf3); }
 .tr-attach-gallery { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; min-height: 0; }
 .tr-attach-thumb {
   position: relative; width: 60px; height: 60px;
@@ -4717,12 +4719,22 @@ function _trMigrateNotesEntry(job) {
   return job;
 }
 
+function _trMigrateDropReasonFlags(job) {
+  (job.notesEntries || []).forEach(entry => {
+    if (!entry.isDropReason && typeof entry.text === 'string' && entry.text.startsWith('Dropped: ')) {
+      entry.isDropReason = true;
+    }
+  });
+  return job;
+}
+
 function trLoad() {
   try {
     const raw = localStorage.getItem(TR_KEY);
     trJobs = raw ? JSON.parse(raw) : [];
   } catch { trJobs = []; }
   trJobs.forEach(_trMigrateNotesEntry);
+  trJobs.forEach(_trMigrateDropReasonFlags);
 }
 
 function trFmtNoteTimestamp(iso) {
@@ -4855,7 +4867,7 @@ function trRender() {
         </div>
       </td>
       <td style="color:var(--text-s);font-size:12px;white-space:nowrap">${dateStr}</td>
-      <td class="tr-td-notes" onclick="trEditNote(event,this,'${jid}')">${(j.notesEntries && j.notesEntries[0]) ? trX(j.notesEntries[0].text) : ''}</td>
+      <td class="tr-td-notes" onclick="trEditNote(event,this,'${jid}')">${trAttachIndicatorHtml(j)}${(j.notesEntries && j.notesEntries[0]) ? trX(j.notesEntries[0].text) : ''}</td>
       <td style="white-space:nowrap">
         <button class="tr-btn-icon" title="Edit" onclick="trOpenModal('${jid}')">✎</button>
         <button class="tr-btn-icon del" title="Delete" onclick="trDelJob('${jid}')">✕</button>
@@ -4976,6 +4988,7 @@ function trDropReasonSave() {
     id: 'ne' + Date.now() + Math.random().toString(36).slice(2, 6),
     text: `Dropped: ${reason}`,
     timestamp: new Date().toISOString(),
+    isDropReason: true,
   });
   job.status = 'Dropped';
   job.lastModified = new Date().toISOString();
@@ -5026,9 +5039,14 @@ function trEditNote(event, td, jobId) {
   _trRenderNotesEditor(td, job);
 }
 
+function trAttachIndicatorHtml(job) {
+  if (!job.attachmentIds || !job.attachmentIds.length) return '';
+  return '<span style="color:#d29922;margin-right:4px;display:inline-flex;vertical-align:-1px" title="Has attachment"><svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l8.57-8.57A4 4 0 1 1 18 8.84l-8.59 8.57a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg></span>';
+}
+
 function _trRenderNotesCollapsed(td, job) {
   const latest = (job.notesEntries || [])[0];
-  td.innerHTML = latest ? trX(latest.text) : '';
+  td.innerHTML = trAttachIndicatorHtml(job) + (latest ? trX(latest.text) : '');
 }
 
 function _trRenderNotesEditor(td, job) {
@@ -5074,15 +5092,15 @@ function _trRenderNotesEditor(td, job) {
   attachBtn.type = 'button';
   attachBtn.className = 'tr-attach-btn';
   attachBtn.title = 'Attach a screenshot';
-  attachBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l8.57-8.57A4 4 0 1 1 18 8.84l-8.59 8.57a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>';
+  attachBtn.textContent = '📎 Attach';
   attachBtn.addEventListener('click', (e) => { e.stopPropagation(); trAttachPick(); });
 
   addBox.appendChild(ta);
-  addBox.appendChild(attachBtn);
   wrap.appendChild(addBox);
 
   const addBtnRow = document.createElement('div');
   addBtnRow.className = 'tr-note-add-row';
+  addBtnRow.appendChild(attachBtn);
   const addBtn = document.createElement('button');
   addBtn.type = 'button';
   addBtn.className = 'tr-btn tr-btn-primary';
@@ -5121,19 +5139,21 @@ function _trRenderNotesEditor(td, job) {
     const ts = document.createElement('span');
     ts.className = 'tr-note-entry-ts';
     ts.textContent = trFmtNoteTimestamp(entry.timestamp);
-    const delBtn = document.createElement('button');
-    delBtn.type = 'button';
-    delBtn.className = 'tr-note-entry-del';
-    delBtn.title = 'Delete this note';
-    delBtn.textContent = '✕';
-    delBtn.addEventListener('click', (ev) => {
-      ev.stopPropagation();
-      job.notesEntries = (job.notesEntries || []).filter(e => e.id !== entry.id);
-      trPersist();
-      _trRenderNotesEditor(td, job);
-    });
     head.appendChild(ts);
-    head.appendChild(delBtn);
+    if (!entry.isDropReason) {
+      const delBtn = document.createElement('button');
+      delBtn.type = 'button';
+      delBtn.className = 'tr-note-entry-del';
+      delBtn.title = 'Delete this note';
+      delBtn.textContent = '✕';
+      delBtn.addEventListener('click', (ev) => {
+        ev.stopPropagation();
+        job.notesEntries = (job.notesEntries || []).filter(e => e.id !== entry.id);
+        trPersist();
+        _trRenderNotesEditor(td, job);
+      });
+      head.appendChild(delBtn);
+    }
 
     const textEl = document.createElement('div');
     textEl.className = 'tr-note-entry-text';
@@ -6484,7 +6504,7 @@ document.addEventListener('DOMContentLoaded', function() {
           <div class="tr-notes-wrap">
             <textarea id="tr-fNotes" placeholder="Add a note (e.g. context, contacts, follow-ups)…"></textarea>
             <button type="button" class="tr-attach-btn" onclick="trAttachPick()" title="Attach a screenshot">
-              <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l8.57-8.57A4 4 0 1 1 18 8.84l-8.59 8.57a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>
+              📎 Attach
             </button>
           </div>
           <div class="tr-attach-gallery" id="tr-attach-gallery"></div>
@@ -6548,7 +6568,7 @@ document.addEventListener('DOMContentLoaded', function() {
         <div class="tr-field">
           <div class="tr-notes-wrap">
             <button type="button" class="tr-attach-btn" onclick="trAttachPick()" title="Attach a screenshot">
-              <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l8.57-8.57A4 4 0 1 1 18 8.84l-8.59 8.57a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>
+              📎 Attach
             </button>
           </div>
           <div class="tr-attach-gallery" id="tr-attach-gallery-round"></div>
@@ -6636,7 +6656,7 @@ document.addEventListener('DOMContentLoaded', function() {
         <div class="tr-notes-wrap">
           <textarea id="tr-dropreason-input" rows="3" placeholder="Recruiter said the role requires full-time onsite presence in a location I can't relocate to." style="width:100%;resize:vertical;background:var(--surface2,#21262d);border:1px solid var(--border,#30363d);border-radius:6px;color:var(--text,#e6edf3);padding:8px;font:inherit;font-size:0.85rem;box-sizing:border-box"></textarea>
           <button type="button" class="tr-attach-btn" onclick="trAttachPick()" title="Attach a screenshot">
-            <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l8.57-8.57A4 4 0 1 1 18 8.84l-8.59 8.57a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>
+            📎 Attach
           </button>
         </div>
         <div class="tr-attach-gallery" id="tr-attach-gallery-drop"></div>
